@@ -1,0 +1,16 @@
+[
+  {
+    "request_id": "INT-2001",
+    "patient_data": {
+      "first_name": "Maria",
+      "last_name": "Gomez",
+      "national_id": "22111333"
+    },
+    "clinical_order": {
+      "modality": "CR",
+      "procedure": "Radiografia de Pelvis",
+      "diagnosis": "Control post-quirurgico",
+      "bed": "Cama 4B"
+    }
+  }
+]

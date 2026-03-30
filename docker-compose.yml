@@ -1,0 +1,61 @@
+services:
+  # 1. Base de Datos Relacional para tu FastAPI
+  postgres:
+    image: postgres:15-alpine
+    container_name: db_hospital
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "${DB_PORT}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: always
+
+  # 2. Orquestador n8n
+  n8n:
+    image: docker.n8n.io/n8nio/n8n
+    container_name: orquestador_n8n
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_HOST=0.0.0.0
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - NODE_ENV=production
+      - WEBHOOK_URL=http://localhost:5678/
+      - GENERIC_TIMEZONE=America/Argentina/Mendoza
+      - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY}
+    volumes:
+      - n8n_data:/home/node/.n8n
+    restart: always
+
+  # 3. Servidor simulado para las APIs de la clínica
+  mock-server:
+    image: python:3.9-alpine
+    container_name: mock_apis
+    volumes:
+      - ./mocks:/mocks
+    working_dir: /mocks
+    command: python -m http.server 4000
+    ports:
+      - "4000:4000"
+  orthanc:
+    image: orthancteam/orthanc
+    container_name: servidor_dicom
+    ports:
+      - "4242:4242" # Puerto DICOM estándar (para que los equipos se conecten)
+      - "8042:8042" # Puerto HTTP/REST API (para el tablero web y n8n)
+    environment:
+      - ORTHANC_NAME=Hospital_Orthanc
+      - ORTHANC__AUTHENTICATION_ENABLED=true
+      - ORTHANC__REGISTERED_USERS={"${ORTHANC_USER}":"${ORTHANC_PASS}"}
+    volumes:
+      - orthanc_data:/var/lib/orthanc/db
+    restart: always
+
+volumes:
+  postgres_data:
+  n8n_data:
+  orthanc_data:

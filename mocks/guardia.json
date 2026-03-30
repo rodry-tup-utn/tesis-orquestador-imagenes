@@ -1,0 +1,18 @@
+[
+  {
+    "id_transaccion": "GUA-1001",
+    "nom_paciente": "Perez, Juan",
+    "doc_identidad": "33444555",
+    "estudio_req": "TC de Cerebro",
+    "motivo_clinico": "TEC con perdida de conocimiento",
+    "codigo_gravedad": "ROJO"
+  },
+  {
+    "id_transaccion": "GUA-1002",
+    "nom_paciente": "Gimenez, Carlos",
+    "doc_identidad": "12345678",
+    "estudio_req": "Rx Torax",
+    "motivo_clinico": "Tos persistente",
+    "codigo_gravedad": "VERDE"
+  }
+]
