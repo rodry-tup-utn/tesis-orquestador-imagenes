@@ -1,0 +1,68 @@
+{
+  "name": "Alertas Criticas",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "alertas-criticas",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "66566485-c940-4b0e-a10c-53dfc1d06e69",
+      "name": "Webhook",
+      "webhookId": "61f8d6be-dd7d-4296-bf94-240b65e6e3c9"
+    },
+    {
+      "parameters": {
+        "chatId": "-5103240525",
+        "text": "## Hola Bot\nEste es un mensaje de prueba",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        224,
+        0
+      ],
+      "id": "d44abcf0-0e8a-4804-85d5-56270bab9bc9",
+      "name": "Send a text message",
+      "webhookId": "2d78c0fe-a2b8-4bbe-810e-f72969ca8c2b",
+      "credentials": {
+        "telegramApi": {
+          "id": "vDK4MLRlTBXmHeoj",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "29f9372a-9f97-4ea3-9697-020dde096455",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "68817198e4f2234f06d497b266480aeaee86e39fa21de9dd94db6e614877bfec"
+  },
+  "id": "tda6vJhg3kaxsVvE",
+  "tags": []
+}
