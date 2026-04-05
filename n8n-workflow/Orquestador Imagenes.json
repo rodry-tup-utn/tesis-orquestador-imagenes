@@ -1,0 +1,179 @@
+{
+  "name": "Orquestador Imagenes",
+  "nodes": [
+    {
+      "parameters": {
+        "url": "http://mock-server:4000/internacion.json",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        240,
+        -208
+      ],
+      "id": "0bbe3a51-5816-453f-92a8-8c80d5f5951b",
+      "name": "Request Internacion"
+    },
+    {
+      "parameters": {
+        "url": "http://mock-server:4000/guardia.json",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        240,
+        0
+      ],
+      "id": "d7c620d0-5428-4fa3-8bb0-c975cc95ea9f",
+      "name": "Request Guardia"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 10
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -48,
+        0
+      ],
+      "id": "7f840917-822f-4b4b-a910-af9243b1c227",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "http://mock-server:4000/ambulatorio.json",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        240,
+        208
+      ],
+      "id": "ae21fdd5-ce84-41da-860f-367498cbf50e",
+      "name": "Request Ambulatorio"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Iteramos sobre todos los pacientes que entraron desde Internación\nconst ordenesLimpias = $input.all().map(item => {\n  const data = item.json;\n\n  // 1. Extraer datos de los objetos anidados para no repetir código\n  const paciente = data.patient_data || {};\n  const orden = data.clinical_order || {};\n\n  const nombre = paciente.first_name || \"\";\n  const apellido = paciente.last_name || \"\";\n\n  // 2. Generar el seudónimo para Telegram (ej: \"M.G.\")\n  const iniciales = `${nombre.charAt(0) || 'X'}.${apellido.charAt(0) || 'X'}.`;\n\n  // 3. Formatear la fecha de nacimiento (viene separada en year, month, day)\n  const bd = paciente.birth_date || {};\n  const fechaNac = bd.year ? `${bd.year}-${bd.month}-${bd.day}` : \"\";\n\n  // 4. Mapear el nivel de urgencia (viene como un booleano true/false)\n  const prioridad = data.is_urgent ? \"Urgente\" : \"Rutina\";\n\n  // 5. Armar la ubicación combinando sector, habitación y cama\n  const ubicacion = `${orden.sector || 'S/D'} - Hab: ${orden.room || '-'} Cama: ${orden.bed || '-'}`;\n\n  // 6. Retornar el objeto plano respetando el Contrato de Datos base\n  return {\n    id_orden: data.request_id,\n    origen: \"INTERNACION\",\n    modalidad: orden.modality,\n    estudio: orden.procedure,\n    diagnostico: orden.diagnosis,\n    observaciones: orden.observations || \"Sin observaciones\",\n    ubicacion: ubicacion,\n    paciente_nombre: nombre,\n    paciente_apellido: apellido,\n    paciente_seudonimo: iniciales,\n    paciente_dni: paciente.national_id,\n    fecha_nacimiento: fechaNac,\n    medico_solicitante: \"Médico de Planta\", // El mock de internación no traía un campo de médico específico\n    prioridad_solicitada: prioridad,\n    is_active: true\n  };\n});\n\n// Retornamos la estructura que n8n necesita para seguir el flujo\nreturn ordenesLimpias.map(orden => ({ json: orden }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        512,
+        -208
+      ],
+      "id": "2c239c9e-357e-45b5-9914-ca4f7ef841ae",
+      "name": "Normalizacion Internacion"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Iteramos sobre todos los pacientes que entraron desde la Guardia\nconst ordenesLimpias = $input.all().map(item => {\n  const data = item.json;\n\n  // 1. Limpiar el formato del nombre (Viene como \"Apellido, Nombre\")\n  const partesNombre = (data.nom_paciente || \"\").split(', ');\n  const apellido = partesNombre[0] || \"\";\n  const nombre = partesNombre[1] || \"\";\n\n  // 2. Generar el seudónimo para Telegram (ej: \"J.P.\")\n  const iniciales = `${nombre.charAt(0) || 'X'}.${apellido.charAt(0) || 'X'}.`;\n\n  // 3. Mapear el nivel de urgencia\n  const prioridad = data.urgente === \"SI\" ? \"Urgente\" : \"Rutina\";\n\n  // 4. Retornar el objeto plano respetando el Contrato de Datos base\n  return {\n    id_orden: data.id_transaccion,\n    origen: \"GUARDIA\",\n    modalidad: data.modalidad || \"Sin modalidad asignada\",\n    estudio: data.estudio_req || \"Sin estudio\",\n    diagnostico: data.diagnostico || \"Sin diagnostico\",\n    observaciones: data.observaciones || \"Sin observaciones\",\n    paciente_nombre: nombre,\n    paciente_apellido: apellido,\n    paciente_seudonimo: iniciales,\n    paciente_dni: data.doc_identidad || \"Sin DNI\",\n    fecha_nacimiento: data.fecha_nacimiento || \"Sin fecha de nacimiento\",\n    medico_solicitante: data.solicitante || \"Solicitante no especificado\",\n    prioridad_solicitada: prioridad,\n    is_active: true\n  };\n});\n\n// Retornamos la estructura que n8n necesita para seguir el flujo\nreturn ordenesLimpias.map(orden => ({ json: orden }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        512,
+        0
+      ],
+      "id": "f2cc57ff-d1c5-4bca-856d-c774b9397e20",
+      "name": "Normalizacion Guardia"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Iteramos sobre todos los pacientes ambulatorios\nconst ordenesLimpias = $input.all().map(item => {\n  const data = item.json;\n\n  // 1. Desarmar el formato DICOM del nombre (APELLIDO^NOMBRE)\n  const partesNombre = (data.PACIENTE_DATA || \"\").split('^');\n  const apellido = partesNombre[0] || \"\";\n  const nombre = partesNombre[1] || \"\";\n\n  // 2. Generar el seudónimo para Telegram (ej: \"R.R.\")\n  const iniciales = `${nombre.charAt(0) || 'X'}.${apellido.charAt(0) || 'X'}.`;\n\n  // 3. Inferir modalidad DICOM basándonos en el texto de la prestación\n  let modalidadInferida = \"OTRO\";\n  const prestacion = (data.PRESTACION_DESC || \"\").toLowerCase();\n  \n  if (prestacion.includes(\"resonancia\")) modalidadInferida = \"MR\";\n  else if (prestacion.includes(\"ecografia\") || prestacion.includes(\"ecografía\")) modalidadInferida = \"US\";\n  else if (prestacion.includes(\"tomografia\") || prestacion.includes(\"tomografía\")) modalidadInferida = \"CT\";\n  else if (prestacion.includes(\"radiografia\") || prestacion.includes(\"radiografía\")) modalidadInferida = \"CR\";\n\n  // 4. Retornar el objeto plano respetando el Contrato de Datos base\n  return {\n    id_orden: data.ID_CITA,\n    origen: \"AMBULATORIO\", \n    modalidad: modalidadInferida,\n    estudio: data.PRESTACION_DESC,\n    diagnostico: data.DIAGNOSTICO || \"Sin especificar\",\n    observaciones: data.OBSERVACIONES || \"Sin observaciones\",\n    ubicacion: \"Atención Ambulatoria\", // Sector genérico para no dejarlo vacío\n    paciente_nombre: nombre,\n    paciente_apellido: apellido,\n    paciente_seudonimo: iniciales,\n    paciente_dni: data.NRO_DOCUMENTO,\n    fecha_nacimiento: data.FECHA_NACIMIENTO,\n    medico_solicitante: data.MEDICO_DERIVANTE,\n    prioridad_solicitada: \"RUTINA\", // Los ambulatorios son rutina por defecto\n    is_active: true\n  };\n});\n\n// Retornamos la estructura que n8n necesita para seguir el flujo\nreturn ordenesLimpias.map(orden => ({ json: orden }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        512,
+        208
+      ],
+      "id": "d790a603-3e0b-4f66-bb45-a6c6c6e108d2",
+      "name": "Normalizacion Ambulatorio"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Request Internacion": {
+      "main": [
+        [
+          {
+            "node": "Normalizacion Internacion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Request Guardia": {
+      "main": [
+        [
+          {
+            "node": "Normalizacion Guardia",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Request Internacion",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Request Guardia",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Request Ambulatorio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Request Ambulatorio": {
+      "main": [
+        [
+          {
+            "node": "Normalizacion Ambulatorio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalizacion Guardia": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "be4fefc7-aaf5-4f0d-a7a6-3c3f03e4a703",
+  "meta": {
+    "instanceId": "68817198e4f2234f06d497b266480aeaee86e39fa21de9dd94db6e614877bfec"
+  },
+  "id": "VX9lpwEr2VqSDALR",
+  "tags": []
+}
