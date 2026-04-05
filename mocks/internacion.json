@@ -7,16 +7,13 @@
       "last_name": "Gomez",
       "national_id": "22111333",
       "internal_id": 32456,
-      "birth_date": {
-        "year": "1999",
-        "month": "04",
-        "day": "12"
-      }
+      "birth_date": { "year": "1999", "month": "04", "day": "12" }
     },
     "clinical_order": {
       "modality": "CR",
       "procedure": "Radiografia de Pelvis",
       "diagnosis": "Control post-quirurgico",
+      "requesting_physician": "Dr. Arnaldo Rossi",
       "room": "115",
       "bed": "4B",
       "sector": "Traumatologia",
@@ -31,16 +28,13 @@
       "last_name": "Perez",
       "national_id": "14222333",
       "internal_id": 32457,
-      "birth_date": {
-        "year": "1955",
-        "month": "06",
-        "day": "15"
-      }
+      "birth_date": { "year": "1955", "month": "06", "day": "15" }
     },
     "clinical_order": {
       "modality": "CT",
       "procedure": "Tomografia de Cerebro",
       "diagnosis": "ACV Hemorragico",
+      "requesting_physician": "Dra. Elena Vazquez",
       "room": "201",
       "bed": "1A",
       "sector": "UTI",
@@ -55,16 +49,13 @@
       "last_name": "Martinez",
       "national_id": "30111222",
       "internal_id": 32458,
-      "birth_date": {
-        "year": "1983",
-        "month": "09",
-        "day": "20"
-      }
+      "birth_date": { "year": "1983", "month": "09", "day": "20" }
     },
     "clinical_order": {
       "modality": "US",
       "procedure": "Ecografia Abdominal",
       "diagnosis": "Colecistitis aguda",
+      "requesting_physician": "Dr. Marcos Juarez",
       "room": "105",
       "bed": "2B",
       "sector": "Cirugia General",
@@ -79,16 +70,13 @@
       "last_name": "Fernandez",
       "national_id": "25999888",
       "internal_id": 32459,
-      "birth_date": {
-        "year": "1977",
-        "month": "11",
-        "day": "03"
-      }
+      "birth_date": { "year": "1977", "month": "11", "day": "03" }
     },
     "clinical_order": {
       "modality": "MR",
       "procedure": "Resonancia de Columna Cervical",
       "diagnosis": "Hernia de disco C5-C6",
+      "requesting_physician": "Dra. Sandra Miguelez",
       "room": "304",
       "bed": "1A",
       "sector": "Neurologia",
@@ -103,16 +91,13 @@
       "last_name": "Lopez",
       "national_id": "11444555",
       "internal_id": 32460,
-      "birth_date": {
-        "year": "1950",
-        "month": "02",
-        "day": "28"
-      }
+      "birth_date": { "year": "1950", "month": "02", "day": "28" }
     },
     "clinical_order": {
       "modality": "CR",
       "procedure": "Radiografia de Torax",
       "diagnosis": "Neumonia intrahospitalaria",
+      "requesting_physician": "Dr. Carlos Santilli",
       "room": "110",
       "bed": "3C",
       "sector": "Clinica Medica",
@@ -127,16 +112,13 @@
       "last_name": "Sanchez",
       "national_id": "20333444",
       "internal_id": 32461,
-      "birth_date": {
-        "year": "1968",
-        "month": "12",
-        "day": "10"
-      }
+      "birth_date": { "year": "1968", "month": "12", "day": "10" }
     },
     "clinical_order": {
       "modality": "CT",
       "procedure": "Tomografia de Abdomen y Pelvis",
       "diagnosis": "Control oncologico",
+      "requesting_physician": "Dra. Monica Gatti",
       "room": "405",
       "bed": "1B",
       "sector": "Oncologia",
@@ -151,16 +133,13 @@
       "last_name": "Quiroga",
       "national_id": "18555666",
       "internal_id": 32462,
-      "birth_date": {
-        "year": "1965",
-        "month": "07",
-        "day": "25"
-      }
+      "birth_date": { "year": "1965", "month": "07", "day": "25" }
     },
     "clinical_order": {
       "modality": "US",
       "procedure": "Doppler Venoso de Miembros Inferiores",
       "diagnosis": "TVP",
+      "requesting_physician": "Dr. Esteban Quito",
       "room": "112",
       "bed": "2A",
       "sector": "Cardiologia",
@@ -175,16 +154,13 @@
       "last_name": "Dominguez",
       "national_id": "35777888",
       "internal_id": 32463,
-      "birth_date": {
-        "year": "1990",
-        "month": "08",
-        "day": "14"
-      }
+      "birth_date": { "year": "1990", "month": "08", "day": "14" }
     },
     "clinical_order": {
       "modality": "CR",
       "procedure": "Radiografia de Femur",
       "diagnosis": "Fractura expuesta",
+      "requesting_physician": "Dr. Lucio Domato",
       "room": "116",
       "bed": "1A",
       "sector": "Traumatologia",
@@ -199,16 +175,13 @@
       "last_name": "Ruiz",
       "national_id": "28111999",
       "internal_id": 32464,
-      "birth_date": {
-        "year": "1980",
-        "month": "01",
-        "day": "05"
-      }
+      "birth_date": { "year": "1980", "month": "01", "day": "05" }
     },
     "clinical_order": {
       "modality": "CT",
       "procedure": "Angiotomografia Pulmonar",
       "diagnosis": "TEP",
+      "requesting_physician": "Dra. Laura Spinelli",
       "room": "202",
       "bed": "3A",
       "sector": "UTI",
@@ -223,16 +196,13 @@
       "last_name": "Blanco",
       "national_id": "12666777",
       "internal_id": 32465,
-      "birth_date": {
-        "year": "1952",
-        "month": "03",
-        "day": "30"
-      }
+      "birth_date": { "year": "1952", "month": "03", "day": "30" }
     },
     "clinical_order": {
       "modality": "MR",
       "procedure": "Resonancia de Cerebro",
       "diagnosis": "Sospecha de tumoracion",
+      "requesting_physician": "Dr. Fabian Solis",
       "room": "308",
       "bed": "2B",
       "sector": "Neurologia",
@@ -247,16 +217,13 @@
       "last_name": "Gimenez",
       "national_id": "50222333",
       "internal_id": 32466,
-      "birth_date": {
-        "year": "2015",
-        "month": "10",
-        "day": "18"
-      }
+      "birth_date": { "year": "2015", "month": "10", "day": "18" }
     },
     "clinical_order": {
       "modality": "US",
       "procedure": "Ecografia Renal",
       "diagnosis": "Colico nefritico",
+      "requesting_physician": "Dra. Patricia Sosa",
       "room": "501",
       "bed": "1C",
       "sector": "Pediatria",
@@ -271,16 +238,13 @@
       "last_name": "Navarro",
       "national_id": "22444555",
       "internal_id": 32467,
-      "birth_date": {
-        "year": "1971",
-        "month": "05",
-        "day": "22"
-      }
+      "birth_date": { "year": "1971", "month": "05", "day": "22" }
     },
     "clinical_order": {
       "modality": "CT",
       "procedure": "Urotomografia",
       "diagnosis": "Litiasis renal",
+      "requesting_physician": "Dr. Jorge Rinaldi",
       "room": "108",
       "bed": "2A",
       "sector": "Urologia",
@@ -295,16 +259,13 @@
       "last_name": "Castro",
       "national_id": "16888999",
       "internal_id": 32468,
-      "birth_date": {
-        "year": "1962",
-        "month": "09",
-        "day": "11"
-      }
+      "birth_date": { "year": "1962", "month": "09", "day": "11" }
     },
     "clinical_order": {
       "modality": "CR",
       "procedure": "Radiografia de Torax Portatil",
       "diagnosis": "Control de via central",
+      "requesting_physician": "Dra. Beatriz Ferro",
       "room": "205",
       "bed": "1B",
       "sector": "Unidad Coronaria",
@@ -319,16 +280,13 @@
       "last_name": "Alonso",
       "national_id": "39555444",
       "internal_id": 32469,
-      "birth_date": {
-        "year": "1996",
-        "month": "04",
-        "day": "08"
-      }
+      "birth_date": { "year": "1996", "month": "04", "day": "08" }
     },
     "clinical_order": {
       "modality": "MR",
       "procedure": "Resonancia de Pelvis",
       "diagnosis": "Endometriosis profunda",
+      "requesting_physician": "Dr. Martin Palermo",
       "room": "210",
       "bed": "1A",
       "sector": "Ginecologia",
@@ -343,16 +301,13 @@
       "last_name": "Sosa",
       "national_id": "17333222",
       "internal_id": 32470,
-      "birth_date": {
-        "year": "1964",
-        "month": "11",
-        "day": "29"
-      }
+      "birth_date": { "year": "1964", "month": "11", "day": "29" }
     },
     "clinical_order": {
       "modality": "CT",
       "procedure": "Tomografia de Torax de Alta Resolucion",
       "diagnosis": "Fibrosis pulmonar",
+      "requesting_physician": "Dra. Natalia Oreiro",
       "room": "111",
       "bed": "4B",
       "sector": "Clinica Medica",
