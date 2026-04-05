@@ -8,10 +8,7 @@
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
-      "position": [
-        240,
-        -208
-      ],
+      "position": [240, -208],
       "id": "0bbe3a51-5816-453f-92a8-8c80d5f5951b",
       "name": "Request Internacion"
     },
@@ -22,10 +19,7 @@
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
-      "position": [
-        240,
-        0
-      ],
+      "position": [240, 0],
       "id": "d7c620d0-5428-4fa3-8bb0-c975cc95ea9f",
       "name": "Request Guardia"
     },
@@ -42,10 +36,7 @@
       },
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.3,
-      "position": [
-        -48,
-        0
-      ],
+      "position": [-48, 0],
       "id": "7f840917-822f-4b4b-a910-af9243b1c227",
       "name": "Schedule Trigger"
     },
@@ -56,49 +47,37 @@
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
-      "position": [
-        240,
-        208
-      ],
+      "position": [240, 208],
       "id": "ae21fdd5-ce84-41da-860f-367498cbf50e",
       "name": "Request Ambulatorio"
     },
     {
       "parameters": {
-        "jsCode": "// Iteramos sobre todos los pacientes que entraron desde Internación\nconst ordenesLimpias = $input.all().map(item => {\n  const data = item.json;\n\n  // 1. Extraer datos de los objetos anidados para no repetir código\n  const paciente = data.patient_data || {};\n  const orden = data.clinical_order || {};\n\n  const nombre = paciente.first_name || \"\";\n  const apellido = paciente.last_name || \"\";\n\n  // 2. Generar el seudónimo para Telegram (ej: \"M.G.\")\n  const iniciales = `${nombre.charAt(0) || 'X'}.${apellido.charAt(0) || 'X'}.`;\n\n  // 3. Formatear la fecha de nacimiento (viene separada en year, month, day)\n  const bd = paciente.birth_date || {};\n  const fechaNac = bd.year ? `${bd.year}-${bd.month}-${bd.day}` : \"\";\n\n  // 4. Mapear el nivel de urgencia (viene como un booleano true/false)\n  const prioridad = data.is_urgent ? \"Urgente\" : \"Rutina\";\n\n  // 5. Armar la ubicación combinando sector, habitación y cama\n  const ubicacion = `${orden.sector || 'S/D'} - Hab: ${orden.room || '-'} Cama: ${orden.bed || '-'}`;\n\n  // 6. Retornar el objeto plano respetando el Contrato de Datos base\n  return {\n    id_orden: data.request_id,\n    origen: \"INTERNACION\",\n    modalidad: orden.modality,\n    estudio: orden.procedure,\n    diagnostico: orden.diagnosis,\n    observaciones: orden.observations || \"Sin observaciones\",\n    ubicacion: ubicacion,\n    paciente_nombre: nombre,\n    paciente_apellido: apellido,\n    paciente_seudonimo: iniciales,\n    paciente_dni: paciente.national_id,\n    fecha_nacimiento: fechaNac,\n    medico_solicitante: \"Médico de Planta\", // El mock de internación no traía un campo de médico específico\n    prioridad_solicitada: prioridad,\n    is_active: true\n  };\n});\n\n// Retornamos la estructura que n8n necesita para seguir el flujo\nreturn ordenesLimpias.map(orden => ({ json: orden }));"
+        "jsCode": "//Script para Internacion\nconst ordenesLimpias = $input.all().map((item) => {\n  const data = item.json;\n\n  // desestructuracion de datos para mejor orden\n  const paciente = data.patient_data || {};\n  const orden = data.clinical_order || {};\n\n  const nombre = paciente.first_name || \"\";\n  const apellido = paciente.last_name || \"\";\n\n  // pseudonimo de telegram\n  const iniciales = `${nombre.charAt(0) || \"X\"}.${apellido.charAt(0) || \"X\"}.`;\n\n  // formateo fecha nacimiento\n  const bd = paciente.birth_date || {};\n  const fechaNac = bd.year ? `${bd.year}-${bd.month}-${bd.day}` : \"\";\n\n  // calculo de edad\n  const dob = new Date(fechaNac);\n  const hoy = new Date();\n  let edad = hoy.getFullYear() - dob.getFullYear();\n  const m = hoy.getMonth() - dob.getMonth();\n\n  if (m < 0 || (m === 0 && hoy.getDate() < dob.getDate())) {\n    edad--;\n  }\n\n  // urgencia como booleano, ya viene en ese formato\n  const prioridad = data.is_urgent;\n\n  // ubicacion mapeada en un solo campo\n  const ubicacion = `${orden.sector || \"S/D\"} - Hab: ${orden.room || \"-\"} Cama: ${orden.bed || \"-\"}`;\n\n  // retorno del objeto limpio\n  return {\n    id_orden: data.request_id,\n    origen: \"INTERNACION\",\n    modalidad: orden.modality,\n    estudio: orden.procedure,\n    diagnostico: orden.diagnosis,\n    observaciones: orden.observations || \"Sin observaciones\",\n    ubicacion: ubicacion,\n    paciente_nombre: nombre,\n    paciente_apellido: apellido,\n    paciente_seudonimo: iniciales,\n    paciente_dni: paciente.national_id,\n    fecha_nacimiento: fechaNac,\n    paciente_edad: edad, \n    medico_solicitante: data.requesting_physician,\n    is_urgente: prioridad,\n    is_active: true,\n  };\n});\n\n// Retornamos la estructura que n8n necesita para seguir el flujo\nreturn ordenesLimpias.map((orden) => ({ json: orden }));\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        512,
-        -208
-      ],
+      "position": [512, -208],
       "id": "2c239c9e-357e-45b5-9914-ca4f7ef841ae",
       "name": "Normalizacion Internacion"
     },
     {
       "parameters": {
-        "jsCode": "// Iteramos sobre todos los pacientes que entraron desde la Guardia\nconst ordenesLimpias = $input.all().map(item => {\n  const data = item.json;\n\n  // 1. Limpiar el formato del nombre (Viene como \"Apellido, Nombre\")\n  const partesNombre = (data.nom_paciente || \"\").split(', ');\n  const apellido = partesNombre[0] || \"\";\n  const nombre = partesNombre[1] || \"\";\n\n  // 2. Generar el seudónimo para Telegram (ej: \"J.P.\")\n  const iniciales = `${nombre.charAt(0) || 'X'}.${apellido.charAt(0) || 'X'}.`;\n\n  // 3. Mapear el nivel de urgencia\n  const prioridad = data.urgente === \"SI\" ? \"Urgente\" : \"Rutina\";\n\n  // 4. Retornar el objeto plano respetando el Contrato de Datos base\n  return {\n    id_orden: data.id_transaccion,\n    origen: \"GUARDIA\",\n    modalidad: data.modalidad || \"Sin modalidad asignada\",\n    estudio: data.estudio_req || \"Sin estudio\",\n    diagnostico: data.diagnostico || \"Sin diagnostico\",\n    observaciones: data.observaciones || \"Sin observaciones\",\n    paciente_nombre: nombre,\n    paciente_apellido: apellido,\n    paciente_seudonimo: iniciales,\n    paciente_dni: data.doc_identidad || \"Sin DNI\",\n    fecha_nacimiento: data.fecha_nacimiento || \"Sin fecha de nacimiento\",\n    medico_solicitante: data.solicitante || \"Solicitante no especificado\",\n    prioridad_solicitada: prioridad,\n    is_active: true\n  };\n});\n\n// Retornamos la estructura que n8n necesita para seguir el flujo\nreturn ordenesLimpias.map(orden => ({ json: orden }));"
+        "jsCode": "// Script para Guardia\nconst ordenesLimpias = $input.all().map((item) => {\n  const data = item.json;\n\n  // formateo de nombre\n  const partesNombre = (data.nom_paciente || \"\").split(\", \");\n  const apellido = partesNombre[0] || \"\";\n  const nombre = partesNombre[1] || \"\";\n\n  // pseudonimo para telegram\n  const iniciales = `${nombre.charAt(0) || \"X\"}.${apellido.charAt(0) || \"X\"}.`;\n\n  // urgencia\n  const prioridad = data.urgente === \"SI\";\n\n  // calculo de edad\n  const dob = new Date(data.fecha_nacimiento);\n  const hoy = new Date();\n  let edad = hoy.getFullYear() - dob.getFullYear();\n  const m = hoy.getMonth() - dob.getMonth();\n\n  // retorno de objeto formateado\n  return {\n    id_orden: data.id_transaccion,\n    origen: \"GUARDIA\",\n    modalidad: data.modalidad || \"Sin modalidad asignada\",\n    estudio: data.estudio_req || \"Sin estudio\",\n    diagnostico: data.diagnostico || \"Sin diagnostico\",\n    observaciones: data.observaciones || \"Sin observaciones\",\n    ubicacion: data.ubicacion_actual || \"Sin ubicacion\",\n    paciente_nombre: nombre,\n    paciente_apellido: apellido,\n    paciente_seudonimo: iniciales,\n    paciente_dni: data.doc_identidad || \"Sin DNI\",\n    fecha_nacimiento: data.fecha_nacimiento || \"Sin fecha de nacimiento\",\n    edad: edad,\n    medico_solicitante: data.solicitante || \"Solicitante no especificado\",\n    is_urgente: prioridad,\n    is_active: true,\n  };\n});\n\n// Retornamos la estructura que n8n necesita para seguir el flujo\nreturn ordenesLimpias.map((orden) => ({ json: orden }));\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        512,
-        0
-      ],
+      "position": [512, 0],
       "id": "f2cc57ff-d1c5-4bca-856d-c774b9397e20",
       "name": "Normalizacion Guardia"
     },
     {
       "parameters": {
-        "jsCode": "// Iteramos sobre todos los pacientes ambulatorios\nconst ordenesLimpias = $input.all().map(item => {\n  const data = item.json;\n\n  // 1. Desarmar el formato DICOM del nombre (APELLIDO^NOMBRE)\n  const partesNombre = (data.PACIENTE_DATA || \"\").split('^');\n  const apellido = partesNombre[0] || \"\";\n  const nombre = partesNombre[1] || \"\";\n\n  // 2. Generar el seudónimo para Telegram (ej: \"R.R.\")\n  const iniciales = `${nombre.charAt(0) || 'X'}.${apellido.charAt(0) || 'X'}.`;\n\n  // 3. Inferir modalidad DICOM basándonos en el texto de la prestación\n  let modalidadInferida = \"OTRO\";\n  const prestacion = (data.PRESTACION_DESC || \"\").toLowerCase();\n  \n  if (prestacion.includes(\"resonancia\")) modalidadInferida = \"MR\";\n  else if (prestacion.includes(\"ecografia\") || prestacion.includes(\"ecografía\")) modalidadInferida = \"US\";\n  else if (prestacion.includes(\"tomografia\") || prestacion.includes(\"tomografía\")) modalidadInferida = \"CT\";\n  else if (prestacion.includes(\"radiografia\") || prestacion.includes(\"radiografía\")) modalidadInferida = \"CR\";\n\n  // 4. Retornar el objeto plano respetando el Contrato de Datos base\n  return {\n    id_orden: data.ID_CITA,\n    origen: \"AMBULATORIO\", \n    modalidad: modalidadInferida,\n    estudio: data.PRESTACION_DESC,\n    diagnostico: data.DIAGNOSTICO || \"Sin especificar\",\n    observaciones: data.OBSERVACIONES || \"Sin observaciones\",\n    ubicacion: \"Atención Ambulatoria\", // Sector genérico para no dejarlo vacío\n    paciente_nombre: nombre,\n    paciente_apellido: apellido,\n    paciente_seudonimo: iniciales,\n    paciente_dni: data.NRO_DOCUMENTO,\n    fecha_nacimiento: data.FECHA_NACIMIENTO,\n    medico_solicitante: data.MEDICO_DERIVANTE,\n    prioridad_solicitada: \"RUTINA\", // Los ambulatorios son rutina por defecto\n    is_active: true\n  };\n});\n\n// Retornamos la estructura que n8n necesita para seguir el flujo\nreturn ordenesLimpias.map(orden => ({ json: orden }));"
+        "jsCode": "// Script para Ambulatorio\nconst ordenesLimpias = $input.all().map((item) => {\n  const data = item.json;\n\n  // 1. Desarmar el formato DICOM del nombre (APELLIDO^NOMBRE)\n  const partesNombre = (data.PACIENTE_DATA || \"\").split(\"^\");\n  const apellido = partesNombre[0] || \"\";\n  const nombre = partesNombre[1] || \"\";\n\n  // 2. Generar el seudónimo para Telegram (ej: \"R.R.\")\n  const iniciales = `${nombre.charAt(0) || \"X\"}.${apellido.charAt(0) || \"X\"}.`;\n\n  // 3. Inferir modalidad DICOM basándonos en el texto de la prestación\n  let modalidadInferida = \"OTRO\";\n  const prestacion = (data.PRESTACION_DESC || \"\").toLowerCase();\n\n  if (prestacion.includes(\"resonancia\") || prestacion.includes(\"RM\"))\n    modalidadInferida = \"MR\";\n  else if (prestacion.includes(\"ecograf\") || prestacion.includes(\"ecografía\"))\n    modalidadInferida = \"US\";\n  else if (\n    prestacion.includes(\"tomograf\") ||\n    prestacion.includes(\"TC\") ||\n    prestacion.includes(\"TAC\")\n  )\n    modalidadInferida = \"CT\";\n  else if (prestacion.includes(\"radiograf\") || prestacion.includes(\"rx\"))\n    modalidadInferida = \"CR\";\n\n  const nacimiento_array = data.FECHA_NACIMIENTO.split(\"-\")\n  const dia = nacimiento_array[0]\n  const mes = nacimiento_array[1]\n  const anio = nacimiento_array[2]\n\n  const dob = new Date(`${anio}-${mes}-${dia}`);\n  const hoy = new Date();\n  let edad = hoy.getFullYear() - dob.getFullYear();\n  const m = hoy.getMonth() - dob.getMonth();\n\n  // 4. Retornar el objeto plano respetando el Contrato de Datos base\n  return {\n    id_orden: data.ID_CITA,\n    origen: \"AMBULATORIO\",\n    modalidad: modalidadInferida,\n    estudio: data.PRESTACION_DESC,\n    diagnostico: data.DIAGNOSTICO || \"Sin especificar\",\n    observaciones: data.OBSERVACIONES || \"Sin observaciones\",\n    ubicacion: \"Atención Ambulatoria\",\n    paciente_nombre: nombre,\n    paciente_apellido: apellido,\n    paciente_seudonimo: iniciales,\n    paciente_dni: data.NRO_DOCUMENTO,\n    fecha_nacimiento: data.FECHA_NACIMIENTO,\n    edad: edad,\n    medico_solicitante: data.MEDICO_DERIVANTE,\n    is_urgente: false,\n    is_active: true,\n  };\n});\n\n// Retornamos la estructura que n8n necesita para seguir el flujo\nreturn ordenesLimpias.map((orden) => ({ json: orden }));\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        512,
-        208
-      ],
+      "position": [512, 208],
       "id": "d790a603-3e0b-4f66-bb45-a6c6c6e108d2",
       "name": "Normalizacion Ambulatorio"
     }
@@ -160,9 +139,7 @@
       ]
     },
     "Normalizacion Guardia": {
-      "main": [
-        []
-      ]
+      "main": [[]]
     }
   },
   "active": false,
@@ -170,7 +147,7 @@
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "versionId": "be4fefc7-aaf5-4f0d-a7a6-3c3f03e4a703",
+  "versionId": "f9582ce6-119d-486e-9103-e75443084f5d",
   "meta": {
     "instanceId": "68817198e4f2234f06d497b266480aeaee86e39fa21de9dd94db6e614877bfec"
   },
