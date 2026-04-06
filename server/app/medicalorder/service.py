@@ -1,10 +1,10 @@
-from sqlmodel import Session, select
+from sqlmodel import Session, select, col
 from app.medicalorder.model import MedicalOrder, MedicalOrderCreate
 from typing import Sequence
 
 
 def get_all(session: Session) -> Sequence[MedicalOrder]:
-    statement = select(MedicalOrder)
+    statement = select(MedicalOrder).order_by(col(MedicalOrder.created_at).desc())
     result = session.exec(statement)
     orders = result.all()
 
