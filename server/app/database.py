@@ -1,13 +1,9 @@
 import os
-from dotenv import load_dotenv
-from pathlib import Path
+from dotenv import load_dotenv, find_dotenv
 from sqlmodel import create_engine, Session, SQLModel
 
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
-dot_env_path = BASE_DIR / ".env"
 
-# 2. Cargamos el archivo especificando la ruta exacta
-load_dotenv(dotenv_path=dot_env_path)
+load_dotenv(find_dotenv())
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 if not DATABASE_URL:
