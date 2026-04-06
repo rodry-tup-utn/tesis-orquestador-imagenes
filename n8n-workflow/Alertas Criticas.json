@@ -3,15 +3,13 @@
   "nodes": [
     {
       "parameters": {
+        "httpMethod": "POST",
         "path": "alertas-criticas",
         "options": {}
       },
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
-      "position": [
-        0,
-        0
-      ],
+      "position": [0, 0],
       "id": "66566485-c940-4b0e-a10c-53dfc1d06e69",
       "name": "Webhook",
       "webhookId": "61f8d6be-dd7d-4296-bf94-240b65e6e3c9"
@@ -19,15 +17,14 @@
     {
       "parameters": {
         "chatId": "-5103240525",
-        "text": "## Hola Bot\nEste es un mensaje de prueba",
-        "additionalFields": {}
+        "text": "=🚨 ALERTA: ORDEN CRÍTICA\n👤 Paciente: {{ $json.body.patient }}\n📖 Diagnóstico: {{ $json.body.diagnosis }}\n📍 Ubicación: {{ $json.body.location}} ({{ $json.body.setting}})\n🆔 Orden #: {{ $json.body.order_id }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
       },
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
-      "position": [
-        224,
-        0
-      ],
+      "position": [224, 0],
       "id": "d44abcf0-0e8a-4804-85d5-56270bab9bc9",
       "name": "Send a text message",
       "webhookId": "2d78c0fe-a2b8-4bbe-810e-f72969ca8c2b",
@@ -36,7 +33,8 @@
           "id": "vDK4MLRlTBXmHeoj",
           "name": "Telegram account"
         }
-      }
+      },
+      "onError": "continueErrorOutput"
     }
   ],
   "pinData": {},
@@ -58,7 +56,7 @@
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "versionId": "29f9372a-9f97-4ea3-9697-020dde096455",
+  "versionId": "44d9455a-46d4-4a7e-b4cb-08ba4d71e4d7",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "68817198e4f2234f06d497b266480aeaee86e39fa21de9dd94db6e614877bfec"
