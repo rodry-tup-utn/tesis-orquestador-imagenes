@@ -9,6 +9,7 @@
     "observaciones": "Afasia y hemiparesia derecha",
     "ubicacion_actual": "Box Rojo",
     "estudio_req": "TC de Cerebro",
+    "lugar_estudio": "Rayos",
     "urgente": "SI",
     "modalidad": "Tomografia",
     "solicitante": "Garcia Tomas"
@@ -23,6 +24,7 @@
     "observaciones": "Accidente de transito.",
     "ubicacion_actual": "Shock Room",
     "estudio_req": "Ecografia FAST",
+    "lugar_estudio": "En cama",
     "urgente": "SI",
     "modalidad": "Ecografia",
     "solicitante": "Martinez Ana"
@@ -37,6 +39,7 @@
     "observaciones": "Paciente febril. EPOC severo.",
     "ubicacion_actual": "Box Amarillo",
     "estudio_req": "Rx de Torax Frente",
+    "lugar_estudio": "Rayos",
     "urgente": "NO",
     "modalidad": "Radiologia",
     "solicitante": "Ramirez Julio"
@@ -51,6 +54,7 @@
     "observaciones": "Dolor fosa iliaca derecha, Murphy positivo",
     "ubicacion_actual": "Sala de Espera",
     "estudio_req": "Ecografia Abdominal",
+    "lugar_estudio": "Rayos",
     "urgente": "SI",
     "modalidad": "Ecografia",
     "solicitante": "Gimenez Laura"
@@ -65,6 +69,7 @@
     "observaciones": "Traumatismo deportivo.",
     "ubicacion_actual": "Box Verde",
     "estudio_req": "Rx Tobillo Frente y Perfil",
+    "lugar_estudio": "Rayos",
     "urgente": "NO",
     "modalidad": "Radiologia",
     "solicitante": "Herrera Pablo"
@@ -79,6 +84,7 @@
     "observaciones": "Sospecha de fractura de cadera izquierda",
     "ubicacion_actual": "Sala de Espera",
     "estudio_req": "Rx Pelvis y Cadera Izquierda",
+    "lugar_estudio": "Rayos",
     "urgente": "SI",
     "modalidad": "Radiologia",
     "solicitante": "Castro Diego"
@@ -93,6 +99,7 @@
     "observaciones": "Dolor lumbar intenso, hematuria",
     "ubicacion_actual": "Sala de Espera",
     "estudio_req": "TC de Abdomen sin contraste",
+    "lugar_estudio": "Rayos",
     "urgente": "SI",
     "modalidad": "Tomografia",
     "solicitante": "Silva Martin"
@@ -107,6 +114,7 @@
     "observaciones": "Sin signos neurologicos focales.",
     "ubicacion_actual": "Box Verde",
     "estudio_req": "TC de Cerebro",
+    "lugar_estudio": "Rayos",
     "urgente": "NO",
     "modalidad": "Tomografia",
     "solicitante": "Blanco Rocio"
