@@ -11,7 +11,8 @@ router = APIRouter(prefix="/orders", tags=["Ordenes"])
 
 @router.get("", response_model=List[MedicalOrderRead])
 def get_orders(session: Session = Depends(get_session)):
-    return get_all(session)
+    orders = get_all(session)
+    return [MedicalOrderRead.from_orm_flat(order) for order in orders]
 
 
 @router.post("", response_model=MedicalOrderRead)
@@ -28,4 +29,4 @@ def create(
 
     background_task.add_task(evaluate_and_notify, order.id)
 
-    return order
+    return MedicalOrderRead.from_orm_flat(order)
