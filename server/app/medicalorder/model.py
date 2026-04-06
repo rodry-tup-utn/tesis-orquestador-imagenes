@@ -34,7 +34,74 @@ class MedicalOrderCreate(MedicalOrderBase):
     pass
 
 
-class MedicalOrderRead(MedicalOrderBase):
+# READ agrupado para mejor consumo desde cliente
+
+
+class PatientInfo(SQLModel):
+    name: str
+    lastname: str
+    pseudonym: str
+    dni: str
+    dob: str
+    age: int
+
+
+class OrderDetails(SQLModel):
+    modality: str
+    medical_order: str
+    location: str
+    study_setting: str
+    diagnosis: str
+    observations: Optional[str] = None
+    requesting_physician: str
+    is_urgent: bool
+    is_active: bool
+    is_critical: bool
+
+
+class MedicalOrderRead(SQLModel):
     id: int
+    external_id: str
+    origin: str
     created_at: datetime
     was_notified: bool
+    patient: PatientInfo
+    order: OrderDetails
+
+    @classmethod
+    def from_orm_flat(cls, obj: MedicalOrder) -> "MedicalOrderRead":
+        assert obj.id is not None, "La orden debe tener un id"
+        return cls(
+            id=obj.id,
+            external_id=obj.external_id,
+            origin=obj.origin,
+            created_at=obj.created_at,
+            was_notified=obj.was_notified,
+            patient=PatientInfo(
+                name=obj.patient_name,
+                lastname=obj.patient_lastname,
+                pseudonym=obj.patient_pseudonym,
+                dni=obj.patient_dni,
+                dob=obj.patient_dob,
+                age=obj.patient_age,
+            ),
+            order=OrderDetails(
+                modality=obj.modality,
+                medical_order=obj.medical_order,
+                location=obj.location,
+                study_setting=obj.study_setting,
+                diagnosis=obj.diagnosis,
+                observations=obj.observations,
+                requesting_physician=obj.requesting_physician,
+                is_urgent=obj.is_urgent,
+                is_active=obj.is_active,
+                is_critical=obj.is_critical,
+            ),
+        )
+
+
+class MedicalOrderUpdate(SQLModel):
+    is_urgent: Optional[bool] = None
+    is_active: Optional[bool] = None
+    is_critical: Optional[bool] = None
+    was_notified: Optional[bool] = None
