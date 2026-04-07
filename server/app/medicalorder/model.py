@@ -1,6 +1,8 @@
 from typing import Optional
 from datetime import datetime, timezone
 from sqlmodel import SQLModel, Field
+from pydantic import BaseModel
+from typing import List
 
 
 class MedicalOrderBase(SQLModel):
@@ -105,3 +107,8 @@ class MedicalOrderUpdate(SQLModel):
     is_active: Optional[bool] = None
     is_critical: Optional[bool] = None
     was_notified: Optional[bool] = None
+
+
+class MedicalOrderPagination(BaseModel):
+    items: List[MedicalOrderRead]
+    total: int
