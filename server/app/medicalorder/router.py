@@ -1,18 +1,25 @@
 from fastapi import APIRouter, Depends, BackgroundTasks
 from app.medicalorder.service import create_order, get_all
 from sqlmodel import Session
-from app.medicalorder.model import MedicalOrderRead, MedicalOrderCreate
+from app.medicalorder.model import (
+    MedicalOrderRead,
+    MedicalOrderCreate,
+    MedicalOrderPagination,
+)
 from app.database import get_session
-from typing import List
 from app.medicalorder.notifier import evaluate_and_notify
 
 router = APIRouter(prefix="/orders", tags=["Ordenes"])
 
 
-@router.get("", response_model=List[MedicalOrderRead])
-def get_orders(session: Session = Depends(get_session)):
-    orders = get_all(session)
-    return [MedicalOrderRead.from_orm_flat(order) for order in orders]
+@router.get("", response_model=MedicalOrderPagination)
+def get_orders(skip: int = 0, limit: int = 50, session: Session = Depends(get_session)):
+    items, total = get_all(session, skip, limit)
+
+    return {
+        "items": [MedicalOrderRead.from_orm_flat(order) for order in items],
+        "total": total,
+    }
 
 
 @router.post("", response_model=MedicalOrderRead)

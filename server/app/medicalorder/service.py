@@ -1,14 +1,20 @@
-from sqlmodel import Session, select, col
+from sqlmodel import Session, select, col, func
 from app.medicalorder.model import MedicalOrder, MedicalOrderCreate
-from typing import Sequence
 
 
-def get_all(session: Session) -> Sequence[MedicalOrder]:
-    statement = select(MedicalOrder).order_by(col(MedicalOrder.created_at).desc())
-    result = session.exec(statement)
-    orders = result.all()
+def get_all(session: Session, skip: int, limit: int):
+    total_statement = select(func.count()).select_from(MedicalOrder)
+    total = session.exec(total_statement).one()
 
-    return orders
+    items_statement = (
+        select(MedicalOrder)
+        .order_by(col(MedicalOrder.created_at).desc())
+        .offset(skip)
+        .limit(limit)
+    )
+    items = session.exec(items_statement).all()
+
+    return items, total
 
 
 def create_order(session: Session, data: MedicalOrderCreate):
