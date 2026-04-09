@@ -36,7 +36,7 @@
       },
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.3,
-      "position": [-48, 0],
+      "position": [-80, 0],
       "id": "7f840917-822f-4b4b-a910-af9243b1c227",
       "name": "Schedule Trigger"
     },
@@ -53,33 +53,81 @@
     },
     {
       "parameters": {
-        "jsCode": "//Script para Internacion\nconst ordenesLimpias = $input.all().map((item) => {\n  const data = item.json;\n\n  // desestructuracion de datos para mejor orden\n  const paciente = data.patient_data || {};\n  const orden = data.clinical_order || {};\n\n  const nombre = paciente.first_name || \"\";\n  const apellido = paciente.last_name || \"\";\n\n  // pseudonimo de telegram\n  const iniciales = `${nombre.charAt(0) || \"X\"}.${apellido.charAt(0) || \"X\"}.`;\n\n  // formateo fecha nacimiento\n  const bd = paciente.birth_date || {};\n  const fechaNac = bd.year ? `${bd.year}-${bd.month}-${bd.day}` : \"\";\n\n  // calculo de edad\n  const dob = new Date(fechaNac);\n  const hoy = new Date();\n  let edad = hoy.getFullYear() - dob.getFullYear();\n  const m = hoy.getMonth() - dob.getMonth();\n\n  if (m < 0 || (m === 0 && hoy.getDate() < dob.getDate())) {\n    edad--;\n  }\n\n  // urgencia como booleano, ya viene en ese formato\n  const prioridad = data.is_urgent;\n\n  // ubicacion mapeada en un solo campo\n  const ubicacion = `${orden.sector || \"S/D\"} - Hab: ${orden.room || \"-\"} Cama: ${orden.bed || \"-\"}`;\n\n  // retorno del objeto limpio\n  return {\n    external_id: data.request_id,\n    origin: \"INTERNACION\",\n    modality: orden.modality,\n    medical_order: orden.procedure,\n    diagnosis: orden.diagnosis,\n    observations: orden.observations || \"Sin observaciones\",\n    location: ubicacion,\n    study_setting: orden.study_setting || \"Rayos\",\n    patient_name: nombre,\n    patient_lastname: apellido,\n    patient_pseudonym: iniciales,\n    patient_dni: paciente.national_id,\n    patient_dob: fechaNac,\n    patient_age: edad, \n    requesting_physician: data.requesting_physician,\n    is_urgent: prioridad,\n    is_active: true,\n  };\n});\n\n// Retornamos la estructura que n8n necesita para seguir el flujo\nreturn ordenesLimpias.map((orden) => ({ json: orden }));\n"
+        "jsCode": "//Script para Internacion\nconst ordenesLimpias = $input.all().map((item) => {\n  const data = item.json;\n\n  // desestructuracion de datos para mejor orden\n  const paciente = data.patient_data || {};\n  const orden = data.clinical_order || {};\n\n  const nombre = paciente.first_name || \"\";\n  const apellido = paciente.last_name || \"\";\n\n  // pseudonimo de telegram\n  const iniciales = `${nombre.charAt(0) || \"X\"}.${apellido.charAt(0) || \"X\"}.`;\n\n  // formateo fecha nacimiento\n  const bd = paciente.birth_date || {};\n  const fechaNac = bd.year ? `${bd.year}-${bd.month}-${bd.day}` : \"\";\n\n  // calculo de edad\n  const dob = new Date(fechaNac);\n  const hoy = new Date();\n  let edad = hoy.getFullYear() - dob.getFullYear();\n  const m = hoy.getMonth() - dob.getMonth();\n\n  if (m < 0 || (m === 0 && hoy.getDate() < dob.getDate())) {\n    edad--;\n  }\n\n  // urgencia como booleano, ya viene en ese formato\n  const prioridad = data.is_urgent;\n\n  // ubicacion mapeada en un solo campo\n  const ubicacion = `${orden.sector || \"S/D\"} - Hab: ${orden.room || \"-\"} Cama: ${orden.bed || \"-\"}`;\n\n  // retorno del objeto limpio\n  return {\n    external_id: `I-${data.request_id}`,\n    origin: \"INTERNACION\",\n    modality: orden.modality,\n    medical_order: orden.procedure,\n    diagnosis: orden.diagnosis,\n    observations: orden.observations || \"Sin observaciones\",\n    location: ubicacion,\n    study_setting: orden.study_setting || \"Rayos\",\n    patient_name: nombre,\n    patient_lastname: apellido,\n    patient_pseudonym: iniciales,\n    patient_dni: paciente.national_id,\n    patient_dob: fechaNac,\n    patient_age: edad, \n    requesting_physician: data.clinical_order.requesting_physician || \"No especificado\",\n    is_urgent: prioridad,\n    is_active: true,\n  };\n});\n\n// Retornamos la estructura que n8n necesita para seguir el flujo\nreturn ordenesLimpias.map((orden) => ({ json: orden }));\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [512, -208],
+      "position": [544, -208],
       "id": "2c239c9e-357e-45b5-9914-ca4f7ef841ae",
       "name": "Normalizacion Internacion"
     },
     {
       "parameters": {
-        "jsCode": "// Script para Guardia\nconst ordenesLimpias = $input.all().map((item) => {\n  const data = item.json;\n\n  // formateo de nombre\n  const partesNombre = (data.nom_paciente || \"\").split(\", \");\n  const apellido = partesNombre[0] || \"\";\n  const nombre = partesNombre[1] || \"\";\n\n  // pseudonimo para telegram\n  const iniciales = `${nombre.charAt(0) || \"X\"}.${apellido.charAt(0) || \"X\"}.`;\n\n  // urgencia\n  const prioridad = data.urgente === \"SI\";\n\n  const prestacion = data.estudio_req || \"Sin detalle\";\n\n  let modalidadInferida = \"DX\";\n  if (prestacion.includes(\"resonancia\") || prestacion.includes(\"RM\"))\n    modalidadInferida = \"MR\";\n  else if (prestacion.includes(\"ecograf\") || prestacion.includes(\"ecografía\"))\n    modalidadInferida = \"US\";\n  else if (\n    prestacion.includes(\"tomograf\") ||\n    prestacion.includes(\"TC\") ||\n    prestacion.includes(\"TAC\")\n  )\n    modalidadInferida = \"CT\";\n  else if (prestacion.includes(\"radiograf\") || prestacion.includes(\"rx\"))\n    modalidadInferida = \"DX\";\n\n  // calculo de edad\n  const dob = new Date(data.fecha_nacimiento);\n  const hoy = new Date();\n  let edad = hoy.getFullYear() - dob.getFullYear();\n  const m = hoy.getMonth() - dob.getMonth();\n  if (m < 0 || (m === 0 && hoy.getDate() < dob.getDate())) {\n    edad--;\n  }\n  // retorno de objeto formateado\n  return {\n    external_id: data.id_transaccion,\n    origin: \"GUARDIA\",\n    modality: modalidadInferida,\n    medical_order: prestacion,\n    diagnosis: data.diagnostico || \"Sin diagnostico\",\n    observations: data.observaciones || \"Sin observaciones\",\n    location: data.ubicacion_actual || \"Sin ubicacion\",\n    study_setting: data.lugar_estudio || \"Rayos\", \n    patient_name: nombre,\n    patient_lastname: apellido,\n    patient_pseudonym: iniciales,\n    patient_dni: data.doc_identidad || \"Sin DNI\",\n    patient_dob: data.fecha_nacimiento || \"Sin fecha de nacimiento\",\n    patient_age: edad,\n    requesting_physician: data.solicitante || \"Solicitante no especificado\",\n    is_urgent: prioridad,\n    is_active: true,\n  };\n});\n\n// Retornamos la estructura que n8n necesita para seguir el flujo\nreturn ordenesLimpias.map((orden) => ({ json: orden }));\n"
+        "jsCode": "// Script para Guardia\nconst ordenesLimpias = $input.all().map((item) => {\n  const data = item.json;\n\n  // formateo de nombre\n  const partesNombre = (data.nom_paciente || \"\").split(\", \");\n  const apellido = partesNombre[0] || \"\";\n  const nombre = partesNombre[1] || \"\";\n\n  // pseudonimo para telegram\n  const iniciales = `${nombre.charAt(0) || \"X\"}.${apellido.charAt(0) || \"X\"}.`;\n\n  // urgencia\n  const prioridad = data.urgente === \"SI\";\n\n  const prestacion = data.estudio_req || \"Sin detalle\";\n\n  let modalidadInferida = \"DX\";\n  if (prestacion.includes(\"resonancia\") || prestacion.includes(\"RM\"))\n    modalidadInferida = \"MR\";\n  else if (prestacion.includes(\"ecograf\") || prestacion.includes(\"ecografía\"))\n    modalidadInferida = \"US\";\n  else if (\n    prestacion.includes(\"tomograf\") ||\n    prestacion.includes(\"TC\") ||\n    prestacion.includes(\"TAC\")\n  )\n    modalidadInferida = \"CT\";\n  else if (prestacion.includes(\"radiograf\") || prestacion.includes(\"rx\"))\n    modalidadInferida = \"DX\";\n\n  // calculo de edad\n  const dob = new Date(data.fecha_nacimiento);\n  const hoy = new Date();\n  let edad = hoy.getFullYear() - dob.getFullYear();\n  const m = hoy.getMonth() - dob.getMonth();\n  if (m < 0 || (m === 0 && hoy.getDate() < dob.getDate())) {\n    edad--;\n  }\n  // retorno de objeto formateado\n  return {\n    external_id: `G-${data.id_transaccion}`,\n    origin: \"GUARDIA\",\n    modality: modalidadInferida,\n    medical_order: prestacion,\n    diagnosis: data.diagnostico || \"Sin diagnostico\",\n    observations: data.observaciones || \"Sin observaciones\",\n    location: data.ubicacion_actual || \"Sin ubicacion\",\n    study_setting: data.lugar_estudio || \"Rayos\", \n    patient_name: nombre,\n    patient_lastname: apellido,\n    patient_pseudonym: iniciales,\n    patient_dni: data.doc_identidad || \"Sin DNI\",\n    patient_dob: data.fecha_nacimiento || \"Sin fecha de nacimiento\",\n    patient_age: edad,\n    requesting_physician: data.solicitante || \"Solicitante no especificado\",\n    is_urgent: prioridad,\n    is_active: true,\n  };\n});\n\n// Retornamos la estructura que n8n necesita para seguir el flujo\nreturn ordenesLimpias.map((orden) => ({ json: orden }));\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [512, 0],
+      "position": [544, 0],
       "id": "f2cc57ff-d1c5-4bca-856d-c774b9397e20",
       "name": "Normalizacion Guardia"
     },
     {
       "parameters": {
-        "jsCode": "// Script para Ambulatorio\nconst ordenesLimpias = $input.all().map((item) => {\n  const data = item.json;\n\n  // 1. Desarmar el formato DICOM del nombre (APELLIDO^NOMBRE)\n  const partesNombre = (data.PACIENTE_DATA || \"\").split(\"^\");\n  const apellido = partesNombre[0] || \"\";\n  const nombre = partesNombre[1] || \"\";\n\n  // 2. Generar el seudónimo para Telegram (ej: \"R.R.\")\n  const iniciales = `${nombre.charAt(0) || \"X\"}.${apellido.charAt(0) || \"X\"}.`;\n\n  // 3. Inferir modalidad DICOM basándonos en el texto de la prestación\n  let modalidadInferida = \"DX\";\n  const prestacion = (data.PRESTACION_DESC || \"\").toLowerCase();\n\n  if (prestacion.includes(\"resonancia\") || prestacion.includes(\"RM\"))\n    modalidadInferida = \"MR\";\n  else if (prestacion.includes(\"ecograf\") || prestacion.includes(\"ecografía\"))\n    modalidadInferida = \"US\";\n  else if (\n    prestacion.includes(\"tomograf\") ||\n    prestacion.includes(\"TC\") ||\n    prestacion.includes(\"TAC\")\n  )\n    modalidadInferida = \"CT\";\n  else if (prestacion.includes(\"radiograf\") || prestacion.includes(\"rx\"))\n    modalidadInferida = \"DX\";\n\n  const nacimiento_array = data.FECHA_NACIMIENTO.split(\"-\");\n  const dia = nacimiento_array[0];\n  const mes = nacimiento_array[1];\n  const anio = nacimiento_array[2];\n\n  const dob = new Date(`${anio}-${mes}-${dia}`);\n  const hoy = new Date();\n  let edad = hoy.getFullYear() - dob.getFullYear();\n  const m = hoy.getMonth() - dob.getMonth();\n  if (m < 0 || (m === 0 && hoy.getDate() < dob.getDate())) {\n    edad--;\n  }\n  // 4. Retornar el objeto plano respetando el Contrato de Datos base\n  return {\n    external_id: data.ID_CITA,\n    origin: \"AMBULATORIO\",\n    modality: modalidadInferida,\n    medical_order: data.PRESTACION_DESC,\n    diagnosis: data.DIAGNOSTICO || \"Sin especificar\",\n    observations: data.OBSERVACIONES || \"Sin observaciones\",\n    location: \"Atención Ambulatoria\",\n    study_setting : \"Rayos\",\n    patient_name: nombre,\n    patient_lstaname: apellido,\n    patient_pseudonym: iniciales,\n    patient_dni: data.NRO_DOCUMENTO,\n    patient_dob: data.FECHA_NACIMIENTO,\n    patient_age: edad,\n    requesting_physician: data.MEDICO_DERIVANTE,\n    is_urgent: false,\n    is_active: true,\n  };\n});\n\n// Retornamos la estructura que n8n necesita para seguir el flujo\nreturn ordenesLimpias.map((orden) => ({ json: orden }));\n"
+        "jsCode": "// Script para Ambulatorio CORREGIDO\nconst ordenesLimpias = $input.all().map((item) => {\n  const data = item.json;\n\n  const partesNombre = (data.PACIENTE_DATA || \"\").split(\"^\");\n  const apellido = partesNombre[0] || \"\";\n  const nombre = partesNombre[1] || \"\";\n  const iniciales = `${nombre.charAt(0) || \"X\"}.${apellido.charAt(0) || \"X\"}.`;\n\n  let modalidadInferida = \"DX\";\n  const prestacion = (data.PRESTACION_DESC || \"\").toLowerCase();\n  if (prestacion.includes(\"resonancia\") || prestacion.includes(\"RM\")) modalidadInferida = \"MR\";\n  else if (prestacion.includes(\"ecograf\") || prestacion.includes(\"ecografía\")) modalidadInferida = \"US\";\n  else if (prestacion.includes(\"tomograf\") || prestacion.includes(\"TC\") || prestacion.includes(\"TAC\")) modalidadInferida = \"CT\";\n\n  // --- CORRECCIÓN DE FECHA Y EDAD ---\n  // El mock viene YYYY-MM-DD (ej: 1983-12-15)\n  const [anio, mes, dia] = data.FECHA_NACIMIENTO.split(\"-\");\n  \n  // Creamos el objeto fecha (Ojo: en JS los meses van de 0 a 11, por eso mes - 1)\n  const dob = new Date(`${anio}-${mes}-${dia}`);\n  const hoy = new Date();\n  \n  let edad = hoy.getFullYear() - dob.getFullYear();\n  const m = hoy.getMonth() - dob.getMonth();\n  if (m < 0 || (m === 0 && hoy.getDate() < dob.getDate())) {\n    edad--;\n  }\n\n  const edadFinal = isNaN(edad) ? 0 : edad;\n\n  return {\n    external_id: `A-${data.ID_CITA}`,\n    origin: \"AMBULATORIO\",\n    modality: modalidadInferida,\n    medical_order: data.PRESTACION_DESC,\n    diagnosis: data.DIAGNOSTICO || \"Sin especificar\",\n    observations: data.OBSERVACIONES || \"Sin observaciones\",\n    location: \"Atención Ambulatoria\",\n    study_setting: \"Rayos\",\n    patient_name: nombre,\n    patient_lastname: apellido,\n    patient_pseudonym: iniciales,\n    patient_dni: String(data.NRO_DOCUMENTO),\n    patient_dob: data.FECHA_NACIMIENTO,\n    patient_age: edadFinal, \n    requesting_physician: data.MEDICO_DERIVANTE || \"No especificado\",\n    is_urgent: false,\n    is_active: true,\n  };\n});\n\nreturn ordenesLimpias.map((orden) => ({ json: orden }));"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [512, 208],
+      "position": [544, 208],
       "id": "d790a603-3e0b-4f66-bb45-a6c6c6e108d2",
       "name": "Normalizacion Ambulatorio"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://backend:8000/orders/batch",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [{}]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify($json) }}",
+        "options": {
+          "sendCredentialsOnCrossOriginRedirect": false
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [1424, 0],
+      "id": "540754da-a4c0-4f6a-97b8-0c2e480119ac",
+      "name": "HTTP Request",
+      "executeOnce": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "numberInputs": 3
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [928, -16],
+      "id": "896b2277-cab7-4d38-9b1b-73770ab76ffb",
+      "name": "Merge Ordenes",
+      "alwaysOutputData": true,
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "orders",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [1200, 0],
+      "id": "072d8030-289f-40de-85c7-2b39f34d504f",
+      "name": "Aggregate"
     }
   ],
   "pinData": {},
@@ -139,7 +187,62 @@
       ]
     },
     "Normalizacion Guardia": {
+      "main": [
+        [
+          {
+            "node": "Merge Ordenes",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Normalizacion Internacion": {
+      "main": [
+        [
+          {
+            "node": "Merge Ordenes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalizacion Ambulatorio": {
+      "main": [
+        [
+          {
+            "node": "Merge Ordenes",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Merge Ordenes": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
       "main": [[]]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,
@@ -147,8 +250,9 @@
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "versionId": "84c7783e-ba2b-4b6d-9f5c-ab7400f36dfa",
+  "versionId": "32b2d66c-c61e-4609-b4f1-71ceb87971fc",
   "meta": {
+    "templateCredsSetupCompleted": true,
     "instanceId": "68817198e4f2234f06d497b266480aeaee86e39fa21de9dd94db6e614877bfec"
   },
   "id": "VX9lpwEr2VqSDALR",
