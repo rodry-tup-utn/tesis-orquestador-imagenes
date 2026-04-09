@@ -7,6 +7,7 @@ from app.medicalorder.model import (
     MedicalOrderPagination,
     BatchOrderResponse,
     OrderBatchPayload,
+    MedicalOrderUpdate,
 )
 from app.database import get_session
 from app.medicalorder.notifier import evaluate_and_notify
@@ -15,8 +16,13 @@ router = APIRouter(prefix="/orders", tags=["Ordenes"])
 
 
 @router.get("", response_model=MedicalOrderPagination)
-def get_orders(skip: int = 0, limit: int = 50, session: Session = Depends(get_session)):
-    items, total = service.get_all(session, skip, limit)
+def get_orders(
+    skip: int = 0,
+    limit: int = 50,
+    session: Session = Depends(get_session),
+    only_active: bool = True,
+):
+    items, total = service.get_all(session, skip, limit, only_active)
 
     return {
         "items": [MedicalOrderRead.from_orm_flat(order) for order in items],
@@ -61,6 +67,15 @@ def create_batch_orders(
     }
 
 
+@router.get("/{order_id}", response_model=MedicalOrderRead)
+def get_order_id(order_id: int, session: Session = Depends(get_session)):
+    try:
+        order = service.get_order_id(session, order_id)
+        return MedicalOrderRead.from_orm_flat(order)
+    except LookupError:
+        raise HTTPException(404, f"Orden con id {order_id} no encontrada")
+
+
 @router.delete("/{order_id}")
 def soft_delete(order_id: int, session: Session = Depends(get_session)):
     try:
@@ -77,3 +92,20 @@ def soft_delete(order_id: int, session: Session = Depends(get_session)):
         # Para cualquier otro error inesperado (DB, etc.)
         print(f"Error: {e}")
         raise HTTPException(status_code=500, detail="Error interno del servidor")
+
+
+@router.patch("/{order_id}", response_model=MedicalOrderRead)
+def update_order(
+    order_id: int,
+    data: MedicalOrderUpdate,
+    session: Session = Depends(get_session),
+):
+    try:
+
+        order = service.update_order(session, order_id, data)
+        if not order:
+            raise HTTPException(404, f"Orden con id {order_id} no encontrada")
+
+        return MedicalOrderRead.from_orm_flat(order)
+    except LookupError as e:
+        raise HTTPException(404, detail=str(e))

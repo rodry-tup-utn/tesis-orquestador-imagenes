@@ -1,23 +1,32 @@
 from sqlmodel import Session, select, col, func
-from app.medicalorder.model import MedicalOrder, MedicalOrderCreate
+from app.medicalorder.model import MedicalOrder, MedicalOrderCreate, MedicalOrderUpdate
 
 
-def get_all(session: Session, skip: int, limit: int):
+def get_all(session: Session, skip: int, limit: int, only_active: bool = True):
+    statement = select(MedicalOrder).order_by(col(MedicalOrder.created_at).desc())
     total_statement = select(func.count()).select_from(MedicalOrder)
-    total = session.exec(total_statement).one()
 
-    items_statement = (
-        select(MedicalOrder)
-        .order_by(col(MedicalOrder.created_at).desc())
-        .offset(skip)
-        .limit(limit)
-    )
-    items = session.exec(items_statement).all()
+    if only_active:
+        statement = statement.where(MedicalOrder.is_active)
+        total_statement = total_statement.where(MedicalOrder.is_active)
+
+    items = session.exec(statement.offset(skip).limit(limit)).all()
+    total = session.exec(total_statement).one()
 
     return items, total
 
 
+def get_order_id(session: Session, order_id: int):
+    order = session.get(MedicalOrder, order_id)
+
+    if not order:
+        raise LookupError(f"No se encontró la orden con el id {order_id}")
+
+    return order
+
+
 def create_order(session: Session, data: MedicalOrderCreate):
+
     order = MedicalOrder.model_validate(data)
 
     session.add(order)
@@ -67,6 +76,22 @@ def delete_order(session: Session, order_id):
         raise ValueError("La orden ya se encuentra borrada")
 
     order.is_active = False
+
+    session.add(order)
+    session.commit()
+    session.refresh(order)
+
+    return order
+
+
+def update_order(session: Session, order_id: int, data: MedicalOrderUpdate):
+
+    order = session.get(MedicalOrder, order_id)
+
+    update_data = data.model_dump(exclude_unset=True)
+
+    for key, value in update_data.items():
+        setattr(order, key, value)
 
     session.add(order)
     session.commit()
