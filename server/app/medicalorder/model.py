@@ -14,6 +14,7 @@ class MedicalOrderBase(SQLModel):
     study_setting: str
     diagnosis: str
     observations: Optional[str] = None
+    internal_notes: Optional[str] = None
     patient_name: str
     patient_lastname: str
     patient_pseudonym: str
@@ -55,6 +56,7 @@ class OrderDetails(SQLModel):
     study_setting: str
     diagnosis: str
     observations: Optional[str] = None
+    internal_notes: Optional[str]
     requesting_physician: str
     is_urgent: bool
     is_active: bool
@@ -94,6 +96,7 @@ class MedicalOrderRead(SQLModel):
                 study_setting=obj.study_setting,
                 diagnosis=obj.diagnosis,
                 observations=obj.observations,
+                internal_notes=obj.internal_notes,
                 requesting_physician=obj.requesting_physician,
                 is_urgent=obj.is_urgent,
                 is_active=obj.is_active,
@@ -107,6 +110,7 @@ class MedicalOrderUpdate(SQLModel):
     is_active: Optional[bool] = None
     is_critical: Optional[bool] = None
     was_notified: Optional[bool] = None
+    internal_notes: Optional[str] = None
 
 
 class MedicalOrderPagination(BaseModel):
