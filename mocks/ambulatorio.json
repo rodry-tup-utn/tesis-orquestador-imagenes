@@ -11,7 +11,7 @@
     "MEDICO_DERIVANTE": "Dr. Gonzalez",
     "OBSERVACIONES": "Paciente con protesis metalica en pierna izquierda",
     "DIAGNOSTICO": "Gonalgia derecha",
-    "FECHA_NACIMIENTO": "22-10-1994"
+    "FECHA_NACIMIENTO": "1994-10-22"
   },
   {
     "ID_CITA": "AMB-2026-0002",
@@ -25,7 +25,7 @@
     "MEDICO_DERIVANTE": "Dra. Lopez",
     "OBSERVACIONES": "Ayuno de 8 horas requerido",
     "DIAGNOSTICO": "Abdomen agudo",
-    "FECHA_NACIMIENTO": "10-09-1967"
+    "FECHA_NACIMIENTO": "1967-10-09"
   },
   {
     "ID_CITA": "AMB-2026-0003",
@@ -39,7 +39,7 @@
     "MEDICO_DERIVANTE": "Dr. Martinez",
     "OBSERVACIONES": "Paciente asmatico, dificultad para contener la respiracion",
     "DIAGNOSTICO": "Tos cronica, sospecha de bronquiectasias",
-    "FECHA_NACIMIENTO": "15-05-1983"
+    "FECHA_NACIMIENTO": "1983-12-15"
   },
   {
     "ID_CITA": "AMB-2026-0004",
@@ -53,7 +53,7 @@
     "MEDICO_DERIVANTE": "Dra. Fernandez",
     "OBSERVACIONES": "Trae radiografias previas de 2025",
     "DIAGNOSTICO": "Dolor pelvico atero-posterior",
-    "FECHA_NACIMIENTO": "02-11-1990"
+    "FECHA_NACIMIENTO": "1990-11-02"
   },
   {
     "ID_CITA": "AMB-2026-0005",
@@ -67,7 +67,7 @@
     "MEDICO_DERIVANTE": "Dr. Silva",
     "OBSERVACIONES": "Claustrofobia leve, requiere contencion. Sin contraste",
     "DIAGNOSTICO": "Cefalea tensional en estudio",
-    "FECHA_NACIMIENTO": "25-01-1960"
+    "FECHA_NACIMIENTO": "1960-01-25"
   },
   {
     "ID_CITA": "AMB-2026-0006",
@@ -81,7 +81,7 @@
     "MEDICO_DERIVANTE": "Dra. Castro",
     "OBSERVACIONES": "",
     "DIAGNOSTICO": "Hipotiroidismo, control de nodulo",
-    "FECHA_NACIMIENTO": "18-08-2000"
+    "FECHA_NACIMIENTO": "2000-08-18"
   },
   {
     "ID_CITA": "AMB-2026-0007",
@@ -95,7 +95,7 @@
     "MEDICO_DERIVANTE": "Dr. Mendez",
     "OBSERVACIONES": "Alergia dudosa al iodo. Premedicado segun protocolo",
     "DIAGNOSTICO": "Control oncologico",
-    "FECHA_NACIMIENTO": "05-12-1955"
+    "FECHA_NACIMIENTO": "1955-08-09"
   },
   {
     "ID_CITA": "AMB-2026-0008",
@@ -109,7 +109,7 @@
     "MEDICO_DERIVANTE": "Dra. Gimenez",
     "OBSERVACIONES": "Paciente en silla de ruedas",
     "DIAGNOSTICO": "Preoperatorio",
-    "FECHA_NACIMIENTO": "30-07-1988"
+    "FECHA_NACIMIENTO": "1988-07-30"
   },
   {
     "ID_CITA": "AMB-2026-0009",
@@ -123,7 +123,7 @@
     "MEDICO_DERIVANTE": "Dr. Gonzalez",
     "OBSERVACIONES": "Dolor intenso, tratar de agilizar el estudio",
     "DIAGNOSTICO": "Lumbociatalgia izquierda",
-    "FECHA_NACIMIENTO": "14-04-1979"
+    "FECHA_NACIMIENTO": "1979-04-14"
   },
   {
     "ID_CITA": "AMB-2026-0010",
@@ -137,6 +137,6 @@
     "MEDICO_DERIVANTE": "Dra. Lopez",
     "OBSERVACIONES": "Trae ecografia anterior de hace un año",
     "DIAGNOSTICO": "Mastalgia, control anual",
-    "FECHA_NACIMIENTO": "22-09-1995"
+    "FECHA_NACIMIENTO": "1995-09-22"
   }
 ]
