@@ -83,30 +83,6 @@
     },
     {
       "parameters": {
-        "method": "POST",
-        "url": "http://backend:8000/orders/batch",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [{}]
-        },
-        "sendBody": true,
-        "contentType": "raw",
-        "rawContentType": "application/json",
-        "body": "={{ JSON.stringify($json) }}",
-        "options": {
-          "sendCredentialsOnCrossOriginRedirect": false
-        }
-      },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.4,
-      "position": [1424, 0],
-      "id": "540754da-a4c0-4f6a-97b8-0c2e480119ac",
-      "name": "HTTP Request",
-      "executeOnce": true,
-      "onError": "continueErrorOutput"
-    },
-    {
-      "parameters": {
         "numberInputs": 3
       },
       "type": "n8n-nodes-base.merge",
@@ -125,9 +101,33 @@
       },
       "type": "n8n-nodes-base.aggregate",
       "typeVersion": 1,
-      "position": [1200, 0],
+      "position": [1152, 0],
       "id": "072d8030-289f-40de-85c7-2b39f34d504f",
       "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://backend:8000/orders/batch",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [{}]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify($json) }}",
+        "options": {
+          "sendCredentialsOnCrossOriginRedirect": false
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [1360, 0],
+      "id": "540754da-a4c0-4f6a-97b8-0c2e480119ac",
+      "name": "Ingesta FastAPI",
+      "executeOnce": true,
+      "onError": "continueErrorOutput"
     }
   ],
   "pinData": {},
@@ -230,19 +230,19 @@
         ]
       ]
     },
-    "HTTP Request": {
-      "main": [[]]
-    },
     "Aggregate": {
       "main": [
         [
           {
-            "node": "HTTP Request",
+            "node": "Ingesta FastAPI",
             "type": "main",
             "index": 0
           }
         ]
       ]
+    },
+    "Ingesta FastAPI": {
+      "main": [[]]
     }
   },
   "active": false,
@@ -250,7 +250,7 @@
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "versionId": "32b2d66c-c61e-4609-b4f1-71ceb87971fc",
+  "versionId": "7c13b179-c6d7-4f9a-bc75-b525b81d1c3a",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "68817198e4f2234f06d497b266480aeaee86e39fa21de9dd94db6e614877bfec"
