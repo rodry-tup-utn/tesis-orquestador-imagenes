@@ -112,3 +112,13 @@ class MedicalOrderUpdate(SQLModel):
 class MedicalOrderPagination(BaseModel):
     items: List[MedicalOrderRead]
     total: int
+
+
+class BatchOrderResponse(BaseModel):
+    status: str
+    processed: int
+    created: int
+
+
+class OrderBatchPayload(BaseModel):
+    orders: List[MedicalOrderCreate]
