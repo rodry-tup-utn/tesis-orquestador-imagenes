@@ -106,7 +106,6 @@ class MedicalOrderRead(SQLModel):
 
 
 class MedicalOrderUpdate(SQLModel):
-    is_urgent: Optional[bool] = None
     is_active: Optional[bool] = None
     is_critical: Optional[bool] = None
     was_notified: Optional[bool] = None
