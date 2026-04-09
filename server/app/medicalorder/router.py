@@ -1,5 +1,5 @@
-from fastapi import APIRouter, Depends, BackgroundTasks, Request
-from app.medicalorder.service import create_order, get_all, create_orders_batch_service
+from fastapi import APIRouter, Depends, BackgroundTasks, HTTPException
+import app.medicalorder.service as service
 from sqlmodel import Session
 from app.medicalorder.model import (
     MedicalOrderRead,
@@ -10,14 +10,13 @@ from app.medicalorder.model import (
 )
 from app.database import get_session
 from app.medicalorder.notifier import evaluate_and_notify
-from typing import List
 
 router = APIRouter(prefix="/orders", tags=["Ordenes"])
 
 
 @router.get("", response_model=MedicalOrderPagination)
 def get_orders(skip: int = 0, limit: int = 50, session: Session = Depends(get_session)):
-    items, total = get_all(session, skip, limit)
+    items, total = service.get_all(session, skip, limit)
 
     return {
         "items": [MedicalOrderRead.from_orm_flat(order) for order in items],
@@ -31,11 +30,10 @@ def create(
     background_task: BackgroundTasks,
     session: Session = Depends(get_session),
 ):
-    order = create_order(session, data)
+    order = service.create_order(session, data)
 
     if order is None or order.id is None:
-        print(f"⚠️ Alerta: La orden con ID {order.id} no se encontró en la DB.")
-        return
+        raise HTTPException(400, "No se pudo crear la orden")
 
     background_task.add_task(evaluate_and_notify, order.id)
 
@@ -51,7 +49,7 @@ def create_batch_orders(
     data_list = payload.orders
     print("Ordenes ", data_list)
 
-    nuevas_ordenes = create_orders_batch_service(session, data_list)
+    nuevas_ordenes = service.create_orders_batch_service(session, data_list)
 
     for order in nuevas_ordenes:
         background_tasks.add_task(evaluate_and_notify, order.id)
@@ -63,8 +61,19 @@ def create_batch_orders(
     }
 
 
-@router.post("/studies")
-async def create_studies(request: Request):
-    body = await request.body()
-    print(body)
-    return {}
+@router.delete("/{order_id}")
+def soft_delete(order_id: int, session: Session = Depends(get_session)):
+    try:
+        order = service.delete_order(session, order_id)
+        return MedicalOrderRead.from_orm_flat(order)
+
+    except LookupError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+    except Exception as e:
+        # Para cualquier otro error inesperado (DB, etc.)
+        print(f"Error: {e}")
+        raise HTTPException(status_code=500, detail="Error interno del servidor")

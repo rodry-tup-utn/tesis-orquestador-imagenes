@@ -55,3 +55,21 @@ def create_orders_batch_service(session: Session, data_list: list[MedicalOrderCr
             session.refresh(n)
 
     return nuevas_instancias
+
+
+def delete_order(session: Session, order_id):
+    order = session.get(MedicalOrder, order_id)
+
+    if order is None:
+        raise LookupError(f"No se encontro una orden con el id {order_id}")
+
+    if not order.is_active:
+        raise ValueError("La orden ya se encuentra borrada")
+
+    order.is_active = False
+
+    session.add(order)
+    session.commit()
+    session.refresh(order)
+
+    return order
