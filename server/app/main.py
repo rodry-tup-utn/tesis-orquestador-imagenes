@@ -13,9 +13,9 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="Backend Trabajo Practico 2",
+    title="Backend Triage Ordenes Médicas",
     lifespan=lifespan,
-    description="API Basica para TP React",
+    description="Tesis Orquestador Imágenes",
 )
 
 app.add_middleware(
