@@ -11,6 +11,8 @@ from app.medicalorder.model import (
 )
 from app.database import get_session
 from app.medicalorder.notifier import evaluate_and_notify
+from typing import Optional
+from datetime import datetime
 
 router = APIRouter(prefix="/orders", tags=["Ordenes"])
 
@@ -21,8 +23,13 @@ def get_orders(
     limit: int = 50,
     session: Session = Depends(get_session),
     only_active: bool = True,
+    patient_dni: Optional[str] = None,
+    start_date: Optional[datetime] = None,
+    end_date: Optional[datetime] = None,
 ):
-    items, total = service.get_all(session, skip, limit, only_active)
+    items, total = service.get_all(
+        session, skip, limit, only_active, patient_dni, start_date, end_date
+    )
 
     return {
         "items": [MedicalOrderRead.from_orm_flat(order) for order in items],
@@ -103,8 +110,6 @@ def update_order(
     try:
 
         order = service.update_order(session, order_id, data)
-        if not order:
-            raise HTTPException(404, f"Orden con id {order_id} no encontrada")
 
         return MedicalOrderRead.from_orm_flat(order)
     except LookupError as e:
