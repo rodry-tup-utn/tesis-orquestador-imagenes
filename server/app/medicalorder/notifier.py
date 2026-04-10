@@ -36,6 +36,7 @@ def evaluate_and_notify(order_id: int):
                 "message": "🚨 ALERTA MÉDICA CRÍTICA",
                 "patient": f"{order.patient_name} {order.patient_lastname}",  # Para pruebas con Nombre y apellido, en produccion con pseudónimo
                 "diagnosis": order.diagnosis,
+                "date": order.order_date.isoformat(),
                 "location": order.location,
                 "setting": order.study_setting,
                 "order_id": order.id,
