@@ -12,7 +12,8 @@
     "lugar_estudio": "Rayos",
     "urgente": "SI",
     "modalidad": "Tomografia",
-    "solicitante": "Garcia Tomas"
+    "solicitante": "Garcia Tomas",
+    "fecha_hora": "2026-04-09T08:05:00"
   },
   {
     "id_transaccion": "GUA-1002",
@@ -27,7 +28,8 @@
     "lugar_estudio": "En cama",
     "urgente": "SI",
     "modalidad": "Ecografia",
-    "solicitante": "Martinez Ana"
+    "solicitante": "Martinez Ana",
+    "fecha_hora": "2026-04-09T08:10:00"
   },
   {
     "id_transaccion": "GUA-1003",
@@ -42,7 +44,8 @@
     "lugar_estudio": "Rayos",
     "urgente": "NO",
     "modalidad": "Radiologia",
-    "solicitante": "Ramirez Julio"
+    "solicitante": "Ramirez Julio",
+    "fecha_hora": "2026-04-09T08:40:00"
   },
   {
     "id_transaccion": "GUA-1004",
@@ -57,7 +60,8 @@
     "lugar_estudio": "Rayos",
     "urgente": "SI",
     "modalidad": "Ecografia",
-    "solicitante": "Gimenez Laura"
+    "solicitante": "Gimenez Laura",
+    "fecha_hora": "2026-04-09T08:15:00"
   },
   {
     "id_transaccion": "GUA-1005",
@@ -72,7 +76,8 @@
     "lugar_estudio": "Rayos",
     "urgente": "NO",
     "modalidad": "Radiologia",
-    "solicitante": "Herrera Pablo"
+    "solicitante": "Herrera Pablo",
+    "fecha_hora": "2026-04-09T09:10:00"
   },
   {
     "id_transaccion": "GUA-1006",
@@ -87,7 +92,8 @@
     "lugar_estudio": "Rayos",
     "urgente": "SI",
     "modalidad": "Radiologia",
-    "solicitante": "Castro Diego"
+    "solicitante": "Castro Diego",
+    "fecha_hora": "2026-04-09T08:20:00"
   },
   {
     "id_transaccion": "GUA-1007",
@@ -102,7 +108,8 @@
     "lugar_estudio": "Rayos",
     "urgente": "SI",
     "modalidad": "Tomografia",
-    "solicitante": "Silva Martin"
+    "solicitante": "Silva Martin",
+    "fecha_hora": "2026-04-09T08:25:00"
   },
   {
     "id_transaccion": "GUA-1008",
@@ -117,6 +124,7 @@
     "lugar_estudio": "Rayos",
     "urgente": "NO",
     "modalidad": "Tomografia",
-    "solicitante": "Blanco Rocio"
+    "solicitante": "Blanco Rocio",
+    "fecha_hora": "2026-04-09T09:30:00"
   }
 ]
