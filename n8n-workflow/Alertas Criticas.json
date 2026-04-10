@@ -17,7 +17,7 @@
     {
       "parameters": {
         "chatId": "-5103240525",
-        "text": "=🚨 ALERTA: ORDEN CRÍTICA\n👤 Paciente: {{ $json.body.patient }}\n📖 Diagnóstico: {{ $json.body.diagnosis }}\n📍 Ubicación: {{ $json.body.location}} ({{ $json.body.setting}})\n🆔 Orden #: {{ $json.body.order_id }}",
+        "text": "=🚨 ALERTA: ORDEN CRÍTICA\n👤 Paciente: {{ $json.body.patient }}\n🕚 Fecha: {{ new Date($json.body.date).toLocaleString('es-AR', { timeZone: 'America/Argentina/Buenos_Aires', hour12: false }) }}\n📖 Diagnóstico: {{ $json.body.diagnosis }}\n📍 Ubicación: {{ $json.body.location}} ({{ $json.body.setting}}) \n🆔 Orden #: {{ $json.body.order_id }}",
         "additionalFields": {
           "appendAttribution": false
         }
@@ -56,7 +56,7 @@
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "versionId": "44d9455a-46d4-4a7e-b4cb-08ba4d71e4d7",
+  "versionId": "8485184d-33f7-4d8d-9143-35ddf16baf79",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "68817198e4f2234f06d497b266480aeaee86e39fa21de9dd94db6e614877bfec"
