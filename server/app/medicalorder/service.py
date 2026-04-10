@@ -1,17 +1,41 @@
 from sqlmodel import Session, select, col, func
 from app.medicalorder.model import MedicalOrder, MedicalOrderCreate, MedicalOrderUpdate
+from typing import Optional
+from fastapi import Query
+from datetime import datetime, timedelta, timezone
 
 
-def get_all(session: Session, skip: int, limit: int, only_active: bool = True):
+def get_all(
+    session: Session,
+    skip: int = Query(0, ge=0),
+    limit: int = Query(10, ge=1, le=100),
+    only_active: bool = True,
+    patient_dni: Optional[str] = None,
+    start_date: Optional[datetime] = None,
+    end_date: Optional[datetime] = None,
+):
     statement = select(MedicalOrder).order_by(col(MedicalOrder.created_at).desc())
-    total_statement = select(func.count()).select_from(MedicalOrder)
 
     if only_active:
         statement = statement.where(MedicalOrder.is_active)
-        total_statement = total_statement.where(MedicalOrder.is_active)
 
+    if start_date:
+        statement = statement.where(MedicalOrder.order_date >= start_date)
+
+    if end_date:
+        statement = statement.where(MedicalOrder.order_date <= end_date)
+
+    if not start_date and not end_date:
+        time_limit = datetime.now(timezone.utc) - timedelta(hours=24)
+        statement = statement.where(MedicalOrder.created_at >= time_limit)
+
+    if patient_dni:
+        statement = statement.where(MedicalOrder.patient_dni == patient_dni)
+
+    count_statement = select(func.count()).select_from(statement.subquery())
+
+    total = session.exec(count_statement).one()
     items = session.exec(statement.offset(skip).limit(limit)).all()
-    total = session.exec(total_statement).one()
 
     return items, total
 
@@ -87,6 +111,9 @@ def delete_order(session: Session, order_id):
 def update_order(session: Session, order_id: int, data: MedicalOrderUpdate):
 
     order = session.get(MedicalOrder, order_id)
+
+    if not order:
+        raise LookupError(f"Orden con id {order_id} no encontrada")
 
     update_data = data.model_dump(exclude_unset=True)
 
