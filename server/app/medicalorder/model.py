@@ -15,6 +15,7 @@ class MedicalOrderBase(SQLModel):
     diagnosis: str
     observations: Optional[str] = None
     internal_notes: Optional[str] = None
+    order_date: datetime
     patient_name: str
     patient_lastname: str
     patient_pseudonym: str
@@ -24,6 +25,7 @@ class MedicalOrderBase(SQLModel):
     requesting_physician: str
     is_urgent: bool = Field(default=False)
     is_active: bool = Field(default=True)
+    is_completed: bool = Field(default=False)
 
 
 class MedicalOrder(MedicalOrderBase, table=True):
@@ -56,11 +58,13 @@ class OrderDetails(SQLModel):
     study_setting: str
     diagnosis: str
     observations: Optional[str] = None
+    date: datetime
     internal_notes: Optional[str]
     requesting_physician: str
     is_urgent: bool
     is_active: bool
     is_critical: bool
+    is_completed: bool
 
 
 class MedicalOrderRead(SQLModel):
@@ -79,7 +83,7 @@ class MedicalOrderRead(SQLModel):
             id=obj.id,
             external_id=obj.external_id,
             origin=obj.origin,
-            created_at=obj.created_at,
+            created_at=obj.created_at.astimezone(timezone.utc),
             was_notified=obj.was_notified,
             patient=PatientInfo(
                 name=obj.patient_name,
@@ -101,6 +105,8 @@ class MedicalOrderRead(SQLModel):
                 is_urgent=obj.is_urgent,
                 is_active=obj.is_active,
                 is_critical=obj.is_critical,
+                date=obj.order_date.astimezone(timezone.utc),
+                is_completed=obj.is_completed,
             ),
         )
 
@@ -110,6 +116,7 @@ class MedicalOrderUpdate(SQLModel):
     is_critical: Optional[bool] = None
     was_notified: Optional[bool] = None
     internal_notes: Optional[str] = None
+    is_completed: Optional[bool] = None
 
 
 class MedicalOrderPagination(BaseModel):
