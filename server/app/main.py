@@ -1,14 +1,22 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
-from app.database import create_db_and_tables
+from sqlmodel import Session
+from app.core.database import create_db_and_tables, engine
 from fastapi.middleware.cors import CORSMiddleware
-from app.medicalorder.router import router as medical_router
-from app.systemsettings.router import router as settings_router
+from app.modules.medical_order.router import router as medical_router
+from app.modules.triage.router import router as triage_router
+from app.modules.systemsettings.router import router as settings_router
+from app.modules.systemsettings.seed import seed_system_settings
+from app.modules.triage.seed import seed_triage_rules
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     create_db_and_tables()
+    with Session(engine) as session:
+        seed_system_settings(session)
+        seed_triage_rules(session)
+        session.commit()
     yield
 
 
@@ -27,4 +35,5 @@ app.add_middleware(
 )
 
 app.include_router(medical_router)
+app.include_router(triage_router)
 app.include_router(settings_router)
