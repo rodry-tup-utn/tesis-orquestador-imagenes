@@ -62,6 +62,13 @@ services:
       - "8000:8000"
     volumes:
       - ./server:/app
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_PORT: ${DB_PORT}
+      URL_WEBHOOK_N8N: ${URL_WEBHOOK_N8N}
     env_file:
       - .env
     depends_on:
