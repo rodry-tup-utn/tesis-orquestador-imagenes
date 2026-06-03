@@ -1,8 +1,8 @@
 [
   {
     "ID_CITA": "AMB-2026-0001",
-    "FECHA_TURNO": "2026-03-30",
-    "HORA_TURNO": "08:30",
+    "FECHA_TURNO": "2026-04-09",
+    "HORA_TURNO": "08:00",
     "PACIENTE_DATA": "RAMIREZ^RODRIGO",
     "NRO_DOCUMENTO": "40123456",
     "HISTORIA_CLINICA": "232340",
@@ -11,12 +11,13 @@
     "MEDICO_DERIVANTE": "Dr. Gonzalez",
     "OBSERVACIONES": "Paciente con protesis metalica en pierna izquierda",
     "DIAGNOSTICO": "Gonalgia derecha",
-    "FECHA_NACIMIENTO": "22-10-1994"
+    "FECHA_NACIMIENTO": "1994-10-22",
+    "SEXO": "MASCULINO"
   },
   {
     "ID_CITA": "AMB-2026-0002",
-    "FECHA_TURNO": "2026-03-30",
-    "HORA_TURNO": "09:15",
+    "FECHA_TURNO": "2026-04-09",
+    "HORA_TURNO": "08:40",
     "PACIENTE_DATA": "SOSA^MARIA",
     "HISTORIA_CLINICA": "34987",
     "NRO_DOCUMENTO": "25987654",
@@ -25,12 +26,13 @@
     "MEDICO_DERIVANTE": "Dra. Lopez",
     "OBSERVACIONES": "Ayuno de 8 horas requerido",
     "DIAGNOSTICO": "Abdomen agudo",
-    "FECHA_NACIMIENTO": "10-09-1967"
+    "FECHA_NACIMIENTO": "1967-10-09",
+    "SEXO": "FEMENINO"
   },
   {
     "ID_CITA": "AMB-2026-0003",
-    "FECHA_TURNO": "2026-03-30",
-    "HORA_TURNO": "10:00",
+    "FECHA_TURNO": "2026-04-09",
+    "HORA_TURNO": "09:20",
     "PACIENTE_DATA": "PEREZ^JUAN",
     "HISTORIA_CLINICA": "112233",
     "NRO_DOCUMENTO": "30111222",
@@ -39,12 +41,13 @@
     "MEDICO_DERIVANTE": "Dr. Martinez",
     "OBSERVACIONES": "Paciente asmatico, dificultad para contener la respiracion",
     "DIAGNOSTICO": "Tos cronica, sospecha de bronquiectasias",
-    "FECHA_NACIMIENTO": "15-05-1983"
+    "FECHA_NACIMIENTO": "1983-12-15",
+    "SEXO": "MASCULINO"
   },
   {
     "ID_CITA": "AMB-2026-0004",
-    "FECHA_TURNO": "2026-03-30",
-    "HORA_TURNO": "10:45",
+    "FECHA_TURNO": "2026-04-09",
+    "HORA_TURNO": "10:00",
     "PACIENTE_DATA": "GOMEZ^LAURA",
     "HISTORIA_CLINICA": "445566",
     "NRO_DOCUMENTO": "38444555",
@@ -53,12 +56,13 @@
     "MEDICO_DERIVANTE": "Dra. Fernandez",
     "OBSERVACIONES": "Trae radiografias previas de 2025",
     "DIAGNOSTICO": "Dolor pelvico atero-posterior",
-    "FECHA_NACIMIENTO": "02-11-1990"
+    "FECHA_NACIMIENTO": "1990-11-02",
+    "SEXO": "FEMENINO"
   },
   {
     "ID_CITA": "AMB-2026-0005",
-    "FECHA_TURNO": "2026-03-30",
-    "HORA_TURNO": "11:30",
+    "FECHA_TURNO": "2026-04-09",
+    "HORA_TURNO": "10:40",
     "PACIENTE_DATA": "RUIZ^CARLOS",
     "HISTORIA_CLINICA": "778899",
     "NRO_DOCUMENTO": "18777888",
@@ -67,12 +71,13 @@
     "MEDICO_DERIVANTE": "Dr. Silva",
     "OBSERVACIONES": "Claustrofobia leve, requiere contencion. Sin contraste",
     "DIAGNOSTICO": "Cefalea tensional en estudio",
-    "FECHA_NACIMIENTO": "25-01-1960"
+    "FECHA_NACIMIENTO": "1960-01-25",
+    "SEXO": "MASCULINO"
   },
   {
     "ID_CITA": "AMB-2026-0006",
-    "FECHA_TURNO": "2026-03-30",
-    "HORA_TURNO": "12:15",
+    "FECHA_TURNO": "2026-04-09",
+    "HORA_TURNO": "11:20",
     "PACIENTE_DATA": "ALONSO^MARTINA",
     "HISTORIA_CLINICA": "990011",
     "NRO_DOCUMENTO": "42999000",
@@ -81,12 +86,13 @@
     "MEDICO_DERIVANTE": "Dra. Castro",
     "OBSERVACIONES": "",
     "DIAGNOSTICO": "Hipotiroidismo, control de nodulo",
-    "FECHA_NACIMIENTO": "18-08-2000"
+    "FECHA_NACIMIENTO": "2000-08-18",
+    "SEXO": "FEMENINO"
   },
   {
     "ID_CITA": "AMB-2026-0007",
-    "FECHA_TURNO": "2026-03-30",
-    "HORA_TURNO": "13:00",
+    "FECHA_TURNO": "2026-04-09",
+    "HORA_TURNO": "12:00",
     "PACIENTE_DATA": "DOMINGUEZ^HECTOR",
     "HISTORIA_CLINICA": "223344",
     "NRO_DOCUMENTO": "14222333",
@@ -95,12 +101,13 @@
     "MEDICO_DERIVANTE": "Dr. Mendez",
     "OBSERVACIONES": "Alergia dudosa al iodo. Premedicado segun protocolo",
     "DIAGNOSTICO": "Control oncologico",
-    "FECHA_NACIMIENTO": "05-12-1955"
+    "FECHA_NACIMIENTO": "1955-08-09",
+    "SEXO": "MASCULINO"
   },
   {
     "ID_CITA": "AMB-2026-0008",
-    "FECHA_TURNO": "2026-03-30",
-    "HORA_TURNO": "13:45",
+    "FECHA_TURNO": "2026-04-09",
+    "HORA_TURNO": "13:00",
     "PACIENTE_DATA": "VIDAL^LUCIA",
     "HISTORIA_CLINICA": "667788",
     "NRO_DOCUMENTO": "35666777",
@@ -109,12 +116,13 @@
     "MEDICO_DERIVANTE": "Dra. Gimenez",
     "OBSERVACIONES": "Paciente en silla de ruedas",
     "DIAGNOSTICO": "Preoperatorio",
-    "FECHA_NACIMIENTO": "30-07-1988"
+    "FECHA_NACIMIENTO": "1988-07-30",
+    "SEXO": "FEMENINO"
   },
   {
     "ID_CITA": "AMB-2026-0009",
-    "FECHA_TURNO": "2026-03-30",
-    "HORA_TURNO": "14:30",
+    "FECHA_TURNO": "2026-04-09",
+    "HORA_TURNO": "13:40",
     "PACIENTE_DATA": "BLANCO^DIEGO",
     "HISTORIA_CLINICA": "554433",
     "NRO_DOCUMENTO": "28555444",
@@ -123,12 +131,13 @@
     "MEDICO_DERIVANTE": "Dr. Gonzalez",
     "OBSERVACIONES": "Dolor intenso, tratar de agilizar el estudio",
     "DIAGNOSTICO": "Lumbociatalgia izquierda",
-    "FECHA_NACIMIENTO": "14-04-1979"
+    "FECHA_NACIMIENTO": "1979-04-14",
+    "SEXO": "MASCULINO"
   },
   {
     "ID_CITA": "AMB-2026-0010",
-    "FECHA_TURNO": "2026-03-30",
-    "HORA_TURNO": "15:15",
+    "FECHA_TURNO": "2026-04-09",
+    "HORA_TURNO": "14:20",
     "PACIENTE_DATA": "NAVARRO^SOFIA",
     "HISTORIA_CLINICA": "118822",
     "NRO_DOCUMENTO": "39111888",
@@ -137,6 +146,7 @@
     "MEDICO_DERIVANTE": "Dra. Lopez",
     "OBSERVACIONES": "Trae ecografia anterior de hace un año",
     "DIAGNOSTICO": "Mastalgia, control anual",
-    "FECHA_NACIMIENTO": "22-09-1995"
+    "FECHA_NACIMIENTO": "1995-09-22",
+    "SEXO": "FEMENINO"
   }
 ]

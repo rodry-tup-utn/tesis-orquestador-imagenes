@@ -1,0 +1,8 @@
+fastapi[standard]
+sqlmodel
+psycopg2-binary
+alembic
+requests
+pyjwt
+passlib[bcrypt]
+bcrypt==4.0.1
