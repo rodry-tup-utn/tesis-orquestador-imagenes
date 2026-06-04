@@ -51,6 +51,8 @@ services:
       - ORTHANC_NAME=Hospital_Orthanc
       - ORTHANC__AUTHENTICATION_ENABLED=true
       - ORTHANC__REGISTERED_USERS={"${ORTHANC_USER}":"${ORTHANC_PASS}"}
+      - ORTHANC__WORKLISTS__ENABLE=true
+      - ORTHANC__WORKLISTS__SAVE_IN_ORTHANC_DATABASE=true
     volumes:
       - orthanc_data:/var/lib/orthanc/db
     restart: always
