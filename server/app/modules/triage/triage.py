@@ -10,8 +10,9 @@ class TriageEngine:
         order: MedicalOrder,
         rules: list[TriageRule],
         settings: SystemSettings,
-    ) -> MedicalPriority:
+    ) -> tuple[MedicalPriority, dict]:
         score = 0
+        criterios = {"rules_matched": [], "total_score": 0}
         for rule in rules:
             if not rule.enabled:
                 continue
@@ -20,8 +21,16 @@ class TriageEngine:
                 continue
             if TriageEngine._matches(str(field_value), rule.operator, rule.value):
                 score += rule.weight
+                criterios["rules_matched"].append({
+                    "field": rule.field,
+                    "value_matched": str(field_value),
+                    "operator": rule.operator,
+                    "pattern": rule.value,
+                    "weight": rule.weight
+                })
 
-        return TriageEngine._map_priority(score, settings)
+        criterios["total_score"] = score
+        return TriageEngine._map_priority(score, settings), criterios
 
     @staticmethod
     def _matches(field_value: str, operator: TriageOperator, pattern: str) -> bool:
@@ -37,6 +46,8 @@ class TriageEngine:
     def _map_priority(score: int, settings: SystemSettings) -> MedicalPriority:
         if score >= settings.triage_critical_threshold:
             return MedicalPriority.CRITICAL
+        if score >= settings.triage_urgent_threshold:
+            return MedicalPriority.URGENT
         if score >= settings.triage_priority_threshold:
             return MedicalPriority.PRIORITY
         return MedicalPriority.ROUTINE

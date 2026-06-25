@@ -134,3 +134,14 @@ class OrderFilters(BaseModel):
     order_state: OrderState | None = None
     was_notified: bool | None = None
     sort_by: Literal["created_at", "priority"] = "created_at"
+
+
+class NotificationRead(SQLModel):
+    id: int
+    medical_order_id: int
+    pseudonym_hash: str
+    status: str
+    payload_sent: str
+    sent_at: datetime
+    error_message: str | None = None
+

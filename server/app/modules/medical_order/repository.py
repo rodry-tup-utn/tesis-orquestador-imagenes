@@ -1,5 +1,6 @@
 from typing import Sequence
-from sqlmodel import Session, select, func, col
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlmodel import select, func, col
 from sqlalchemy import case
 from app.core.repository import BaseRepository
 from app.modules.medical_order.model import MedicalOrder, MedicalPriority
@@ -7,18 +8,20 @@ from app.modules.medical_order.schemas import OrderFilters
 
 
 class MedicalOrderRepository(BaseRepository[MedicalOrder]):
-    def __init__(self, session: Session) -> None:
+    def __init__(self, session: AsyncSession) -> None:
         super().__init__(session, MedicalOrder)
 
-    def find_by_external_id(self, external_id: str) -> MedicalOrder | None:
+    async def find_by_external_id(self, external_id: str) -> MedicalOrder | None:
         statement = select(MedicalOrder).where(MedicalOrder.external_id == external_id)
-        return self.session.exec(statement).first()
+        result = await self.session.execute(statement)
+        return result.scalars().first()
 
-    def find_existing_external_ids(self, ids: list[str]) -> set[str]:
+    async def find_existing_external_ids(self, ids: list[str]) -> set[str]:
         statement = select(MedicalOrder.external_id).where(
             col(MedicalOrder.external_id).in_(ids)
         )
-        return set(self.session.exec(statement).all())
+        result = await self.session.execute(statement)
+        return set(result.scalars().all())
 
     def _build_order_by(self, sort_by: str) -> tuple:
         if sort_by == "priority":
@@ -34,7 +37,7 @@ class MedicalOrderRepository(BaseRepository[MedicalOrder]):
             )
         return (col(MedicalOrder.created_at).desc(),)
 
-    def find_all_filtered(
+    async def find_all_filtered(
         self, filters: OrderFilters
     ) -> tuple[Sequence[MedicalOrder], int]:
         statement = select(MedicalOrder)
@@ -59,9 +62,12 @@ class MedicalOrderRepository(BaseRepository[MedicalOrder]):
         order_exprs = self._build_order_by(filters.sort_by)
 
         count_statement = select(func.count()).select_from(statement.subquery())
-        total = self.session.exec(count_statement).one()
-        items = self.session.exec(
+        total_result = await self.session.execute(count_statement)
+        total = total_result.scalar_one()
+        
+        items_result = await self.session.execute(
             statement.offset(filters.offset).limit(filters.limit).order_by(*order_exprs)
-        ).all()
+        )
+        items = items_result.scalars().all()
 
         return items, total

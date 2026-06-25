@@ -1,4 +1,4 @@
-from sqlmodel import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from app.modules.medical_order.repository import MedicalOrderRepository
 from app.modules.triage.repository import TriageRuleRepository
 from app.modules.systemsettings.repository import SystemSettingsRepository
@@ -6,28 +6,28 @@ from app.modules.systemsettings.repository import SystemSettingsRepository
 
 class UnitOfWork:
 
-    def __init__(self, session: Session) -> None:
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
-    def __enter__(self):
+    async def __aenter__(self):
         self.orders = MedicalOrderRepository(self.session)
         self.triage_rules = TriageRuleRepository(self.session)
         self.settings = SystemSettingsRepository(self.session)
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+    async def __aexit__(self, exc_type, exc_val, exc_tb) -> None:
         if exc_type is None:
-            self.session.commit()  # type: ignore
+            await self.session.commit()
         else:
-            self.session.rollback()  # type: ignore
-        self.session.close()  # type: ignore
+            await self.session.rollback()
+        await self.session.close()
 
-    def commit(self) -> None:
-        self.session.commit()  # type: ignore
+    async def commit(self) -> None:
+        await self.session.commit()
 
-    def rollback(self) -> None:
-        self.session.rollback()  # type: ignore
+    async def rollback(self) -> None:
+        await self.session.rollback()
 
 
-def get_uow(session: Session) -> UnitOfWork:
+def get_uow(session: AsyncSession) -> UnitOfWork:
     return UnitOfWork(session)

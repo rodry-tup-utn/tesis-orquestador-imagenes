@@ -71,6 +71,9 @@ services:
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_PORT: ${DB_PORT}
       URL_WEBHOOK_N8N: ${URL_WEBHOOK_N8N}
+      ORTHANC_URL: http://orthanc:8042
+      ORTHANC_USER: ${ORTHANC_USER:-admin}
+      ORTHANC_PASSWORD: ${ORTHANC_PASS:-admin}
     env_file:
       - .env
     depends_on:
