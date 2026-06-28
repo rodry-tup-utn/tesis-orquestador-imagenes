@@ -79,6 +79,14 @@ services:
     depends_on:
       - postgres
 
+  frontend:
+    build: ../orquestador_imagenes
+    container_name: react_dashboard
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
 volumes:
   postgres_data:
   n8n_data:
