@@ -24,7 +24,7 @@ services:
       - N8N_PORT=5678
       - N8N_PROTOCOL=http
       - NODE_ENV=production
-      - WEBHOOK_URL=http://localhost:5678/
+      - WEBHOOK_URL=http://host.docker.internal:5678/
       - GENERIC_TIMEZONE=America/Argentina/Mendoza
       - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY}
     volumes:
@@ -52,9 +52,10 @@ services:
       - ORTHANC__AUTHENTICATION_ENABLED=true
       - ORTHANC__REGISTERED_USERS={"${ORTHANC_USER}":"${ORTHANC_PASS}"}
       - ORTHANC__WORKLISTS__ENABLE=true
-      - ORTHANC__WORKLISTS__SAVE_IN_ORTHANC_DATABASE=true
+      - ORTHANC__WORKLISTS__DIRECTORY=/var/lib/orthanc/worklists
     volumes:
       - orthanc_data:/var/lib/orthanc/db
+      - orthanc_worklists:/var/lib/orthanc/worklists
     restart: always
 
   backend:
@@ -64,6 +65,7 @@ services:
       - "8000:8000"
     volumes:
       - ./server:/app
+      - orthanc_worklists:/worklists
     environment:
       POSTGRES_HOST: postgres
       POSTGRES_USER: ${DB_USER}
@@ -91,3 +93,4 @@ volumes:
   postgres_data:
   n8n_data:
   orthanc_data:
+  orthanc_worklists:

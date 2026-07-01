@@ -2,6 +2,8 @@ import logging
 import httpx
 import hashlib
 import json
+from datetime import datetime
+from zoneinfo import ZoneInfo
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select, col
 from app.core.config import settings
@@ -37,18 +39,21 @@ class NotifierService:
         raw_str = f"{settings.secret_key}:{order.patient_dni}"
         pseudonym = hashlib.sha256(raw_str.encode("utf-8")).hexdigest()
         
-        # El payload ahora NO incluye el nombre o apellido del paciente,
-        # protegiendo los datos PHI.
-        return {
+        # Para la demo incluimos nombre y apellido, aunque en un entorno real 
+        # estrictamente solo se mandaría el seudónimo por protección de datos PHI.
+        payload = {
             "message": "Alerta médica crítica",
             "patient_pseudonym": pseudonym,
+            "patient_name": f"{order.patient_lastname}, {order.patient_name}",
             "diagnosis": order.diagnosis,
             "priority": order.triage_priority.value,
-            "date": order.order_date.isoformat(),
+            "date": datetime.now(ZoneInfo("America/Argentina/Mendoza")).strftime("%d/%m/%Y %H:%M"),
             "location": order.patient_location,
             "setting": order.study_setting.value,
             "order_id": order.id,
         }
+        logger.info("PAYLOAD a n8n: %s", payload)
+        return payload
 
     async def notify(self, order_id: int) -> bool:
         async with UnitOfWork(self._session) as uow:

@@ -18,7 +18,7 @@ def get_password_hash(password: str) -> str:
 
 def create_access_token(payload: dict) -> str:
     to_encode = payload.copy()
-    expire = datetime.now(timezone.utc) + timedelta(
+    expire = datetime.utcnow() + timedelta(
         minutes=settings.access_token_expire_minutes
     )
     to_encode.update({"exp": int(expire.timestamp())})

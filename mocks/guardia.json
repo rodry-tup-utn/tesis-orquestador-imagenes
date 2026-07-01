@@ -14,7 +14,7 @@
     "modalidad": "Tomografia",
     "solicitante": "Garcia Tomas",
     "fecha_hora": "2026-04-09T08:05:00",
-    "sexo": "MASCULINO"
+    "sexo": "M"
   },
   {
     "id_transaccion": "GUA-1002",
@@ -31,7 +31,7 @@
     "modalidad": "Ecografia",
     "solicitante": "Martinez Ana",
     "fecha_hora": "2026-04-09T08:10:00",
-    "sexo": "FEMENINO"
+    "sexo": "F"
   },
   {
     "id_transaccion": "GUA-1003",
@@ -48,7 +48,7 @@
     "modalidad": "Radiologia",
     "solicitante": "Ramirez Julio",
     "fecha_hora": "2026-04-09T08:40:00",
-    "sexo": "MASCULINO"
+    "sexo": "M"
   },
   {
     "id_transaccion": "GUA-1004",
@@ -65,7 +65,7 @@
     "modalidad": "Ecografia",
     "solicitante": "Gimenez Laura",
     "fecha_hora": "2026-04-09T08:15:00",
-    "sexo": "FEMENINO"
+    "sexo": "F"
   },
   {
     "id_transaccion": "GUA-1005",
@@ -82,7 +82,7 @@
     "modalidad": "Radiologia",
     "solicitante": "Herrera Pablo",
     "fecha_hora": "2026-04-09T09:10:00",
-    "sexo": "MASCULINO"
+    "sexo": "M"
   },
   {
     "id_transaccion": "GUA-1006",
@@ -99,7 +99,7 @@
     "modalidad": "Radiologia",
     "solicitante": "Castro Diego",
     "fecha_hora": "2026-04-09T08:20:00",
-    "sexo": "MASCULINO"
+    "sexo": "M"
   },
   {
     "id_transaccion": "GUA-1007",
@@ -116,7 +116,7 @@
     "modalidad": "Tomografia",
     "solicitante": "Silva Martin",
     "fecha_hora": "2026-04-09T08:25:00",
-    "sexo": "MASCULINO"
+    "sexo": "M"
   },
   {
     "id_transaccion": "GUA-1008",
@@ -133,6 +133,6 @@
     "modalidad": "Tomografia",
     "solicitante": "Blanco Rocio",
     "fecha_hora": "2026-04-09T09:30:00",
-    "sexo": "FEMENINO"
+    "sexo": "F"
   }
 ]

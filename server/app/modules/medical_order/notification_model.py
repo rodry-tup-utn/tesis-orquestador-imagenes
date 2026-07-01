@@ -11,7 +11,7 @@ class NotificacionEmitida(SQLModel, table=True):
     status: str = Field(max_length=50)  # "SUCCESS", "FAILED"
     payload_sent: str = Field()
     sent_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
+        default_factory=lambda: datetime.utcnow(),
         sa_column=Column(DateTime(timezone=True)),
     )
     error_message: Optional[str] = Field(default=None)

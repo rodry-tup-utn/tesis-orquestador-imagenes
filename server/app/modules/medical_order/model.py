@@ -93,7 +93,7 @@ class MedicalOrder(SQLModel, table=True):
         default=None, sa_column=Column(DateTime(timezone=True))
     )
     created_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
+        default_factory=lambda: datetime.utcnow(),
         sa_column=Column(DateTime(timezone=True)),
     )
 

@@ -30,11 +30,24 @@ class MedicalOrderService:
 
     async def list_notifications(self, limit: int = 50, offset: int = 0):
         from app.modules.medical_order.notification_model import NotificacionEmitida
+        from app.modules.medical_order.model import MedicalOrder
         from sqlmodel import select
         async with UnitOfWork(self._session) as uow:
-            statement = select(NotificacionEmitida).order_by(NotificacionEmitida.sent_at.desc()).offset(offset).limit(limit)
+            statement = select(NotificacionEmitida, MedicalOrder).join(
+                MedicalOrder, NotificacionEmitida.medical_order_id == MedicalOrder.id
+            ).order_by(NotificacionEmitida.sent_at.desc()).offset(offset).limit(limit)
+            
             result = await uow.session.execute(statement)
-            return result.scalars().all()
+            rows = result.all()
+            
+            res = []
+            for notif, order in rows:
+                item_dict = notif.dict()
+                item_dict["patient_name"] = order.patient_name
+                item_dict["patient_lastname"] = order.patient_lastname
+                res.append(item_dict)
+                
+            return res
 
     async def _get_or_404(self, uow: UnitOfWork, order_id: int) -> MedicalOrder:
         order = await uow.orders.get_by_id(order_id)
@@ -57,7 +70,7 @@ class MedicalOrderService:
         priority, criterios = TriageEngine.evaluate(order, rules, settings)
         order.triage_priority = priority
         order.criterios_evaluados = criterios
-        order.triaged_at = datetime.now(timezone.utc)
+        order.triaged_at = datetime.utcnow()
         return order
 
     async def get_by_id(self, order_id: int) -> MedicalOrderRead:
@@ -114,7 +127,7 @@ class MedicalOrderService:
         async with UnitOfWork(self._session) as uow:
             rules = await uow.triage_rules.get_enabled()
             settings = await self._get_system_settings_or_404(uow)
-            now = datetime.now(timezone.utc)
+            now = datetime.utcnow()
 
             existing = await uow.orders.find_existing_external_ids(
                 [o.external_id for o in payload.orders]
@@ -163,7 +176,7 @@ class MedicalOrderService:
         async with UnitOfWork(self._session) as uow:
             order = await self._get_or_404(uow, order_id)
             order.order_state = data.order_state
-            now = datetime.now(timezone.utc)
+            now = datetime.utcnow()
 
             if data.order_state == OrderState.FINALIZED:
                 order.completed_at = now

@@ -104,7 +104,7 @@ class UpdateState(BaseModel):
 
 
 class UpdateObservations(BaseModel):
-    observations: str = PydanticField(min_length=4, max_length=25)
+    observations: str = PydanticField(min_length=4, max_length=2000)
 
 
 class MedicalOrderPagination(BaseModel):
@@ -144,4 +144,6 @@ class NotificationRead(SQLModel):
     payload_sent: str
     sent_at: datetime
     error_message: str | None = None
+    patient_name: str | None = None
+    patient_lastname: str | None = None
 
