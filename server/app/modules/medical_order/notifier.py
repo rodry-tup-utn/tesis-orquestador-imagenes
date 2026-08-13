@@ -1,7 +1,6 @@
-import logging
-import httpx
 import hashlib
 import json
+import logging
 from datetime import datetime
 from zoneinfo import ZoneInfo
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -9,6 +8,7 @@ from sqlmodel import select, col
 from app.core.config import settings
 from app.core.database import get_session
 from app.core.unit_of_work import UnitOfWork
+from app.core.metrics import now_ms, log_metric
 from app.modules.medical_order.model import MedicalOrder, MedicalPriority
 from app.modules.systemsettings.model import SystemSettings
 from app.modules.medical_order.notification_model import NotificacionEmitida
@@ -55,7 +55,9 @@ class NotifierService:
         logger.info("PAYLOAD a n8n: %s", payload)
         return payload
 
-    async def notify(self, order_id: int) -> bool:
+    async def notify(
+        self, order_id: int, cycle_id: str | None = None, t_received: float | None = None
+    ) -> bool:
         async with UnitOfWork(self._session) as uow:
             order = await uow.orders.get_by_id(order_id)
             if not order or order.was_notified:
@@ -73,7 +75,14 @@ class NotifierService:
                 status="PENDING"
             )
 
+            baseline_ms = (
+                t_received
+                if t_received is not None
+                else order.created_at.timestamp() * 1000
+            )
+
             success = False
+            t_start = now_ms()
             try:
                 async with httpx.AsyncClient() as client:
                     resp = await client.post(settings.url_webhook_n8n, json=payload, timeout=5)
@@ -90,6 +99,20 @@ class NotifierService:
                 logger.error("Error de conexión con n8n para order %d: %s", order.id, e)
                 notificacion.status = "FAILED"
                 notificacion.error_message = str(e)
+            t_end = now_ms()
+
+            log_metric(
+                "tdcc",
+                cycle_id=cycle_id,
+                order_id=order.id,
+                external_id=order.external_id,
+                priority=order.triage_priority.value,
+                status=notificacion.status,
+                t_received=round(baseline_ms, 3),
+                t_notify_start=round(t_start, 3),
+                t_notify_end=round(t_end, 3),
+                TDCC=round(t_end - baseline_ms, 3),
+            )
 
             uow.session.add(notificacion)
 
@@ -100,7 +123,12 @@ class NotifierService:
             
             return success
 
-    async def notify_many(self, order_ids: list[int]) -> int:
+    async def notify_many(
+        self,
+        order_ids: list[int],
+        cycle_id: str | None = None,
+        t_received: float | None = None,
+    ) -> int:
         if not order_ids:
             return 0
 
@@ -126,7 +154,14 @@ class NotifierService:
                     status="PENDING"
                 )
 
+                baseline_ms = (
+                    t_received
+                    if t_received is not None
+                    else order.created_at.timestamp() * 1000
+                )
+
                 success = False
+                t_start = now_ms()
                 try:
                     async with httpx.AsyncClient() as client:
                         resp = await client.post(settings.url_webhook_n8n, json=payload, timeout=5)
@@ -143,6 +178,20 @@ class NotifierService:
                     logger.error("Error de conexión con n8n para order %d: %s", order.id, e)
                     notificacion.status = "FAILED"
                     notificacion.error_message = str(e)
+                t_end = now_ms()
+
+                log_metric(
+                    "tdcc",
+                    cycle_id=cycle_id,
+                    order_id=order.id,
+                    external_id=order.external_id,
+                    priority=order.triage_priority.value,
+                    status=notificacion.status,
+                    t_received=round(baseline_ms, 3),
+                    t_notify_start=round(t_start, 3),
+                    t_notify_end=round(t_end, 3),
+                    TDCC=round(t_end - baseline_ms, 3),
+                )
 
                 uow.session.add(notificacion)
 
@@ -155,25 +204,31 @@ class NotifierService:
             return notified
 
 
-async def evaluate_and_notify(order_id: int):
+async def evaluate_and_notify(order_id: int, t_received: float | None = None):
     if not settings.url_webhook_n8n:
         logger.warning("URL_WEBHOOK_N8N no configurada")
         return
     try:
         async for session in get_session():
-            await NotifierService(session).notify(order_id)
+            await NotifierService(session).notify(order_id, t_received=t_received)
             await session.commit()
     except Exception as e:
         logger.error("Error en notificador para order %d: %s", order_id, e)
 
 
-async def evaluate_and_notify_many(order_ids: list[int]):
+async def evaluate_and_notify_many(
+    order_ids: list[int],
+    cycle_id: str | None = None,
+    t_received: float | None = None,
+):
     if not settings.url_webhook_n8n or not order_ids:
         logger.warning("URL_WEBHOOK_N8N no configurada o sin órdenes")
         return
     try:
         async for session in get_session():
-            notified = await NotifierService(session).notify_many(order_ids)
+            notified = await NotifierService(session).notify_many(
+                order_ids, cycle_id=cycle_id, t_received=t_received
+            )
             await session.commit()
             if notified:
                 logger.info(

@@ -114,6 +114,11 @@ class MedicalOrderPagination(BaseModel):
 
 class OrderBatchPayload(BaseModel):
     orders: list[MedicalOrderCreate]
+    # Campos de instrumentacion (benchmark Escenario B). Opcionales:
+    # permiten al backend computar T_n8n / T_proc / TDCC en milisegundos.
+    ts_start: float | None = None
+    ts_sent: float | None = None
+    cycle_id: str | None = None
 
 
 class BatchOrderResponse(BaseModel):
