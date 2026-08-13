@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 from fastapi import HTTPException, status
-from sqlmodel import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.unit_of_work import UnitOfWork
 from app.modules.medical_order.model import MedicalOrder, OrderState
 from app.modules.medical_order.schemas import (
@@ -13,60 +13,123 @@ from app.modules.medical_order.schemas import (
     UpdateObservations,
 )
 from app.modules.triage.triage import TriageEngine
-
+from pydicom.uid import generate_uid
+from app.core.orthanc_client import OrthancClient
+from app.core.websocket import manager
 
 class MedicalOrderService:
-    _session: Session
+    _session: AsyncSession
 
-    def __init__(self, session: Session) -> None:
+    def __init__(self, session: AsyncSession) -> None:
         self._session = session
 
-    def list_all(self, filters: OrderFilters) -> tuple[list[MedicalOrderRead], int]:
-        with UnitOfWork(self._session) as uow:
-            items, total = uow.orders.find_all_filtered(filters)
+    async def list_all(self, filters: OrderFilters) -> tuple[list[MedicalOrderRead], int]:
+        async with UnitOfWork(self._session) as uow:
+            items, total = await uow.orders.find_all_filtered(filters)
             return [MedicalOrderRead.from_orm(o) for o in items], total
 
-    def _get_or_404(self, uow: UnitOfWork, order_id: int) -> MedicalOrder:
-        order = uow.orders.get_by_id(order_id)
+    async def list_notifications(self, limit: int = 50, offset: int = 0):
+        from app.modules.medical_order.notification_model import NotificacionEmitida
+        from app.modules.medical_order.model import MedicalOrder
+        from sqlmodel import select
+        async with UnitOfWork(self._session) as uow:
+            statement = select(NotificacionEmitida, MedicalOrder).join(
+                MedicalOrder, NotificacionEmitida.medical_order_id == MedicalOrder.id
+            ).order_by(NotificacionEmitida.sent_at.desc()).offset(offset).limit(limit)
+            
+            result = await uow.session.execute(statement)
+            rows = result.all()
+            
+            res = []
+            for notif, order in rows:
+                item_dict = notif.dict()
+                item_dict["patient_name"] = order.patient_name
+                item_dict["patient_lastname"] = order.patient_lastname
+                res.append(item_dict)
+                
+            return res
+
+    async def _get_or_404(self, uow: UnitOfWork, order_id: int) -> MedicalOrder:
+        order = await uow.orders.get_by_id(order_id)
         if not order:
             raise HTTPException(status_code=404, detail="Order not found")
         return order
 
-    def _get_system_settings_or_404(self, uow: UnitOfWork):
-        settings = uow.settings.get_by_id(1)
+    async def _get_system_settings_or_404(self, uow: UnitOfWork):
+        settings = await uow.settings.get_by_id(1)
         if not settings:
             raise HTTPException(
                 status.HTTP_404_NOT_FOUND, "Archivo de configuraciones no encontrado"
             )
         return settings
 
-    def _apply_triage(self, uow: UnitOfWork, order: MedicalOrder) -> MedicalOrder:
-        rules = uow.triage_rules.get_enabled()
-        settings = self._get_system_settings_or_404(uow)
+    async def _apply_triage(self, uow: UnitOfWork, order: MedicalOrder) -> MedicalOrder:
+        rules = await uow.triage_rules.get_enabled()
+        settings = await self._get_system_settings_or_404(uow)
 
-        order.triage_priority = TriageEngine.evaluate(order, rules, settings)
-        order.triaged_at = datetime.now(timezone.utc)
+        priority, criterios = TriageEngine.evaluate(order, rules, settings)
+        order.triage_priority = priority
+        order.criterios_evaluados = criterios
+        order.triaged_at = datetime.utcnow()
         return order
 
-    def get_by_id(self, order_id: int) -> MedicalOrderRead:
-        with UnitOfWork(self._session) as uow:
-            order = self._get_or_404(uow, order_id)
+    async def get_by_id(self, order_id: int) -> MedicalOrderRead:
+        async with UnitOfWork(self._session) as uow:
+            order = await self._get_or_404(uow, order_id)
             return MedicalOrderRead.from_orm(order)
 
-    def create(self, data: MedicalOrderCreate) -> MedicalOrderRead:
-        with UnitOfWork(self._session) as uow:
+    async def _send_to_orthanc(self, order: MedicalOrder) -> None:
+        if not order.study_instance_uid:
+            return
+            
+        fecha_prog = order.order_date.strftime("%Y%m%d")
+        hora_prog = order.order_date.strftime("%H%M%S")
+        
+        sexo_map = {"MALE": "M", "FEMALE": "F", "OTHER": "O"}
+        sexo = sexo_map.get(order.patient_sex.value, "O")
+        
+        dicom_json = {
+            "0010,0010": f"{order.patient_lastname}^{order.patient_name}",
+            "0010,0020": order.patient_dni,
+            "0010,0030": order.patient_dob.strftime("%Y%m%d"),
+            "0010,0040": sexo,
+            "0020,000D": order.study_instance_uid,
+            "0008,0050": f"ACC-{order.id}-{fecha_prog}",
+            "0040,0100": [{
+                "0008,0060": order.modality.value,
+                "0040,0001": f"AET_{order.modality.value}_1",
+                "0040,0002": fecha_prog,
+                "0040,0003": hora_prog,
+                "0040,0007": order.description
+            }]
+        }
+        
+        client = OrthancClient()
+        success = await client.create_worklist(dicom_json)
+        order.sent_to_orthanc = success
+
+    async def create(self, data: MedicalOrderCreate) -> MedicalOrderRead:
+        async with UnitOfWork(self._session) as uow:
             order = MedicalOrder.model_validate(data)
-            self._apply_triage(uow, order)
-            order = uow.orders.add(order)
+            await self._apply_triage(uow, order)
+            
+            order.study_instance_uid = generate_uid()
+            order = await uow.orders.add(order)
+            await uow.session.flush()
+            
+            await self._send_to_orthanc(order)
+            uow.session.add(order)
+            
+            await manager.broadcast("orders_updated")
             return MedicalOrderRead.from_orm(order)
 
-    def create_batch(self, payload: OrderBatchPayload) -> BatchOrderResponse:
-        with UnitOfWork(self._session) as uow:
-            rules = uow.triage_rules.get_enabled()
-            settings = self._get_system_settings_or_404(uow)
-            now = datetime.now(timezone.utc)
+    async def create_batch(self, payload: OrderBatchPayload) -> BatchOrderResponse:
+        async with UnitOfWork(self._session) as uow:
+            rules = await uow.triage_rules.get_enabled()
+            settings = await self._get_system_settings_or_404(uow)
+            now = datetime.utcnow()
 
-            existing = uow.orders.find_existing_external_ids(
+            existing = await uow.orders.find_existing_external_ids(
                 [o.external_id for o in payload.orders]
             )
             orders: list[MedicalOrder] = []
@@ -74,34 +137,46 @@ class MedicalOrderService:
                 if data.external_id in existing:
                     continue
                 order = MedicalOrder.model_validate(data)
-                order.triage_priority = TriageEngine.evaluate(order, rules, settings)
+                priority, criterios = TriageEngine.evaluate(order, rules, settings)
+                order.triage_priority = priority
+                order.criterios_evaluados = criterios
                 order.triaged_at = now
+                order.study_instance_uid = generate_uid()
                 orders.append(order)
 
             if orders:
                 uow.orders.session.add_all(orders)
-                uow.orders.session.flush()
+                await uow.orders.session.flush()
+                
+                for order in orders:
+                    await self._send_to_orthanc(order)
+                    uow.orders.session.add(order)
 
             created_ids = [o.id for o in orders] if orders else []
+            
+            if created_ids:
+                await manager.broadcast("orders_updated")
+                
             return BatchOrderResponse(
                 status="success",
                 processed=len(payload.orders),
                 created=len(orders),
-                created_ids=created_ids,  # type: ignore
+                created_ids=created_ids,
             )
 
-    def retriage(self, order_id: int) -> MedicalOrderRead:
-        with UnitOfWork(self._session) as uow:
-            order = self._get_or_404(uow, order_id)
-            self._apply_triage(uow, order)
+    async def retriage(self, order_id: int) -> MedicalOrderRead:
+        async with UnitOfWork(self._session) as uow:
+            order = await self._get_or_404(uow, order_id)
+            await self._apply_triage(uow, order)
             uow.orders.session.add(order)
+            await manager.broadcast("orders_updated")
             return MedicalOrderRead.from_orm(order)
 
-    def update_state(self, order_id: int, data: UpdateState) -> MedicalOrderRead:
-        with UnitOfWork(self._session) as uow:
-            order = self._get_or_404(uow, order_id)
+    async def update_state(self, order_id: int, data: UpdateState) -> MedicalOrderRead:
+        async with UnitOfWork(self._session) as uow:
+            order = await self._get_or_404(uow, order_id)
             order.order_state = data.order_state
-            now = datetime.now(timezone.utc)
+            now = datetime.utcnow()
 
             if data.order_state == OrderState.FINALIZED:
                 order.completed_at = now
@@ -109,13 +184,14 @@ class MedicalOrderService:
                 order.canceled_at = now
 
             uow.orders.session.add(order)
+            await manager.broadcast("orders_updated")
             return MedicalOrderRead.from_orm(order)
 
-    def update_observations(
+    async def update_observations(
         self, order_id: int, data: UpdateObservations
     ) -> MedicalOrderRead:
-        with UnitOfWork(self._session) as uow:
-            order = self._get_or_404(uow, order_id)
+        async with UnitOfWork(self._session) as uow:
+            order = await self._get_or_404(uow, order_id)
 
             order.observations = data.observations
             uow.orders.session.add(order)

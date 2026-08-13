@@ -1,9 +1,12 @@
-from sqlmodel import Session, select, func
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlmodel import select, func
 from app.modules.triage.model import TriageRule, TriageField, TriageOperator
 
 
-def seed_triage_rules(session: Session) -> list[TriageRule]:
-    count = session.exec(select(func.count()).select_from(TriageRule)).one()
+async def seed_triage_rules(session: AsyncSession) -> list[TriageRule]:
+    statement = select(func.count()).select_from(TriageRule)
+    result = await session.execute(statement)
+    count = result.scalar_one()
     if count > 0:
         return []
 
@@ -102,7 +105,7 @@ def seed_triage_rules(session: Session) -> list[TriageRule]:
     ]
 
     session.add_all(rules)
-    session.flush()
+    await session.flush()
     for r in rules:
-        session.refresh(r)
+        await session.refresh(r)
     return rules

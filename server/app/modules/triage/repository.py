@@ -1,12 +1,14 @@
-from sqlmodel import Session, select
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlmodel import select
 from app.core.repository import BaseRepository
 from app.modules.triage.model import TriageRule
 
 
 class TriageRuleRepository(BaseRepository[TriageRule]):
-    def __init__(self, session: Session) -> None:
+    def __init__(self, session: AsyncSession) -> None:
         super().__init__(session, TriageRule)
 
-    def get_enabled(self) -> list[TriageRule]:
+    async def get_enabled(self) -> list[TriageRule]:
         statement = select(TriageRule).where(TriageRule.enabled == True)
-        return list(self.session.exec(statement).all())
+        result = await self.session.execute(statement)
+        return list(result.scalars().all())

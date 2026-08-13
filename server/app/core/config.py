@@ -13,12 +13,17 @@ class Settings(BaseSettings):
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 30
     url_webhook_n8n: str = ""
+    
+    # Orthanc settings
+    orthanc_url: str = "http://localhost:8042"
+    orthanc_user: str = "admin"
+    orthanc_password: str = "admin"
 
     @computed_field
     @property
     def DATABASE_URL(self) -> str:
         return (
-            f"postgresql://{self.postgres_user}:{self.postgres_password}"
+            f"postgresql+asyncpg://{self.postgres_user}:{self.postgres_password}"
             f"@{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"
         )
 

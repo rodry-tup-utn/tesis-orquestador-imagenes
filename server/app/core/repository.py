@@ -1,5 +1,6 @@
 from typing import Generic, TypeVar, Type, Sequence
-from sqlmodel import Session, SQLModel, select
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlmodel import SQLModel, select
 from sqlalchemy import func
 
 ModelT = TypeVar("ModelT", bound=SQLModel)
@@ -7,31 +8,28 @@ ModelT = TypeVar("ModelT", bound=SQLModel)
 
 class BaseRepository(Generic[ModelT]):
 
-    def __init__(self, session: Session, model: Type[ModelT]) -> None:
-
+    def __init__(self, session: AsyncSession, model: Type[ModelT]) -> None:
         self.session = session
         self.model = model
 
-    def get_by_id(self, record_id: int) -> ModelT | None:
+    async def get_by_id(self, record_id: int) -> ModelT | None:
+        return await self.session.get(self.model, record_id)
 
-        return self.session.get(self.model, record_id)
+    async def get_all(self, offset: int = 0, limit: int = 20) -> Sequence[ModelT]:
+        result = await self.session.execute(select(self.model).offset(offset).limit(limit))
+        return result.scalars().all()
 
-    def get_all(self, offset: int = 0, limit: int = 20) -> Sequence[ModelT]:
-
-        return self.session.exec(select(self.model).offset(offset).limit(limit)).all()
-
-    def count(self) -> int:
+    async def count(self) -> int:
         statement = select(func.count()).select_from(self.model)
-        return self.session.exec(statement).one()
+        result = await self.session.execute(statement)
+        return result.scalar_one()
 
-    def add(self, instance: ModelT) -> ModelT:
-
+    async def add(self, instance: ModelT) -> ModelT:
         self.session.add(instance)
-        self.session.flush()  # obtiene el ID sin hacer commit
-        self.session.refresh(instance)
+        await self.session.flush()
+        await self.session.refresh(instance)
         return instance
 
-    def delete(self, instance: ModelT) -> None:
-
-        self.session.delete(instance)
-        self.session.flush()
+    async def delete(self, instance: ModelT) -> None:
+        await self.session.delete(instance)
+        await self.session.flush()

@@ -3,6 +3,7 @@ from typing import Optional
 from sqlmodel import SQLModel, Field
 from enum import Enum
 from sqlalchemy import Column, DateTime
+from sqlalchemy.dialects.postgresql import JSONB
 
 
 class Sex(str, Enum):
@@ -37,8 +38,9 @@ class OrderState(str, Enum):
 class MedicalPriority(str, Enum):
     order: int
     CRITICAL = (0, "Crítico")
-    PRIORITY = (1, "Prioritario")
-    ROUTINE = (2, "Rutina")
+    URGENT = (1, "Urgente")
+    PRIORITY = (2, "Prioritario")
+    ROUTINE = (3, "Rutina")
 
     def __new__(cls, value: int, display: str):
         obj = str.__new__(cls, display)
@@ -62,6 +64,10 @@ class MedicalOrder(SQLModel, table=True):
     observations: str | None = Field(max_length=255, default=None)
     order_date: datetime = Field(sa_column=Column(DateTime(timezone=True)))
     requesting_physician: str = Field(max_length=255, min_length=1)
+
+    # Integración PACS / Orthanc
+    study_instance_uid: str | None = Field(default=None, max_length=100)
+    sent_to_orthanc: bool = Field(default=False)
 
     # Datos demográficos del paciente
     patient_lastname: str = Field(max_length=255, min_length=2)
@@ -87,9 +93,12 @@ class MedicalOrder(SQLModel, table=True):
         default=None, sa_column=Column(DateTime(timezone=True))
     )
     created_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
+        default_factory=lambda: datetime.utcnow(),
         sa_column=Column(DateTime(timezone=True)),
     )
 
     # Bandera por si fue notificado
     was_notified: bool = Field(default=False)
+
+    # Auditoría de triaje
+    criterios_evaluados: dict | None = Field(default=None, sa_column=Column(JSONB))

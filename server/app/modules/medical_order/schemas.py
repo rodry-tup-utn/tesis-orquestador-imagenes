@@ -104,7 +104,7 @@ class UpdateState(BaseModel):
 
 
 class UpdateObservations(BaseModel):
-    observations: str = PydanticField(min_length=4, max_length=25)
+    observations: str = PydanticField(min_length=4, max_length=2000)
 
 
 class MedicalOrderPagination(BaseModel):
@@ -134,3 +134,16 @@ class OrderFilters(BaseModel):
     order_state: OrderState | None = None
     was_notified: bool | None = None
     sort_by: Literal["created_at", "priority"] = "created_at"
+
+
+class NotificationRead(SQLModel):
+    id: int
+    medical_order_id: int
+    pseudonym_hash: str
+    status: str
+    payload_sent: str
+    sent_at: datetime
+    error_message: str | None = None
+    patient_name: str | None = None
+    patient_lastname: str | None = None
+
