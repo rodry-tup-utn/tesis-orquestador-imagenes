@@ -11,6 +11,7 @@ from app.modules.medical_order.schemas import (
     UpdateState,
     UpdateObservations,
     NotificationRead,
+    OrderStats,
 )
 from fastapi import Path
 from app.core.database import get_session
@@ -32,6 +33,13 @@ async def list_orders(
 ):
     items, total = await svc.list_all(filters)
     return MedicalOrderPagination(items=items, total=total)
+
+
+@router.get("/stats", response_model=OrderStats)
+async def get_stats_endpoint(
+    svc: MedicalOrderService = Depends(get_order_service),
+):
+    return await svc.get_stats()
 
 
 @router.get("/notifications", response_model=list[NotificationRead])
@@ -139,3 +147,11 @@ async def update_order_observations(
     svc: MedicalOrderService = Depends(get_order_service),
 ):
     return await svc.update_observations(order_id, data)
+
+
+@router.post("/{order_id}/send-to-orthanc", response_model=MedicalOrderRead)
+async def send_order_to_orthanc(
+    order_id: Annotated[int, Path(ge=1)],
+    svc: MedicalOrderService = Depends(get_order_service),
+):
+    return await svc.send_to_orthanc(order_id)

@@ -11,6 +11,7 @@ from app.modules.medical_order.schemas import (
     OrderBatchPayload,
     UpdateState,
     UpdateObservations,
+    OrderStats,
 )
 from app.modules.triage.triage import TriageEngine
 from pydicom.uid import generate_uid
@@ -27,6 +28,10 @@ class MedicalOrderService:
         async with UnitOfWork(self._session) as uow:
             items, total = await uow.orders.find_all_filtered(filters)
             return [MedicalOrderRead.from_orm(o) for o in items], total
+
+    async def get_stats(self) -> "OrderStats":
+        async with UnitOfWork(self._session) as uow:
+            return await uow.orders.get_stats()
 
     async def list_notifications(self, limit: int = 50, offset: int = 0):
         from app.modules.medical_order.notification_model import NotificacionEmitida
@@ -78,10 +83,10 @@ class MedicalOrderService:
             order = await self._get_or_404(uow, order_id)
             return MedicalOrderRead.from_orm(order)
 
-    async def _send_to_orthanc(self, order: MedicalOrder) -> None:
+    async def _send_to_orthanc(self, order: MedicalOrder) -> bool:
         if not order.study_instance_uid:
-            return
-            
+            order.study_instance_uid = generate_uid()
+
         fecha_prog = order.order_date.strftime("%Y%m%d")
         hora_prog = order.order_date.strftime("%H%M%S")
         
@@ -107,6 +112,7 @@ class MedicalOrderService:
         client = OrthancClient()
         success = await client.create_worklist(dicom_json)
         order.sent_to_orthanc = success
+        return success
 
     async def create(self, data: MedicalOrderCreate) -> MedicalOrderRead:
         async with UnitOfWork(self._session) as uow:
@@ -116,10 +122,7 @@ class MedicalOrderService:
             order.study_instance_uid = generate_uid()
             order = await uow.orders.add(order)
             await uow.session.flush()
-            
-            await self._send_to_orthanc(order)
-            uow.session.add(order)
-            
+
             await manager.broadcast("orders_updated")
             return MedicalOrderRead.from_orm(order)
 
@@ -147,10 +150,6 @@ class MedicalOrderService:
             if orders:
                 uow.orders.session.add_all(orders)
                 await uow.orders.session.flush()
-                
-                for order in orders:
-                    await self._send_to_orthanc(order)
-                    uow.orders.session.add(order)
 
             created_ids = [o.id for o in orders] if orders else []
             
@@ -195,4 +194,12 @@ class MedicalOrderService:
 
             order.observations = data.observations
             uow.orders.session.add(order)
+            return MedicalOrderRead.from_orm(order)
+
+    async def send_to_orthanc(self, order_id: int) -> MedicalOrderRead:
+        async with UnitOfWork(self._session) as uow:
+            order = await self._get_or_404(uow, order_id)
+            await self._send_to_orthanc(order)
+            uow.orders.session.add(order)
+            await manager.broadcast("orders_updated")
             return MedicalOrderRead.from_orm(order)

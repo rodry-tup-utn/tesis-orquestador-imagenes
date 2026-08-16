@@ -64,6 +64,8 @@ class MedicalOrderRead(SQLModel):
     source_system: str
     created_at: datetime
     was_notified: bool
+    sent_to_orthanc: bool = False
+    study_instance_uid: str | None = None
     patient: PatientInfo
     order: OrderDetails
 
@@ -75,6 +77,8 @@ class MedicalOrderRead(SQLModel):
             source_system=obj.source_system,
             created_at=obj.created_at.astimezone(datetime.now().astimezone().tzinfo),
             was_notified=obj.was_notified,
+            sent_to_orthanc=obj.sent_to_orthanc,
+            study_instance_uid=obj.study_instance_uid,
             patient=PatientInfo(
                 name=obj.patient_name,
                 lastname=obj.patient_lastname,
@@ -130,15 +134,30 @@ class BatchOrderResponse(BaseModel):
 
 class OrderFilters(BaseModel):
     offset: Annotated[int | None, PydanticField(ge=0)] = 0
-    limit: Annotated[int | None, PydanticField(ge=20, le=100)] = 50
+    limit: Annotated[int | None, PydanticField(ge=1, le=100)] = 50
     patient_dni: Annotated[str | None, PydanticField(max_length=10, min_length=4)] = (
         None
     )
+    q: Annotated[str | None, PydanticField(max_length=100)] = None
     start_date: datetime | None = None
     end_date: datetime | None = None
     order_state: OrderState | None = None
     was_notified: bool | None = None
-    sort_by: Literal["created_at", "priority"] = "created_at"
+    modality: Modality | None = None
+    source_system: Annotated[str | None, PydanticField(max_length=80)] = None
+    study_setting: OrderSetting | None = None
+    sort_by: Literal["created_at", "priority", "patient_name"] = "created_at"
+    sort_dir: Literal["asc", "desc"] = "desc"
+
+
+class OrderStats(BaseModel):
+    total: int
+    notified: int
+    critical_pending: int
+    by_state: dict[str, int]
+    by_priority: dict[str, int]
+    by_modality: dict[str, int]
+    latest_created_at: datetime | None = None
 
 
 class NotificationRead(SQLModel):

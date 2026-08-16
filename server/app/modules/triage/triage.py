@@ -1,9 +1,14 @@
+from enum import Enum
 from app.modules.medical_order.model import MedicalOrder, MedicalPriority
 from app.modules.triage.model import TriageRule, TriageOperator
 from app.modules.systemsettings.model import SystemSettings
 
 
 class TriageEngine:
+
+    @staticmethod
+    def _to_text(value) -> str:
+        return value.value if isinstance(value, Enum) else str(value)
 
     @staticmethod
     def evaluate(
@@ -19,11 +24,12 @@ class TriageEngine:
             field_value = getattr(order, rule.field, None)
             if field_value is None:
                 continue
-            if TriageEngine._matches(str(field_value), rule.operator, rule.value):
+            text_value = TriageEngine._to_text(field_value)
+            if TriageEngine._matches(text_value, rule.operator, rule.value):
                 score += rule.weight
                 criterios["rules_matched"].append({
                     "field": rule.field,
-                    "value_matched": str(field_value),
+                    "value_matched": text_value,
                     "operator": rule.operator,
                     "pattern": rule.value,
                     "weight": rule.weight
