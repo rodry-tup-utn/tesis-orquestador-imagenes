@@ -44,7 +44,9 @@ Abre tu terminal en la carpeta raíz del proyecto y ejecuta:
 ```bash
 docker compose up -d --build
 ```
-> Esto construirá la imagen optimizada del Frontend (Nginx), el Backend (FastAPI), y descargará las imágenes de Postgres, n8n, Mock Server y Orthanc. Las migraciones de la base de datos se aplicarán automáticamente.
+> Esto construirá la imagen de desarrollo del Frontend (Vite), el Backend (FastAPI), y descargará las imágenes de Postgres, n8n, Mock Server y Orthanc. Las migraciones de la base de datos se aplicarán automáticamente.
+>
+> El Frontend corre en modo desarrollo con **Hot Module Replacement (HMR)**: los cambios en `frontend/src` se ven al instante sin rebuild. Ingresa a [http://localhost:5173](http://localhost:5173).
 
 ### 3. Configurar el Orquestador (n8n)
 La primera vez que n8n inicie, estará "en blanco".
@@ -79,7 +81,7 @@ Cuando el motor de triaje de FastAPI detecta un caso crítico, avisa a n8n media
 ## 🖥️ Uso del Sistema (Demostración)
 
 Con el sistema en marcha:
-1.  **Dashboard:** Ingresa a [http://localhost](http://localhost) para ver el tablero de control principal, donde las órdenes irán apareciendo coloreadas por su nivel de triaje.
+1.  **Dashboard:** Ingresa a [http://localhost:5173](http://localhost:5173) para ver el tablero de control principal, donde las órdenes irán apareciendo coloreadas por su nivel de triaje.
 2.  **Alertas:** Mantén abierto tu Telegram; las órdenes marcadas como críticas te notificarán en menos de 5 segundos con el código del paciente seudonimizado.
 3.  **DICOM/PACS:** El servidor Orthanc estará escuchando conexiones de modalidades en el puerto `4242` y exponiendo su interfaz web en [http://localhost:8042](http://localhost:8042).
 
