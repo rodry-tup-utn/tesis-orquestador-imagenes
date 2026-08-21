@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Evaluación de Motor de Triaje - Clasificación</title>
+<style>
+  :root { --primary: #1a5276; --accent: #2980b9; --light: #eaf2f8; --danger: #e74c3c; --success: #27ae60; --gray: #95a5a6; --orange: #e67e22; --yellow: #f39c12; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f6fa; color: #2c3e50; min-height: 100vh; }
+  .container { max-width: 900px; margin: 0 auto; padding: 16px; }
+  header { background: var(--primary); color: white; padding: 20px 24px; border-radius: 12px; margin-bottom: 20px; }
+  header h1 { font-size: 1.3em; margin-bottom: 2px; }
+  header p { opacity: 0.85; font-size: 0.88em; }
+  .progress-bar { background: #ddd; border-radius: 20px; height: 10px; margin: 14px 0 6px; overflow: hidden; }
+  .progress-fill { background: var(--accent); height: 100%; border-radius: 20px; transition: width 0.4s ease; }
+  .progress-text { text-align: center; font-size: 0.82em; color: var(--gray); margin-bottom: 14px; }
+  .panel { background: white; border-radius: 12px; padding: 18px 22px; margin-bottom: 18px; border-left: 4px solid var(--accent); }
+  .panel h2 { font-size: 1.05em; margin-bottom: 10px; color: var(--primary); display: flex; align-items: center; justify-content: space-between; }
+  .toggle-btn { background: none; border: none; color: var(--accent); cursor: pointer; font-size: 0.82em; padding: 4px 0; flex-shrink: 0; }
+  .toggle-btn:hover { text-decoration: underline; }
+  .ref-table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 0.88em; }
+  .ref-table th, .ref-table td { padding: 7px 10px; text-align: left; border-bottom: 1px solid #eee; }
+  .ref-table th { background: var(--light); color: var(--primary); font-size: 0.85em; }
+  .ref-table .examples { font-size: 0.85em; color: #555; }
+  @media (max-width: 700px) {
+    .ref-table { display: block; }
+    .ref-table thead { display: none; }
+    .ref-table tbody tr { display: block; padding: 8px 0; border-bottom: 2px solid #eee; }
+    .ref-table tbody td { display: block; padding: 2px 0; border: none; }
+    .ref-table tbody td:first-child { font-weight: 700; font-size: 1em; margin-bottom: 2px; }
+    .ref-table tbody td:nth-child(2)::before { content: "Tiempo: "; font-weight: 600; color: var(--primary); }
+    .ref-table tbody td:nth-child(3)::before { content: "Definición: "; font-weight: 600; color: var(--primary); }
+    .ref-table tbody td:nth-child(4)::before { content: "Ejemplos: "; font-weight: 600; color: var(--primary); }
+  }
+  .abbr-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 3px 14px; font-size: 0.82em; }
+  @media (max-width: 500px) { .abbr-grid { grid-template-columns: 1fr 1fr; } }
+  .eval-info { background: white; border-radius: 12px; padding: 18px 22px; margin-bottom: 18px; }
+  .eval-info h2 { font-size: 1em; color: var(--primary); margin-bottom: 10px; }
+  .eval-info input { width: 100%; padding: 7px 10px; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 7px; font-size: 0.88em; }
+  .eval-info label { font-size: 0.82em; color: var(--gray); display: block; margin-bottom: 2px; }
+  .case-card { background: white; border-radius: 12px; padding: 24px 28px; margin-bottom: 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border: 2px solid transparent; }
+  .case-card.active { border-color: var(--accent); }
+  .case-card h2 { font-size: 0.95em; color: var(--gray); margin-bottom: 14px; }
+  .case-info { display: grid; grid-template-columns: 120px 1fr; gap: 6px 14px; margin-bottom: 20px; font-size: 0.92em; }
+  .case-info dt { font-weight: 600; color: var(--primary); }
+  .case-info dd { color: #333; }
+  .urgent-yes { color: var(--danger); font-weight: 600; }
+  .urgent-no { color: var(--gray); }
+  .options { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  @media (max-width: 500px) { .options { grid-template-columns: 1fr; } }
+  .option-label { display: flex; align-items: center; padding: 12px 14px; border: 2px solid #e0e0e0; border-radius: 10px; cursor: pointer; transition: all 0.2s; font-size: 0.92em; }
+  .option-label:hover { border-color: var(--accent); background: var(--light); }
+  .option-label.selected { border-color: var(--accent); background: var(--light); font-weight: 600; }
+  .option-label input { margin-right: 10px; accent-color: var(--accent); width: 18px; height: 18px; flex-shrink: 0; }
+  .option-desc { font-size: 0.76em; color: var(--gray); display: block; margin-top: 2px; font-weight: normal; }
+  .nav { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; }
+  .btn { padding: 10px 24px; border: none; border-radius: 8px; font-size: 0.92em; cursor: pointer; font-weight: 600; transition: all 0.2s; }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-primary:hover { background: #2471a3; }
+  .btn-primary:disabled { background: #bdc3c7; cursor: not-allowed; }
+  .btn-success { background: var(--success); color: white; }
+  .btn-success:hover { background: #219a52; }
+  .btn-outline { background: white; color: var(--accent); border: 2px solid var(--accent); }
+  .btn-outline:hover { background: var(--light); }
+  .btn-sm { padding: 6px 14px; font-size: 0.82em; }
+  .case-grid-wrapper { margin-top: 20px; }
+  .case-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(145px, 1fr)); gap: 8px; }
+  @media (max-width: 500px) { .case-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 6px; } }
+  .case-mini { background: white; border-radius: 8px; padding: 8px 10px; border: 2px solid #e8e8e8; cursor: pointer; transition: all 0.15s; font-size: 0.78em; min-height: 72px; display: flex; flex-direction: column; justify-content: space-between; }
+  .case-mini:hover { border-color: var(--accent); background: #f8fbff; }
+  .case-mini.current { border-color: var(--accent); background: var(--light); box-shadow: 0 0 0 2px rgba(41,128,185,0.3); }
+  .case-mini.answered { background: #eafaf1; border-color: #a9dfbf; }
+  .case-mini.answered.current { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(41,128,185,0.3); }
+  .mini-top { display: flex; justify-content: space-between; align-items: center; }
+  .mini-num { font-weight: 700; color: var(--primary); }
+  .mini-check { font-size: 1em; }
+  .mini-id { font-weight: 600; color: #333; margin: 2px 0; font-size: 0.9em; }
+  .mini-mod { color: var(--gray); font-size: 0.85em; }
+  .mini-desc { color: var(--primary); font-size: 0.82em; font-weight: 600; line-height: 1.2; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; margin-top: 1px; }
+  .mini-diag { color: #444; font-size: 0.88em; line-height: 1.2; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; margin-top: 2px; }
+  .mini-ans { font-weight: 600; margin-top: 3px; font-size: 0.88em; }
+  .mini-ans.Cr\u00edtico { color: var(--danger); }
+  .mini-ans.Urgente { color: var(--orange); }
+  .mini-ans.Prioritario { color: var(--yellow); }
+  .mini-ans.Rutina { color: var(--success); }
+  .summary { background: white; border-radius: 12px; padding: 22px 26px; margin-bottom: 18px; }
+  .summary h2 { color: var(--primary); margin-bottom: 14px; }
+  .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px 18px; font-size: 0.82em; }
+  .summary-grid span { padding: 3px 0; }
+  .summary-grid .s-id { font-weight: 600; color: var(--primary); }
+  .summary-grid .s-clr { font-weight: 600; }
+  .s-clr.Cr\u00edtico { color: var(--danger); }
+  .s-clr.Urgente { color: var(--orange); }
+  .s-clr.Prioritario { color: var(--yellow); }
+  .s-clr.Rutina { color: var(--success); }
+  .download-section { text-align: center; padding: 28px; }
+  .download-section h2 { color: var(--success); margin-bottom: 6px; }
+  .download-section p { color: var(--gray); margin-bottom: 18px; }
+  .hidden { display: none !important; }
+  @media print { .no-print { display: none !important; } body { background: white; } .container { max-width: 100%; padding: 0; } header { background: white; color: black; border-bottom: 2px solid black; border-radius: 0; } }
+</style>
+</head>
+<body>
+<div class="container">
+<header>
+  <h1>Evaluaci&oacute;n de Motor de Triaje</h1>
+  <p>Clasificaci&oacute;n de 50 &oacute;rdenes de diagn&oacute;stico por im&aacute;genes</p>
+</header>
+
+<div class="panel no-print">
+  <h2>Instrucciones <button class="toggle-btn" onclick="toggleSection('instructionsContent')">ocultar/mostrar</button></h2>
+  <div id="instructionsContent">
+    <p style="margin-bottom:6px;">Clasifique cada una de las 50 &oacute;rdenes en uno de cuatro niveles de prioridad seg&uacute;n su criterio profesional. No hay respuestas correctas o incorrectas.</p>
+    <p style="font-size:0.82em;color:#777;">Su progreso se guarda autom&aacute;ticamente. Puede cerrar y reabrir el navegador sin perder datos.</p>
+  </div>
+</div>
+
+<div class="panel no-print" style="border-left-color: var(--success);">
+  <h2>Referencia de clasificaci&oacute;n <button class="toggle-btn" onclick="toggleSection('referenceContent')">mostrar/ocultar</button></h2>
+  <div id="referenceContent" style="display:none;">
+    <table class="ref-table">
+      <thead><tr><th>Nivel</th><th>Tiempo</th><th>Definici&oacute;n</th><th>Ejemplos</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Cr&iacute;tico</strong></td><td><strong>Minutos</strong></td><td>Amenaza vital inmediata. Paciente inestable que requiere atenci&oacute;n de imagen urgente.</td><td class="examples">ACV agudo, politraumatismo inestable, hemorragia activa con inestabilidad hemodin&aacute;mica</td></tr>
+        <tr><td><strong>Urgente</strong></td><td><strong>1-2 horas</strong></td><td>Condici&oacute;n aguda, potencialmente grave. El retraso empeora el pron&oacute;stico.</td><td class="examples">TEP confirmado, colecistitis aguda con fiebre alta, fractura expuesta, apendicitis aguda</td></tr>
+        <tr><td><strong>Prioritario</strong></td><td><strong>Mismo d&iacute;a (urgente)</strong></td><td>Estudio que debe realizarse hoy, con prioridad en la agenda.</td><td class="examples">Control post-quir&uacute;rgico programado, estudio de tumoraci&oacute;n conocida, control oncol&oacute;gico</td></tr>
+        <tr><td><strong>Rutina</strong></td><td><strong>Mismo d&iacute;a (sin urgencia)</strong></td><td>Estudio programado para hoy, puede ocupar el &uacute;ltimo turno o espacio disponible.</td><td class="examples">Control de asma, mastalgia de control, espondiloartrosis cr&oacute;nica, preoperatorio</td></tr>
+      </tbody>
+    </table>
+    <h3 style="font-size:0.92em; color:var(--primary); margin:14px 0 6px;">Factores a considerar</h3>
+    <ul style="font-size:0.85em; line-height:1.5; padding-left:18px;">
+      <li><strong>Combinaci&oacute;n de factores:</strong> Un paciente en UTI con un estudio urgente tiene mayor prioridad que el mismo estudio en ambiente ambulatorio.</li>
+      <li><strong>Modalidad:</strong> Una TC cerebral tiene mayor prioridad que una radiograf&iacute;a simple en el mismo contexto.</li>
+      <li><strong>Ubicaci&oacute;n del paciente:</strong> Shock Room, Box Rojo y UTI indican pacientes m&aacute;s graves que Sala de Espera o Box Verde.</li>
+      <li><strong>Campo &ldquo;urgente&rdquo;:</strong> Refleja la solicitud del m&eacute;dico solicitante. Su criterio puede diferir.</li>
+    </ul>
+    <h3 style="font-size:0.92em; color:var(--primary); margin:14px 0 6px;">Abreviaturas m&eacute;dicas</h3>
+    <div class="abbr-grid">
+      <span><strong>ACV</strong> &mdash; Accidente cerebrovascular</span>
+      <span><strong>TEP</strong> &mdash; Tromboembolismo pulmonar</span>
+      <span><strong>TVP</strong> &mdash; Trombosis venosa profunda</span>
+      <span><strong>UTI</strong> &mdash; Unidad de Terapia Intensiva</span>
+      <span><strong>CT</strong> &mdash; Tomograf&iacute;a computarizada</span>
+      <span><strong>MR</strong> &mdash; Resonancia magn&eacute;tica</span>
+      <span><strong>DX</strong> &mdash; Radiograf&iacute;a simple</span>
+      <span><strong>US</strong> &mdash; Ecograf&iacute;a</span>
+    </div>
+  </div>
+</div>
+
+<div class="eval-info" id="evalInfoPanel">
+  <h2>Datos del evaluador</h2>
+  <label>Nombre / seud&oacute;nimo</label>
+  <input type="text" id="evalName" placeholder="Ej: Carlos M." oninput="saveProgress()">
+  <label>Especialidad / rol</label>
+  <input type="text" id="evalRole" placeholder="Ej: T&eacute;cnico en Radiolog&iacute;a" oninput="saveProgress()">
+  <label>A&ntilde;os de experiencia</label>
+  <input type="number" id="evalExp" placeholder="Ej: 8" oninput="saveProgress()">
+</div>
+
+<div class="no-print">
+  <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+  <div class="progress-text" id="progressText">Caso 1 de 50</div>
+</div>
+
+<div id="casePanel">
+  <div class="case-card active" id="mainCaseCard">
+    <h2 id="caseHeader">Caso 1 de 50</h2>
+    <dl class="case-info">
+      <dt>ID</dt><dd id="cId"></dd>
+      <dt>Modalidad</dt><dd id="cMod"></dd>
+      <dt>Estudio</dt><dd id="cDesc" style="font-weight:600;color:#2c3e50;"></dd>
+      <dt>Diagn&oacute;stico</dt><dd id="cDiag"></dd>
+      <dt>Servicio</dt><dd id="cServ"></dd>
+      <dt>Ubicaci&oacute;n</dt><dd id="cUbi"></dd>
+      <dt>Urgente</dt><dd id="cUrg"></dd>
+    </dl>
+    <p style="font-size:0.82em;color:#777;margin-bottom:10px;">Marque UNA opci&oacute;n:</p>
+    <div class="options" id="optionsContainer">
+      <label class="option-label" onclick="selectOption(0)"><input type="radio" name="clasificacion" value="Crítico"><span>Crítico<span class="option-desc">Amenaza vital inmediata</span></span></label>
+      <label class="option-label" onclick="selectOption(1)"><input type="radio" name="clasificacion" value="Urgente"><span>Urgente<span class="option-desc">Condici&oacute;n aguda (1-2 horas)</span></span></label>
+      <label class="option-label" onclick="selectOption(2)"><input type="radio" name="clasificacion" value="Prioritario"><span>Prioritario<span class="option-desc">Mismo d&iacute;a (urgente)</span></span></label>
+      <label class="option-label" onclick="selectOption(3)"><input type="radio" name="clasificacion" value="Rutina"><span>Rutina<span class="option-desc">Mismo d&iacute;a (sin urgencia)</span></span></label>
+    </div>
+  </div>
+  <div class="nav no-print">
+    <button class="btn btn-outline" id="btnPrev" onclick="prevCase()">Anterior</button>
+    <button class="btn btn-primary" id="btnNext" onclick="nextCase()">Siguiente</button>
+  </div>
+
+  <div class="case-grid-wrapper no-print">
+    <button class="btn btn-outline btn-sm" onclick="toggleSection('caseGridContent')" style="margin-bottom:10px;">Ver todos los casos</button>
+    <div id="caseGridContent" style="display:none;">
+      <div class="case-grid" id="caseGrid"></div>
+    </div>
+  </div>
+</div>
+
+<div id="summaryPanel" class="hidden">
+  <div class="summary">
+    <h2>Resumen de clasificaciones</h2>
+    <div class="summary-grid" id="summaryGrid"></div>
+  </div>
+  <div class="download-section">
+    <h2>Evaluaci&oacute;n completada</h2>
+    <p id="summaryStats"></p>
+    <button class="btn btn-success" onclick="downloadCSV()">Descargar respuestas (CSV)</button>
+    <br><br>
+    <button class="btn btn-outline" onclick="goToCase(0)">Revisar desde el inicio</button>
+  </div>
+</div>
+
+</div>
+<script>
+const CASES=[
+{id:"INT-2013",desc:"Radiografia de Torax Portatil",mod:"DX",mod_full:"DX (Radiograf\u00eda)",diag:"Control de v\u00eda central",serv:"Internaci\u00f3n",ubi:"Unidad Coronaria",urg:true},
+{id:"INT-2011",desc:"Ecografia Renal",mod:"US",mod_full:"US (Ecograf\u00eda)",diag:"C\u00f3lico nefr\u00edtico",serv:"Internaci\u00f3n",ubi:"Pediatr\u00eda",urg:true},
+{id:"INT-2007",desc:"Doppler Venoso de Miembros Inferiores",mod:"US",mod_full:"US (Ecograf\u00eda)",diag:"TVP",serv:"Internaci\u00f3n",ubi:"Cardiolog\u00eda",urg:true},
+{id:"GUA-1012",desc:"Ecografia Abdominal",mod:"US",mod_full:"US (Ecograf\u00eda)",diag:"Dolor abdominal difuso",serv:"Guardia",ubi:"Sala de Espera",urg:false},
+{id:"GUA-1005",desc:"Rx Tobillo Frente y Perfil",mod:"DX",mod_full:"DX (Radiograf\u00eda)",diag:"Esguince de Tobillo",serv:"Guardia",ubi:"Box Verde",urg:false},
+{id:"AMB-2026-0012",desc:"Tomografia de Senos Paranasales",mod:"CT",mod_full:"CT (Tomograf\u00eda)",diag:"Sinusitis cr\u00f3nica",serv:"Ambulatorio",ubi:"\u2014",urg:false},
+{id:"INT-2014",desc:"Resonancia de Pelvis",mod:"MR",mod_full:"MR (Resonancia)",diag:"Endometriosis profunda",serv:"Internaci\u00f3n",ubi:"Ginecolog\u00eda",urg:false},
+{id:"GUA-1010",desc:"TC de Cerebro",mod:"CT",mod_full:"CT (Tomograf\u00eda)",diag:"Hemorragia subaracnoidea",serv:"Guardia",ubi:"Box Rojo",urg:true},
+{id:"INT-2017",desc:"Tomografia de Abdomen con contraste",mod:"CT",mod_full:"CT (Tomograf\u00eda)",diag:"Hemorragia digestiva alta",serv:"Internaci\u00f3n",ubi:"UTI",urg:true},
+{id:"INT-2004",desc:"Resonancia de Columna Cervical",mod:"MR",mod_full:"MR (Resonancia)",diag:"Hernia de disco C5-C6",serv:"Internaci\u00f3n",ubi:"Neurolog\u00eda",urg:false},
+{id:"INT-2019",desc:"Resonancia de Cerebro",mod:"MR",mod_full:"MR (Resonancia)",diag:"TEP con duda diagn\u00f3stica",serv:"Internaci\u00f3n",ubi:"Neumonolog\u00eda",urg:true},
+{id:"INT-2009",desc:"Angiotomografia Pulmonar",mod:"CT",mod_full:"CT (Tomograf\u00eda)",diag:"TEP",serv:"Internaci\u00f3n",ubi:"UTI",urg:true},
+{id:"GUA-1013",desc:"TC de Cerebro",mod:"CT",mod_full:"CT (Tomograf\u00eda)",diag:"ACV en evoluci\u00f3n",serv:"Guardia",ubi:"Box Rojo",urg:true},
+{id:"GUA-1004",desc:"Ecografia Abdominal",mod:"US",mod_full:"US (Ecograf\u00eda)",diag:"Apendicitis Aguda",serv:"Guardia",ubi:"Sala de Espera",urg:true},
+{id:"AMB-2026-0006",desc:"Ecografia Tiroidea",mod:"US",mod_full:"US (Ecograf\u00eda)",diag:"Hipotiroidismo, control de n\u00f3dulo",serv:"Ambulatorio",ubi:"\u2014",urg:false},
+{id:"AMB-2026-0005",desc:"Resonancia Magnetica de Cerebro",mod:"MR",mod_full:"MR (Resonancia)",diag:"Cefalea tensional en estudio",serv:"Ambulatorio",ubi:"\u2014",urg:false},
+{id:"GUA-1011",desc:"Rx de Muneca Frente y Perfil",mod:"DX",mod_full:"DX (Radiograf\u00eda)",diag:"Fractura de radio distal",serv:"Guardia",ubi:"Box Amarillo",urg:false},
+{id:"INT-2012",desc:"Urotomografia",mod:"CT",mod_full:"CT (Tomograf\u00eda)",diag:"Litiasis renal",serv:"Internaci\u00f3n",ubi:"Urolog\u00eda",urg:false},
+{id:"AMB-2026-0002",desc:"Ecografia Abdominal",mod:"US",mod_full:"US (Ecograf\u00eda)",diag:"Abdomen agudo",serv:"Ambulatorio",ubi:"\u2014",urg:false},
+{id:"GUA-1001",desc:"TC de Cerebro",mod:"CT",mod_full:"CT (Tomograf\u00eda)",diag:"ACV",serv:"Guardia",ubi:"Box Rojo",urg:true},
+{id:"AMB-2026-0010",desc:"Ecografia Mamaria Bilateral",mod:"US",mod_full:"US (Ecograf\u00eda)",diag:"Mastalgia, control anual",serv:"Ambulatorio",ubi:"\u2014",urg:false},
+{id:"INT-2006",desc:"Tomografia de Abdomen y Pelvis",mod:"CT",mod_full:"CT (Tomograf\u00eda)",diag:"Control oncol\u00f3gico",serv:"Internaci\u00f3n",ubi:"Oncolog\u00eda",urg:false},
+{id:"INT-2021",desc:"Resonancia de Hombro",mod:"MR",mod_full:"MR (Resonancia)",diag:"Lesi\u00f3n de manguito rotador",serv:"Internaci\u00f3n",ubi:"Traumatolog\u00eda",urg:false},
+{id:"AMB-2026-0015",desc:"Tomografia de Torax con contraste",mod:"CT",mod_full:"CT (Tomograf\u00eda)",diag:"Sospecha de linfoma",serv:"Ambulatorio",ubi:"\u2014",urg:false},
+{id:"AMB-2026-0008",desc:"Radiografia de Torax Frente y Perfil",mod:"DX",mod_full:"DX (Radiograf\u00eda)",diag:"Preoperatorio",serv:"Ambulatorio",ubi:"\u2014",urg:false},
+{id:"INT-2018",desc:"Ecocardiograma Transtoracico",mod:"US",mod_full:"US (Ecograf\u00eda)",diag:"Insuficiencia card\u00edaca",serv:"Internaci\u00f3n",ubi:"Cardiolog\u00eda",urg:false},
+{id:"INT-2016",desc:"Tomografia de Cerebro sin contraste",mod:"CT",mod_full:"CT (Tomograf\u00eda)",diag:"ACV Isqu\u00e9mico Agudo",serv:"Internaci\u00f3n",ubi:"UTI",urg:true},
+{id:"INT-2008",desc:"Radiografia de Femur",mod:"DX",mod_full:"DX (Radiograf\u00eda)",diag:"Fractura expuesta",serv:"Internaci\u00f3n",ubi:"Traumatolog\u00eda",urg:false},
+{id:"INT-2010",desc:"Resonancia de Cerebro",mod:"MR",mod_full:"MR (Resonancia)",diag:"Sospecha de tumoraci\u00f3n",serv:"Internaci\u00f3n",ubi:"Neurolog\u00eda",urg:false},
+{id:"AMB-2026-0009",desc:"Resonancia Magnetica de Columna Lumbar",mod:"MR",mod_full:"MR (Resonancia)",diag:"Lumbociatalgia izquierda",serv:"Ambulatorio",ubi:"\u2014",urg:false},
+{id:"AMB-2026-0013",desc:"Radiografia de Columna Lumbar",mod:"DX",mod_full:"DX (Radiograf\u00eda)",diag:"Espondiloartrosis",serv:"Ambulatorio",ubi:"\u2014",urg:false},
+{id:"AMB-2026-0003",desc:"Tomografia de Torax sin contraste",mod:"CT",mod_full:"CT (Tomograf\u00eda)",diag:"Tos cr\u00f3nica, sospecha de bronquiectasias",serv:"Ambulatorio",ubi:"\u2014",urg:false},
+{id:"INT-2020",desc:"Radiografia de Abdomen",mod:"DX",mod_full:"DX (Radiograf\u00eda)",diag:"Suboclusi\u00f3n intestinal",serv:"Internaci\u00f3n",ubi:"Cirug\u00eda General",urg:false},
+{id:"AMB-2026-0011",desc:"Resonancia Magnetica de Rodilla",mod:"MR",mod_full:"MR (Resonancia)",diag:"Meniscopat\u00eda interna",serv:"Ambulatorio",ubi:"\u2014",urg:false},
+{id:"INT-2001",desc:"Radiografia de Pelvis",mod:"DX",mod_full:"DX (Radiograf\u00eda)",diag:"Control post-quir\u00fArgico",serv:"Internaci\u00f3n",ubi:"Traumatolog\u00eda",urg:false},
+{id:"AMB-2026-0016",desc:"Radiografia de Torax Frente",mod:"DX",mod_full:"DX (Radiograf\u00eda)",diag:"Control de asma",serv:"Ambulatorio",ubi:"\u2014",urg:false},
+{id:"AMB-2026-0014",desc:"Ecografia Pelvica Transabdominal",mod:"US",mod_full:"US (Ecograf\u00eda)",diag:"Control ginecol\u00f3gico",serv:"Ambulatorio",ubi:"\u2014",urg:false},
+{id:"GUA-1003",desc:"Rx de Torax Frente",mod:"DX",mod_full:"DX (Radiograf\u00eda)",diag:"Sospecha de Neumon\u00eda",serv:"Guardia",ubi:"Box Amarillo",urg:false},
+{id:"INT-2015",desc:"Tomografia de Torax de Alta Resolucion",mod:"CT",mod_full:"CT (Tomograf\u00eda)",diag:"Fibrosis pulmonar",serv:"Internaci\u00f3n",ubi:"Cl\u00ednica M\u00e9dica",urg:false},
+{id:"AMB-2026-0004",desc:"Radiografia de Pelvis",mod:"DX",mod_full:"DX (Radiograf\u00eda)",diag:"Dolor p\u00e9lvico antero-posterior",serv:"Ambulatorio",ubi:"\u2014",urg:false},
+{id:"GUA-1006",desc:"Rx Pelvis y Cadera Izquierda",mod:"DX",mod_full:"DX (Radiograf\u00eda)",diag:"Ca\u00edda de propia altura",serv:"Guardia",ubi:"Sala de Espera",urg:true},
+{id:"AMB-2026-0001",desc:"Resonancia Magnetica de Rodilla",mod:"MR",mod_full:"MR (Resonancia)",diag:"Gonalgia derecha",serv:"Ambulatorio",ubi:"\u2014",urg:false},
+{id:"GUA-1007",desc:"TC de Abdomen sin contraste",mod:"CT",mod_full:"CT (Tomograf\u00eda)",diag:"C\u00f3lico Renal",serv:"Guardia",ubi:"Sala de Espera",urg:true},
+{id:"GUA-1009",desc:"TC de Cerebro, Torax y Abdomen",mod:"CT",mod_full:"CT (Tomograf\u00eda)",diag:"Politraumatismo cerrado",serv:"Guardia",ubi:"Shock Room",urg:true},
+{id:"INT-2002",desc:"Tomografia de Cerebro",mod:"CT",mod_full:"CT (Tomograf\u00eda)",diag:"ACV Hemorr\u00e1gico",serv:"Internaci\u00f3n",ubi:"UTI",urg:true},
+{id:"INT-2003",desc:"Ecografia Abdominal",mod:"US",mod_full:"US (Ecograf\u00eda)",diag:"Colecistitis aguda",serv:"Internaci\u00f3n",ubi:"Cirug\u00eda General",urg:true},
+{id:"INT-2005",desc:"Radiografia de Torax",mod:"DX",mod_full:"DX (Radiograf\u00eda)",diag:"Neumon\u00eda intrahospitalaria",serv:"Internaci\u00f3n",ubi:"Cl\u00ednica M\u00e9dica",urg:false},
+{id:"GUA-1002",desc:"Ecografia FAST",mod:"US",mod_full:"US (Ecograf\u00eda)",diag:"Traumatismo cerrado de abdomen",serv:"Guardia",ubi:"Shock Room",urg:true},
+{id:"GUA-1008",desc:"TC de Cerebro",mod:"CT",mod_full:"CT (Tomograf\u00eda)",diag:"Cefalea intensa",serv:"Guardia",ubi:"Box Verde",urg:false},
+{id:"AMB-2026-0007",desc:"Tomografia de Abdomen y Pelvis con contraste",mod:"CT",mod_full:"CT (Tomograf\u00eda)",diag:"Control oncol\u00f3gico",serv:"Ambulatorio",ubi:"\u2014",urg:false}
+];
+
+const STORAGE_KEY="triage_eval_data";
+const LEVELS=["Crítico","Urgente","Prioritario","Rutina"];
+let current=0;
+let answers={};
+
+function init(){loadProgress();renderCase(current);updateProgress();renderCaseGrid();}
+
+function saveProgress(){
+  try{localStorage.setItem(STORAGE_KEY,JSON.stringify({answers,current,evalName:gv("evalName"),evalRole:gv("evalRole"),evalExp:gv("evalExp")}));}catch(e){}
+}
+function loadProgress(){
+  try{const raw=localStorage.getItem(STORAGE_KEY);if(!raw)return;const d=JSON.parse(raw);answers=d.answers||{};current=d.current||0;sv("evalName",d.evalName||"");sv("evalRole",d.evalRole||"");sv("evalExp",d.evalExp||"");}catch(e){}
+}
+function gv(id){return document.getElementById(id).value;}
+function sv(id,v){document.getElementById(id).value=v;}
+
+function renderCase(idx){
+  current=idx;const c=CASES[idx];
+  document.getElementById("caseHeader").textContent="Caso "+(idx+1)+" de "+CASES.length;
+  document.getElementById("cId").textContent=c.id;
+  document.getElementById("cMod").textContent=c.mod_full;
+  document.getElementById("cDesc").textContent=c.desc;
+  document.getElementById("cDiag").textContent=c.diag;
+  document.getElementById("cServ").textContent=c.serv;
+  document.getElementById("cUbi").textContent=c.ubi;
+  const urgEl=document.getElementById("cUrg");
+  urgEl.textContent=c.urg?"S\u00ed":"No";
+  urgEl.className=c.urg?"urgent-yes":"urgent-no";
+  const saved=answers[c.id];
+  document.querySelectorAll('input[name="clasificacion"]').forEach((r,i)=>{r.checked=(LEVELS[i]===saved);});
+  highlightOptions();
+  document.getElementById("btnPrev").disabled=(idx===0);
+  if(idx===CASES.length-1){document.getElementById("btnNext").textContent="Finalizar";document.getElementById("btnNext").className="btn btn-success";}
+  else{document.getElementById("btnNext").textContent="Siguiente";document.getElementById("btnNext").className="btn btn-primary";}
+  updateProgress();updateCaseGrid();
+  document.getElementById("mainCaseCard").scrollIntoView({behavior:"smooth",block:"nearest"});
+}
+
+function updateProgress(){
+  const answered=Object.keys(answers).length;
+  document.getElementById("progressFill").style.width=(answered/CASES.length*100)+"%";
+  document.getElementById("progressText").textContent="Caso "+(current+1)+" de "+CASES.length+" \u2014 "+answered+" de "+CASES.length+" respondidos";
+}
+
+function selectOption(idx){
+  answers[CASES[current].id]=LEVELS[idx];saveProgress();setTimeout(highlightOptions,10);updateProgress();updateCaseGrid();
+}
+function highlightOptions(){
+  document.querySelectorAll('.option-label').forEach((el,i)=>{el.classList.toggle('selected',el.querySelector('input').checked);});
+}
+
+function nextCase(){
+  if(!answers[CASES[current].id]){alert("Por favor, seleccione una clasificaci\u00f3n antes de continuar.");return;}
+  if(current<CASES.length-1)renderCase(current+1);else showSummary();
+}
+function prevCase(){if(current>0)renderCase(current-1);}
+function goToCase(idx){
+  document.getElementById("summaryPanel").classList.add("hidden");
+  document.getElementById("casePanel").classList.remove("hidden");
+  document.getElementById("evalInfoPanel").classList.remove("hidden");
+  renderCase(idx);
+}
+
+function renderCaseGrid(){
+  const grid=document.getElementById("caseGrid");
+  grid.innerHTML="";
+  CASES.forEach((c,i)=>{
+    const ans=answers[c.id]||"";
+    const cls="case-mini"+(i===current?" current":"")+(ans?" answered":"");
+    grid.innerHTML+='<div class="'+cls+'" onclick="goToCase('+i+')">'
+      +'<div class="mini-top"><span class="mini-num">'+(i+1)+'</span><span class="mini-check">'+(ans?"&#10003;":"")+'</span></div>'
+      +'<div class="mini-id">'+c.id+'</div>'
+      +'<div class="mini-mod">'+c.mod+'</div>'+'<div class="mini-desc">'+c.desc+'</div>'
+      +'<div class="mini-diag">'+c.diag+'</div>'
+      +(ans?'<div class="mini-ans '+ans+'">'+ans+'</div>':'')
+      +'</div>';
+  });
+}
+function updateCaseGrid(){
+  const cards=document.querySelectorAll('.case-mini');
+  CASES.forEach((c,i)=>{
+    if(!cards[i])return;
+    const ans=answers[c.id]||"";
+    cards[i].className="case-mini"+(i===current?" current":"")+(ans?" answered":"");
+    const ansEl=cards[i].querySelector('.mini-ans');
+    const checkEl=cards[i].querySelector('.mini-check');
+    if(ans){if(ansEl){ansEl.className="mini-ans "+ans;ansEl.textContent=ans;}else{cards[i].insertAdjacentHTML('beforeend','<div class="mini-ans '+ans+'">'+ans+'</div>');}}
+    else{if(ansEl)ansEl.remove();}
+    if(checkEl)checkEl.innerHTML=ans?"&#10003;":"";
+  });
+}
+
+function showSummary(){
+  document.getElementById("casePanel").classList.add("hidden");
+  document.getElementById("summaryPanel").classList.remove("hidden");
+  const grid=document.getElementById("summaryGrid");grid.innerHTML="";
+  CASES.forEach((c,i)=>{const ans=answers[c.id]||"\u2014";grid.innerHTML+='<span class="s-id">'+(i+1)+'. '+c.id+'</span><span class="s-clr '+ans+'">'+ans+'</span>';});
+  const counts={};LEVELS.forEach(l=>counts[l]=0);CASES.forEach(c=>{if(answers[c.id])counts[answers[c.id]]++;});
+  document.getElementById("summaryStats").textContent="Crítico: "+counts["Crítico"]+" | Urgente: "+counts["Urgente"]+" | Prioritario: "+counts["Prioritario"]+" | Rutina: "+counts["Rutina"];
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function downloadCSV(){
+  const missing=CASES.filter(c=>!answers[c.id]);
+  if(missing.length>0){alert("Faltan "+missing.length+" casos por clasificar.");return;}
+  if(!gv("evalName").trim()){alert("Ingrese su nombre o seud\u00f3nimo.");document.getElementById("evalName").focus();return;}
+  let csv="order_id,modality,diagnosis,origin_service,patient_location,is_urgent,clasificacion\n";
+  CASES.forEach(c=>{const diag=c.diag.includes(",")?'"'+c.diag+'"':c.diag;csv+=c.id+","+c.mod+","+diag+","+c.serv+","+c.ubi+","+c.urg+","+answers[c.id]+"\n";});
+  const name=gv("evalName").trim().toLowerCase().replace(/\s+/g,"_").replace(/[^a-z0-9_]/g,"");
+  const blob=new Blob([csv],{type:"text/csv;charset=utf-8;"});
+  const link=document.createElement("a");link.href=URL.createObjectURL(blob);link.download="evaluator_"+name+".csv";link.click();URL.revokeObjectURL(link.href);
+}
+
+function toggleSection(id){const el=document.getElementById(id);el.style.display=el.style.display==="none"?"block":"none";}
+
+document.addEventListener("keydown",(e)=>{
+  if(!document.getElementById("summaryPanel").classList.contains("hidden"))return;
+  if(e.key==="ArrowRight"||e.key==="Enter")nextCase();
+  else if(e.key==="ArrowLeft")prevCase();
+  else if(e.key>="1"&&e.key<="4"){const idx=parseInt(e.key)-1;document.querySelectorAll('input[name="clasificacion"]')[idx].checked=true;selectOption(idx);}
+});
+
+init();
+</script>
+</body>
+</html>

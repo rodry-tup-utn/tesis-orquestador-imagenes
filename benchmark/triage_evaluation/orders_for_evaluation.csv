@@ -1,0 +1,51 @@
+order_id,modality,description,diagnosis,origin_service,patient_location,is_urgent
+GUA-1001,CT,TC de Cerebro,ACV,Guardia,Box Rojo,True
+GUA-1002,US,Ecografia FAST,Traumatismo cerrado de abdomen,Guardia,Shock Room,True
+GUA-1003,DX,Rx de Torax Frente,Sospecha de Neumonia,Guardia,Box Amarillo,False
+GUA-1004,US,Ecografia Abdominal,Apendicitis Aguda,Guardia,Sala de Espera,True
+GUA-1005,DX,Rx Tobillo Frente y Perfil,Esguince de Tobillo,Guardia,Box Verde,False
+GUA-1006,DX,Rx Pelvis y Cadera Izquierda,Caida de propia altura,Guardia,Sala de Espera,True
+GUA-1007,CT,TC de Abdomen sin contraste,Colico Renal,Guardia,Sala de Espera,True
+GUA-1008,CT,TC de Cerebro,Cefalea intensa,Guardia,Box Verde,False
+GUA-1009,CT,"TC de Cerebro, Torax y Abdomen",Politraumatismo cerrado,Guardia,Shock Room,True
+GUA-1010,CT,TC de Cerebro,Hemorragia subaracnoidea,Guardia,Box Rojo,True
+GUA-1011,DX,Rx de Muneca Frente y Perfil,Fractura de radio distal,Guardia,Box Amarillo,False
+GUA-1012,US,Ecografia Abdominal,Dolor abdominal difuso,Guardia,Sala de Espera,False
+GUA-1013,CT,TC de Cerebro,ACV en evolucion,Guardia,Box Rojo,True
+INT-2001,DX,Radiografia de Pelvis,Control post-quirurgico,Internacion,Traumatologia,False
+INT-2002,CT,Tomografia de Cerebro,ACV Hemorragico,Internacion,UTI,True
+INT-2003,US,Ecografia Abdominal,Colecistitis aguda,Internacion,Cirugia General,True
+INT-2004,MR,Resonancia de Columna Cervical,Hernia de disco C5-C6,Internacion,Neurologia,False
+INT-2005,DX,Radiografia de Torax,Neumonia intrahospitalaria,Internacion,Clinica Medica,False
+INT-2006,CT,Tomografia de Abdomen y Pelvis,Control oncologico,Internacion,Oncologia,False
+INT-2007,US,Doppler Venoso de Miembros Inferiores,TVP,Internacion,Cardiologia,True
+INT-2008,DX,Radiografia de Femur,Fractura expuesta,Internacion,Traumatologia,False
+INT-2009,CT,Angiotomografia Pulmonar,TEP,Internacion,UTI,True
+INT-2010,MR,Resonancia de Cerebro,Sospecha de tumoracion,Internacion,Neurologia,False
+INT-2011,US,Ecografia Renal,Colico nefritico,Internacion,Pediatria,True
+INT-2012,CT,Urotomografia,Litiasis renal,Internacion,Urologia,False
+INT-2013,DX,Radiografia de Torax Portatil,Control de via central,Internacion,Unidad Coronaria,True
+INT-2014,MR,Resonancia de Pelvis,Endometriosis profunda,Internacion,Ginecologia,False
+INT-2015,CT,Tomografia de Torax de Alta Resolucion,Fibrosis pulmonar,Internacion,Clinica Medica,False
+INT-2016,CT,Tomografia de Cerebro sin contraste,ACV Isquemico Agudo,Internacion,UTI,True
+INT-2017,CT,Tomografia de Abdomen con contraste,Hemorragia digestiva alta,Internacion,UTI,True
+INT-2018,US,Ecocardiograma Transtoracico,Insuficiencia cardiaca,Internacion,Cardiologia,False
+INT-2019,MR,Resonancia de Cerebro,TEP con duda diagnostica,Internacion,Neumonologia,True
+INT-2020,DX,Radiografia de Abdomen,Suboclusion intestinal,Internacion,Cirugia General,False
+INT-2021,MR,Resonancia de Hombro,Lesion de manguito rotador,Internacion,Traumatologia,False
+AMB-2026-0001,MR,Resonancia Magnetica de Rodilla,Gonalgia derecha,Ambulatorio,,False
+AMB-2026-0002,US,Ecografia Abdominal,Abdomen agudo,Ambulatorio,,False
+AMB-2026-0003,CT,Tomografia de Torax sin contraste,"Tos cronica, sospecha de bronquiectasias",Ambulatorio,,False
+AMB-2026-0004,DX,Radiografia de Pelvis,Dolor pelvico atero-posterior,Ambulatorio,,False
+AMB-2026-0005,MR,Resonancia Magnetica de Cerebro,Cefalea tensional en estudio,Ambulatorio,,False
+AMB-2026-0006,US,Ecografia Tiroidea,"Hipotiroidismo, control de nodulo",Ambulatorio,,False
+AMB-2026-0007,CT,Tomografia de Abdomen y Pelvis con contraste,Control oncologico,Ambulatorio,,False
+AMB-2026-0008,DX,Radiografia de Torax Frente y Perfil,Preoperatorio,Ambulatorio,,False
+AMB-2026-0009,MR,Resonancia Magnetica de Columna Lumbar,Lumbociatalgia izquierda,Ambulatorio,,False
+AMB-2026-0010,US,Ecografia Mamaria Bilateral,"Mastalgia, control anual",Ambulatorio,,False
+AMB-2026-0011,MR,Resonancia Magnetica de Rodilla,Meniscopatia interna,Ambulatorio,,False
+AMB-2026-0012,CT,Tomografia de Senos Paranasales,Sinusitis cronica,Ambulatorio,,False
+AMB-2026-0013,DX,Radiografia de Columna Lumbar,Espondiloartrosis,Ambulatorio,,False
+AMB-2026-0014,US,Ecografia Pelvica Transabdominal,Control ginecologico,Ambulatorio,,False
+AMB-2026-0015,CT,Tomografia de Torax con contraste,Sospecha de linfoma,Ambulatorio,,False
+AMB-2026-0016,DX,Radiografia de Torax Frente,Control de asma,Ambulatorio,,False

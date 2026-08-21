@@ -1,0 +1,37 @@
+=== ANÁLISIS DE EVALUACIÓN DEL MOTOR DE TRIAJE ===
+
+--- Concordancia entre evaluadores ---
+Kappa de Fleiss: 0.3816 (Regular)
+
+--- Distribución Gold Standard (mayoría) ---
+  Crítico: 10
+  Urgente: 8
+  Prioritario: 10
+  Rutina: 22
+  Total: 50
+
+--- Distribución Motor ---
+  Crítico: 8
+  Urgente: 7
+  Prioritario: 5
+  Rutina: 30
+  Total: 50
+
+--- Matriz de Confusión ---
+Humano \ Motor           Crítico       Urgente   Prioritario        Rutina
+Crítico                        8             2             0             0
+Urgente                        0             5             1             2
+Prioritario                    0             0             4             6
+Rutina                         0             0             0            22
+
+--- Métricas por nivel ---
+Nivel          Sensibilidad  Especificidad  Precisión       F1
+Crítico               80.0%         100.0%     100.0%    88.9%
+Urgente               62.5%          95.2%      71.4%    66.7%
+Prioritario           40.0%          97.5%      80.0%    53.3%
+Rutina               100.0%          71.4%      73.3%    84.6%
+
+--- FALSOS NEGATIVOS CRÍTICOS ---
+Órdenes que humanos clasificaron como Crítico pero el motor NO:
+  GUA-1002: motor=Urgente
+  GUA-1004: motor=Urgente

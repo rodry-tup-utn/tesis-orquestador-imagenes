@@ -3,3 +3,5 @@ node_modules/
 .venv/
 __pycache__/
 benchmark/results_*.csv
+benchmark/triage_evaluation/evaluadores/*.csv
+para_tesis/
