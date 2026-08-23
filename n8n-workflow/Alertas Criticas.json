@@ -17,7 +17,7 @@
     {
       "parameters": {
         "chatId": "-5103240525",
-        "text": "=🚨 ALERTA: ORDEN CRÍTICA\n👤 Paciente: {{ $json.body.patient_name }}\n🕚 Fecha: {{ $json.body.date }}\n📖 Diagnóstico: {{ $json.body.diagnosis }}\n📍 Ubicación: {{ $json.body.location }} ({{ $json.body.setting }}) \n🆔 Orden #: {{ $json.body.order_id }}",
+        "text": "=🚨 ALERTA: ORDEN CRÍTICA\n👤 Paciente: {{ $json.body.patient_name }}\n🕚 Fecha: {{ $json.body.date }}\n🔬 Estudio: {{ $json.body.study }} ({{ $json.body.modality }})\n⚠️ Prioridad: {{ $json.body.priority }}\n📍 Ubicación: {{ $json.body.location }} ({{ $json.body.setting }})\n🆔 Orden #: {{ $json.body.order_id }}",
         "additionalFields": {
           "appendAttribution": false
         }
@@ -51,7 +51,7 @@
       ]
     }
   },
-  "active": false,
+  "active": true,
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate"
