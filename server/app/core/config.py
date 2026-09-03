@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 30
     url_webhook_n8n: str = ""
+    triage_config: str = "desplegada"
     
     # Orthanc settings
     orthanc_url: str = "http://localhost:8042"

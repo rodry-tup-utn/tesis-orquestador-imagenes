@@ -2,6 +2,7 @@ from enum import Enum
 from app.modules.medical_order.model import MedicalOrder, MedicalPriority
 from app.modules.triage.model import TriageRule, TriageOperator
 from app.modules.systemsettings.model import SystemSettings
+import unicodedata
 
 
 class TriageEngine:
@@ -39,14 +40,21 @@ class TriageEngine:
         return TriageEngine._map_priority(score, settings), criterios
 
     @staticmethod
+    def _norm(text: str) -> str:
+        decomposed = unicodedata.normalize("NFD", text.lower())
+        return "".join(c for c in decomposed if not unicodedata.combining(c))
+
+    @staticmethod
     def _matches(field_value: str, operator: TriageOperator, pattern: str) -> bool:
+        value = TriageEngine._norm(field_value)
+        target = TriageEngine._norm(pattern)
         match operator:
             case TriageOperator.EQUALS:
-                return field_value.lower() == pattern.lower()
+                return value == target
             case TriageOperator.CONTAINS:
-                return pattern.lower() in field_value.lower()
+                return target in value
             case TriageOperator.STARTSWITH:
-                return field_value.lower().startswith(pattern.lower())
+                return value.startswith(target)
 
     @staticmethod
     def _map_priority(score: int, settings: SystemSettings) -> MedicalPriority:
