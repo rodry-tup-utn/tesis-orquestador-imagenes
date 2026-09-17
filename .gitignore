@@ -1,5 +1,13 @@
 *.env
+.env
 node_modules/
 .venv/
 __pycache__/
+*.pyc
+.pytest_cache/
+.DS_Store
+*/.DS_Store
+scratch/
+*.bak
+*.docx
 benchmark/results_*.csv
