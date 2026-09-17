@@ -57,10 +57,12 @@ def summarize(rows: list[dict], keys: list[str]):
         if not values:
             print(f"{key}: sin datos")
             continue
+        # P95 con statistics.quantiles (disponible desde Python 3.8)
+        p95 = statistics.quantiles(values, n=100)[94] if len(values) >= 2 else values[0]
         print(
             f"{key}: n={len(values)} media={statistics.mean(values):.3f} "
-            f"mediana={statistics.median(values):.3f} min={min(values):.3f} "
-            f"max={max(values):.3f} std={statistics.pstdev(values):.3f}"
+            f"mediana={statistics.median(values):.3f} P95={p95:.3f} "
+            f"min={min(values):.3f} max={max(values):.3f} std={statistics.pstdev(values):.3f}"
         )
 
 

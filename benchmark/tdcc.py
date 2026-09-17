@@ -118,11 +118,12 @@ def main() -> None:
     if not values:
         print("\nSin muestras de TDCC. Verifica URL_WEBHOOK_N8N y que el workflow 'Alertas Criticas' este activo.")
         return
+    p95 = statistics.quantiles(values, n=100)[94] if len(values) >= 2 else values[0]
     print(
         "\n--- Resumen TDCC (milisegundos) ---\n"
         f"n={len(values)} media={statistics.mean(values):.3f} "
-        f"mediana={statistics.median(values):.3f} min={min(values):.3f} "
-        f"max={max(values):.3f} std={statistics.pstdev(values):.3f}"
+        f"mediana={statistics.median(values):.3f} P95={p95:.3f} "
+        f"min={min(values):.3f} max={max(values):.3f} std={statistics.pstdev(values):.3f}"
     )
 
 

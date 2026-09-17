@@ -20,7 +20,9 @@ class UnitOfWork:
             await self.session.commit()
         else:
             await self.session.rollback()
-        await self.session.close()
+        # No se cierra la sesión aquí: su ciclo de vida es responsabilidad
+        # del get_session() dependency de FastAPI. Cerrarlo acá causaba
+        # "closed session" en notifier.py bajo carga concurrente.
 
     async def commit(self) -> None:
         await self.session.commit()

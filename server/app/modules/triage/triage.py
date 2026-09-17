@@ -55,6 +55,9 @@ class TriageEngine:
                 return target in value
             case TriageOperator.STARTSWITH:
                 return value.startswith(target)
+            case _:
+                # Operador desconocido: nunca coincide, evita retorno None implícito
+                return False
 
     @staticmethod
     def _map_priority(score: int, settings: SystemSettings) -> MedicalPriority:

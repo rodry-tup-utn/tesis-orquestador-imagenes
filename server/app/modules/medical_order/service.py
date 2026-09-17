@@ -75,7 +75,7 @@ class MedicalOrderService:
         priority, criterios = TriageEngine.evaluate(order, rules, settings)
         order.triage_priority = priority
         order.criterios_evaluados = criterios
-        order.triaged_at = datetime.utcnow()
+        order.triaged_at = datetime.now(timezone.utc)
         return order
 
     async def get_by_id(self, order_id: int) -> MedicalOrderRead:
@@ -130,7 +130,7 @@ class MedicalOrderService:
         async with UnitOfWork(self._session) as uow:
             rules = await uow.triage_rules.get_enabled()
             settings = await self._get_system_settings_or_404(uow)
-            now = datetime.utcnow()
+            now = datetime.now(timezone.utc)
 
             existing = await uow.orders.find_existing_external_ids(
                 [o.external_id for o in payload.orders]
@@ -175,7 +175,7 @@ class MedicalOrderService:
         async with UnitOfWork(self._session) as uow:
             order = await self._get_or_404(uow, order_id)
             order.order_state = data.order_state
-            now = datetime.utcnow()
+            now = datetime.now(timezone.utc)
 
             if data.order_state == OrderState.FINALIZED:
                 order.completed_at = now
