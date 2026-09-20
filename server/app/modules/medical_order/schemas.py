@@ -27,7 +27,6 @@ class MedicalOrderCreate(SQLModel):
     requesting_physician: str
     patient_lastname: str
     patient_name: str
-    patient_pseudonym: str
     patient_dni: str
     patient_dob: date
     patient_sex: Sex

@@ -15,6 +15,7 @@ from app.modules.medical_order.schemas import (
 )
 from fastapi import Path
 from app.core.database import get_session
+from app.core.security import get_current_principal, require_ingestion_key
 from app.modules.medical_order.notifier import evaluate_and_notify, evaluate_and_notify_many
 from app.core.metrics import now_ms, log_metric
 from typing import Annotated
@@ -30,6 +31,7 @@ def get_order_service(session: AsyncSession = Depends(get_session)) -> MedicalOr
 async def list_orders(
     filters: OrderFilters = Depends(),
     svc: MedicalOrderService = Depends(get_order_service),
+    _principal: dict = Depends(get_current_principal),
 ):
     items, total = await svc.list_all(filters)
     return MedicalOrderPagination(items=items, total=total)
@@ -38,6 +40,7 @@ async def list_orders(
 @router.get("/stats", response_model=OrderStats)
 async def get_stats_endpoint(
     svc: MedicalOrderService = Depends(get_order_service),
+    _principal: dict = Depends(get_current_principal),
 ):
     return await svc.get_stats()
 
@@ -46,6 +49,7 @@ async def get_stats_endpoint(
 async def list_notifications_endpoint(
     offset: int = 0, limit: int = 50,
     svc: MedicalOrderService = Depends(get_order_service),
+    _principal: dict = Depends(get_current_principal),
 ):
     return await svc.list_notifications(limit, offset)
 
@@ -55,6 +59,7 @@ async def create_order(
     data: MedicalOrderCreate,
     background_tasks: BackgroundTasks,
     svc: MedicalOrderService = Depends(get_order_service),
+    _ingestion: None = Depends(require_ingestion_key),
 ):
     t_received = now_ms()
     order = await svc.create(data)
@@ -77,6 +82,7 @@ async def create_orders_batch(
     payload: OrderBatchPayload,
     background_tasks: BackgroundTasks,
     svc: MedicalOrderService = Depends(get_order_service),
+    _ingestion: None = Depends(require_ingestion_key),
 ):
     t_received = now_ms()
     if payload.cycle_id:
@@ -119,6 +125,7 @@ async def create_orders_batch(
 async def get_order(
     order_id: Annotated[int, Path(ge=1)],
     svc: MedicalOrderService = Depends(get_order_service),
+    _principal: dict = Depends(get_current_principal),
 ):
     return await svc.get_by_id(order_id)
 
@@ -127,6 +134,7 @@ async def get_order(
 async def retriage_order(
     order_id: Annotated[int, Path(ge=1)],
     svc: MedicalOrderService = Depends(get_order_service),
+    _principal: dict = Depends(get_current_principal),
 ):
     return await svc.retriage(order_id)
 
@@ -136,6 +144,7 @@ async def update_order_state(
     order_id: Annotated[int, Path(ge=1)],
     data: UpdateState,
     svc: MedicalOrderService = Depends(get_order_service),
+    _principal: dict = Depends(get_current_principal),
 ):
     return await svc.update_state(order_id, data)
 
@@ -145,6 +154,7 @@ async def update_order_observations(
     order_id: Annotated[int, Path(ge=1)],
     data: UpdateObservations,
     svc: MedicalOrderService = Depends(get_order_service),
+    _principal: dict = Depends(get_current_principal),
 ):
     return await svc.update_observations(order_id, data)
 
@@ -153,5 +163,6 @@ async def update_order_observations(
 async def send_order_to_orthanc(
     order_id: Annotated[int, Path(ge=1)],
     svc: MedicalOrderService = Depends(get_order_service),
+    _principal: dict = Depends(get_current_principal),
 ):
     return await svc.send_to_orthanc(order_id)

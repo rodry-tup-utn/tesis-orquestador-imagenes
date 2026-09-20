@@ -8,12 +8,16 @@ from app.modules.triage.schemas import (
     TriageRuleRead,
     TriageRuleUpdate,
 )
+from app.core.security import get_current_principal
 
 router = APIRouter(prefix="/triage-rules", tags=["Triage"])
 
 
 @router.get("", response_model=list[TriageRuleRead])
-async def list_triage_rules(session: AsyncSession = Depends(get_session)):
+async def list_triage_rules(
+    session: AsyncSession = Depends(get_session),
+    _principal: dict = Depends(get_current_principal),
+):
     async with UnitOfWork(session) as uow:
         rules = await uow.triage_rules.get_all()
         return [TriageRuleRead.model_validate(r) for r in rules]
@@ -21,7 +25,9 @@ async def list_triage_rules(session: AsyncSession = Depends(get_session)):
 
 @router.post("", response_model=TriageRuleRead, status_code=201)
 async def create_triage_rule(
-    data: TriageRuleCreate, session: AsyncSession = Depends(get_session)
+    data: TriageRuleCreate,
+    session: AsyncSession = Depends(get_session),
+    _principal: dict = Depends(get_current_principal),
 ):
     async with UnitOfWork(session) as uow:
         rule = TriageRule.model_validate(data)
@@ -31,7 +37,10 @@ async def create_triage_rule(
 
 @router.patch("/{rule_id}", response_model=TriageRuleRead)
 async def update_triage_rule(
-    rule_id: int, data: TriageRuleUpdate, session: AsyncSession = Depends(get_session)
+    rule_id: int,
+    data: TriageRuleUpdate,
+    session: AsyncSession = Depends(get_session),
+    _principal: dict = Depends(get_current_principal),
 ):
     async with UnitOfWork(session) as uow:
         rule = await uow.triage_rules.get_by_id(rule_id)
@@ -50,7 +59,9 @@ async def update_triage_rule(
 
 @router.delete("/{rule_id}", status_code=204)
 async def delete_triage_rule(
-    rule_id: int, session: AsyncSession = Depends(get_session)
+    rule_id: int,
+    session: AsyncSession = Depends(get_session),
+    _principal: dict = Depends(get_current_principal),
 ):
     async with UnitOfWork(session) as uow:
         rule = await uow.triage_rules.get_by_id(rule_id)

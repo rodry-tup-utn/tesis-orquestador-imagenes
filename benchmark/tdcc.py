@@ -14,6 +14,10 @@ Precondiciones:
     - Contenedores levantados (docker compose up -d --build).
     - .env con URL_WEBHOOK_N8N apuntando al webhook del workflow "Alertas
       Criticas", y ese workflow activo (para que el notifier reciba 200).
+    - INTERNAL_API_KEY definido en .env (o en la variable de entorno del mismo
+      nombre): /orders/batch exige la cabecera X-Internal-API-Key desde que la
+      ingesta fue autenticada. Las series del Capitulo 5 se midieron antes de
+      esa modificacion.
 """
 import argparse
 import csv
@@ -45,7 +49,6 @@ def critical_order(n: int) -> dict:
         "requesting_physician": "Dr. Benchmark",
         "patient_lastname": "Paciente",
         "patient_name": "Critico",
-        "patient_pseudonym": "C.C.",
         "patient_dni": str(40000000 + n),
         "patient_dob": "1980-01-01",
         "patient_sex": "MALE",
@@ -53,12 +56,19 @@ def critical_order(n: int) -> dict:
     }
 
 
+def ingestion_key() -> str:
+    key = os.environ.get("INTERNAL_API_KEY") or common.load_env().get("INTERNAL_API_KEY", "")
+    if not key:
+        sys.exit("Falta INTERNAL_API_KEY (variable de entorno o .env): la ingesta esta autenticada.")
+    return key
+
+
 def post_batch(backend_url: str, cycle_id: str, order: dict) -> dict:
     body = json.dumps({"cycle_id": cycle_id, "ts_start": common.now_ms(), "orders": [order]})
     req = urllib.request.Request(
         f"{backend_url}/orders/batch",
         data=body.encode("utf-8"),
-        headers={"Content-Type": "application/json"},
+        headers={"Content-Type": "application/json", "X-Internal-API-Key": ingestion_key()},
         method="POST",
     )
     with urllib.request.urlopen(req, timeout=30) as resp:

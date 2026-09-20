@@ -1,10 +1,19 @@
 import axios from "axios";
+import { clearAccessToken, getAccessToken } from "./auth";
 
 export const http = axios.create({
   baseURL: import.meta.env.VITE_API_URL ?? "/api",
   headers: {
     "Content-Type": "application/json",
   },
+});
+
+http.interceptors.request.use((config) => {
+  const token = getAccessToken();
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
 });
 
 export interface ApiError {
@@ -41,6 +50,12 @@ http.interceptors.response.use(
 
     if (axios.isAxiosError(error)) {
       apiError.status = error.response?.status;
+      if (error.response?.status === 401 && !error.config?.url?.endsWith("/auth/login")) {
+        clearAccessToken();
+        if (window.location.pathname !== "/login") {
+          window.location.assign("/login");
+        }
+      }
       const detail = extractDetail(error.response?.data);
       apiError.message =
         detail ?? (error.response ? `Error ${error.response.status}` : error.message);

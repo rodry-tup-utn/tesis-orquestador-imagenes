@@ -5,7 +5,7 @@ websockets
 alembic
 requests
 pyjwt
-passlib[bcrypt]
-bcrypt==4.0.1
 httpx>=0.24.0
 pydicom>=2.4.0
+pytest
+pytest-cov

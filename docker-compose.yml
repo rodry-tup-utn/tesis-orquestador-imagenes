@@ -26,6 +26,13 @@ services:
       - NODE_ENV=production
       - WEBHOOK_URL=http://host.docker.internal:5678/
       - GENERIC_TIMEZONE=America/Argentina/Mendoza
+      # Los flujos leen INTERNAL_API_KEY, ALERT_WEBHOOK_KEY y TELEGRAM_CHAT_ID con $env.
+      # Las versiones recientes de n8n bloquean ese acceso por defecto.
+      # Para un piloto conviene migrarlas a credenciales de n8n.
+      - N8N_BLOCK_ENV_ACCESS_IN_NODE=false
+      - INTERNAL_API_KEY=${INTERNAL_API_KEY}
+      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
+      - ALERT_WEBHOOK_KEY=${ALERT_WEBHOOK_KEY}
       - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY}
     volumes:
       - n8n_data:/home/node/.n8n
@@ -74,8 +81,8 @@ services:
       POSTGRES_PORT: 5432
       URL_WEBHOOK_N8N: ${URL_WEBHOOK_N8N}
       ORTHANC_URL: http://orthanc:8042
-      ORTHANC_USER: ${ORTHANC_USER:-admin}
-      ORTHANC_PASSWORD: ${ORTHANC_PASS:-admin}
+      ORTHANC_USER: ${ORTHANC_USER:?Defina ORTHANC_USER en .env}
+      ORTHANC_PASSWORD: ${ORTHANC_PASS:?Defina ORTHANC_PASS en .env}
     env_file:
       - .env
     depends_on:

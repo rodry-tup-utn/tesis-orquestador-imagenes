@@ -73,6 +73,7 @@ class MedicalOrderRepository(BaseRepository[MedicalOrder]):
                     MedicalOrder.patient_lastname.ilike(pattern),
                     MedicalOrder.patient_dni.ilike(pattern),
                     MedicalOrder.external_id.ilike(pattern),
+                    MedicalOrder.patient_pseudonym.ilike(pattern),
                 )
             )
 

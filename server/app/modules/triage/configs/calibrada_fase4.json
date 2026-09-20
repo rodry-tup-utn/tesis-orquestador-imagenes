@@ -1,5 +1,5 @@
 {
-  "description": "Configuracion calibrada en la Fase 4 del experimento de evaluacion del motor de triaje (Capitulo 6). Agrega ocho reglas y baja el umbral de Urgente de quince a doce puntos.",
+  "description": "Configuracion calibrada en la Fase 4 del experimento de evaluacion del motor de triaje (Capitulo 6). Respecto de la configuracion ciega de la Fase 0 (16 reglas) agrega cinco reglas (21 en total) y baja el umbral de Urgente de quince a doce puntos; respecto de la configuracion desplegada (13 reglas) agrega ocho.",
   "origin_service_vocabulary": [
     "Guardia",
     "Internacion",

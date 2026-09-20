@@ -9,9 +9,14 @@ class Settings(BaseSettings):
     postgres_db: str = "orquestador_db"
     postgres_host: str = "localhost"
     postgres_port: int = 5432
-    secret_key: str = "secret-key-dev"
+    secret_key: str
+    pseudonym_secret: str
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 30
+    auth_username: str = "admin"
+    auth_password: str = ""
+    internal_api_key: str = ""
+    alert_webhook_key: str = ""
     url_webhook_n8n: str = ""
     triage_config: str = "desplegada"
     

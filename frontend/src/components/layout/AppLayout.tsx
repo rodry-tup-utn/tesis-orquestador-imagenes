@@ -1,6 +1,8 @@
 import { NavLink, Outlet } from "react-router-dom";
 import { useWebSocket } from "../../hooks/useWebSocket";
+import { clearAccessToken } from "../../services/auth";
 import type { WebSocketStatus } from "../../hooks/useWebSocket";
+import { useNavigate } from "react-router-dom";
 
 const navItems = [
   { to: "/dashboard", label: "Dashboard" },
@@ -31,6 +33,12 @@ const WS_STATUS_COLORS: Record<WebSocketStatus, string> = {
 
 export default function AppLayout() {
   const wsStatus = useWebSocket();
+  const navigate = useNavigate();
+
+  const logout = () => {
+    clearAccessToken();
+    navigate("/login", { replace: true });
+  };
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -57,6 +65,13 @@ export default function AppLayout() {
               className={`inline-block h-2.5 w-2.5 rounded-full ${WS_STATUS_COLORS[wsStatus]}`}
             />
             {WS_STATUS_LABELS[wsStatus]}
+            <button
+              type="button"
+              onClick={logout}
+              className="rounded-md border border-gray-300 bg-white px-2 py-1 text-xs font-medium text-gray-600 hover:bg-gray-50"
+            >
+              Cerrar sesión
+            </button>
           </div>
         </div>
       </header>

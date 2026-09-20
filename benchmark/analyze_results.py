@@ -4,8 +4,8 @@
 Lee los resultados de ejecuciones anteriores en benchmark/results/ y computa:
     - T_proc, T_n8n, T_server: media, mediana, P95, min, max, std
     - TDCC: ídem
-    - Verificación de RNF-01: T_proc P95 < 500 ms
-    - Verificación de RNF-02: tasa de éxito de notificaciones >= 99 %
+    - Evidencia descriptiva para RNF-01 (sin declarar verificación plena)
+    - Tasa de éxito de los ensayos para RNF-02 (sin inferir disponibilidad sostenida)
 
 No requiere Docker ni el sistema en ejecución. Opera únicamente sobre los
 archivos CSV ya generados.
@@ -23,8 +23,8 @@ import sys
 
 RESULTS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "results")
 
-RNF_01_P95_THRESHOLD_MS = 500.0   # RNF-01: P95 de T_proc < 500 ms
-RNF_02_SUCCESS_RATE = 0.99         # RNF-02: tasa de éxito de notificaciones >= 99 %
+RNF_01_P95_THRESHOLD_MS = 500.0   # Umbral de diseño; T_proc no equivale al tiempo completo de API
+RNF_02_SUCCESS_RATE = 0.99         # Umbral de diseño; no equivale a disponibilidad sostenida
 
 
 def _find_latest(prefix: str):
@@ -56,14 +56,14 @@ def _print_stats(label: str, values: list) -> None:
     p95_flag = ""
     if label == "T_proc":
         if p95 < RNF_01_P95_THRESHOLD_MS:
-            p95_flag = f"  -> RNF-01 VERIFICADO (P95={p95:.1f} ms < {RNF_01_P95_THRESHOLD_MS:.0f} ms)"
+            p95_flag = f"  -> Descriptor bajo el umbral de diseño; RNF-01 queda parcialmente sustentado (P95={p95:.1f} ms)"
         else:
-            p95_flag = f"  -> RNF-01 FALLIDO (P95={p95:.1f} ms >= {RNF_01_P95_THRESHOLD_MS:.0f} ms)"
+            p95_flag = f"  -> Descriptor fuera del umbral de diseño; RNF-01 no queda sustentado por este indicador (P95={p95:.1f} ms)"
     print(
         f"  {label}: n={len(values)}  "
         f"media={statistics.mean(values):.2f}  mediana={statistics.median(values):.2f}  "
         f"P95={p95:.2f}  min={min(values):.2f}  max={max(values):.2f}  "
-        f"std={statistics.pstdev(values):.2f}  (ms)"
+        f"std={statistics.stdev(values):.2f}  (ms)"
     )
     if p95_flag:
         print(p95_flag)
@@ -85,9 +85,9 @@ def analyze_tproc(path: str) -> None:
     rate = ok / len(statuses) if statuses else 0
     print(f"\n  Ciclos totales: {len(rows)}  |  HTTP 200: {ok}  |  Tasa exito: {rate*100:.1f}%")
     if rate >= RNF_02_SUCCESS_RATE:
-        print(f"  -> RNF-02 DISPONIBILIDAD: tasa de procesamiento {rate*100:.1f}% >= {RNF_02_SUCCESS_RATE*100:.0f}%")
+        print(f"  -> Ensayos sin fallos: {rate*100:.1f}%. Esto no acredita disponibilidad sostenida de {RNF_02_SUCCESS_RATE*100:.0f}%.")
     else:
-        print(f"  -> RNF-02: tasa {rate*100:.1f}% < {RNF_02_SUCCESS_RATE*100:.0f}%")
+        print(f"  -> Ensayos por debajo del umbral observado: {rate*100:.1f}%.")
 
     # Nota sobre el cold-start
     tproc_vals = [float(r["T_proc"]) for r in rows if r.get("T_proc") not in (None, "")]
@@ -113,9 +113,9 @@ def analyze_tdcc(path: str) -> None:
     rate = success / len(rows) if rows else 0
     print(f"\n  Ordenes criticas: {len(rows)}  |  Notificadas: {success}  |  Tasa: {rate*100:.1f}%")
     if rate >= RNF_02_SUCCESS_RATE:
-        print(f"  -> RNF-02 NOTIFICACIONES CRITICAS: {rate*100:.1f}% >= {RNF_02_SUCCESS_RATE*100:.0f}%")
+        print(f"  -> Ensayos de notificación sin fallos: {rate*100:.1f}%. Esto no acredita disponibilidad sostenida.")
     else:
-        print(f"  -> RNF-02: tasa {rate*100:.1f}% < {RNF_02_SUCCESS_RATE*100:.0f}%")
+        print(f"  -> Ensayos por debajo del umbral observado: {rate*100:.1f}%.")
 
 
 def main() -> None:

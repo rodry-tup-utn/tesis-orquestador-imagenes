@@ -1,4 +1,3 @@
-import hashlib
 import json
 import logging
 from datetime import datetime
@@ -36,14 +35,12 @@ class NotifierService:
         return True
 
     def _build_payload(self, order: MedicalOrder) -> dict:
-        # Seudonimización con SHA-256 según requerimientos de tesis
-        raw_str = f"{settings.secret_key}:{order.patient_dni}"
-        pseudonym = hashlib.sha256(raw_str.encode("utf-8")).hexdigest()
-        
+        # El backend ya calculó y persistió el pseudónimo HMAC-SHA256.
+        pseudonym = order.patient_pseudonym
+
         payload = {
             "message": "Alerta médica crítica",
             "patient_pseudonym": pseudonym,
-            "patient_name": f"{order.patient_lastname}, {order.patient_name}",
             "study": order.description,
             "modality": order.modality.value,
             "priority": order.triage_priority.value,
@@ -85,7 +82,12 @@ class NotifierService:
             t_start = now_ms()
             try:
                 async with httpx.AsyncClient() as client:
-                    resp = await client.post(settings.url_webhook_n8n, json=payload, timeout=5)
+                    resp = await client.post(
+                        settings.url_webhook_n8n,
+                        json=payload,
+                        headers={"X-Alert-API-Key": settings.alert_webhook_key},
+                        timeout=5,
+                    )
                     if resp.status_code != 200:
                         logger.warning(
                             "n8n respondió %d para order %d", resp.status_code, order.id
@@ -164,7 +166,12 @@ class NotifierService:
                 t_start = now_ms()
                 try:
                     async with httpx.AsyncClient() as client:
-                        resp = await client.post(settings.url_webhook_n8n, json=payload, timeout=5)
+                        resp = await client.post(
+                        settings.url_webhook_n8n,
+                        json=payload,
+                        headers={"X-Alert-API-Key": settings.alert_webhook_key},
+                        timeout=5,
+                    )
                         if resp.status_code != 200:
                             logger.warning(
                                 "n8n respondió %d para order %d", resp.status_code, order.id

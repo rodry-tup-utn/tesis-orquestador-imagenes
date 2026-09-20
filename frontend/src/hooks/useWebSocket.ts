@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "../lib/queryKeys";
+import { clearAccessToken, getAccessToken } from "../services/auth";
 
 export type WebSocketStatus = "connecting" | "connected" | "disconnected";
 
@@ -21,6 +22,11 @@ export function useWebSocket(): WebSocketStatus {
     let closed = false;
 
     const handleMessage = (event: MessageEvent<string>) => {
+      if (event.data === "authenticated") {
+        setStatus("connected");
+        attempt = 0;
+        return;
+      }
       if (event.data === "orders_updated") {
         void queryClient.invalidateQueries({ queryKey: queryKeys.orders });
         void queryClient.invalidateQueries({ queryKey: queryKeys.stats });
@@ -33,12 +39,23 @@ export function useWebSocket(): WebSocketStatus {
       ws = new WebSocket(resolveWsUrl());
 
       ws.onopen = () => {
-        setStatus("connected");
-        attempt = 0;
+        const token = getAccessToken();
+        if (!token) {
+          ws?.close(1008, "No autenticado");
+          return;
+        }
+        ws.send(JSON.stringify({ type: "auth", token }));
       };
 
-      ws.onclose = () => {
+      ws.onclose = (event) => {
         setStatus("disconnected");
+        if (event.code === 1008) {
+          // El backend rechazo el token (vencido o invalido): no tiene sentido reintentar.
+          closed = true;
+          clearAccessToken();
+          if (window.location.pathname !== "/login") window.location.assign("/login");
+          return;
+        }
         if (!closed) {
           const delay = Math.min(1000 * 2 ** attempt, 15_000);
           attempt += 1;
