@@ -1,4 +1,4 @@
-# Resumen de verificación — entrega V9
+# Resumen de verificación — entrega de defensa
 
 ## Identificación
 - Artefacto: Middleware de Orquestación y Triaje para Diagnóstico por Imágenes.

@@ -1,6 +1,6 @@
 # Middleware de Orquestación y Triaje para Diagnóstico por Imágenes 🏥🚀
 
-**Entrega de defensa V9 — 20 de septiembre de 2026**
+**Entrega de defensa — 21 de septiembre de 2026**
 
 Este paquete corresponde a la versión de software asociada a la tesis final. Incluye el código del MVP, las mediciones adicionales de RNF-01/RF-04, la verificación de mapeo PostgreSQL ↔ DICOM y la prueba de regresión del motor.
 

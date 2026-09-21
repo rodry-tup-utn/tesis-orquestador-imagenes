@@ -1,4 +1,4 @@
-# Estado técnico y limitaciones de la entrega V9
+# Estado técnico y limitaciones de la entrega de defensa
 
 Este archivo resume qué evidencia forma parte de la entrega y qué aspectos permanecen fuera del alcance del MVP académico.
 
