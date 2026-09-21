@@ -1,0 +1,2 @@
+id,description,modality,origin_service,patient_location,diagnosis,is_urgent,study_setting,observations,rater_1,rater_2,rater_3,rater_4,rater_5
+EJEMPLO-BORRAR,"RX torax frente y perfil",DX,Guardia,Box 2,"dolor toracico, disnea aguda",1,En Efector,,Urgente,Urgente,Critico,Urgente,Urgente

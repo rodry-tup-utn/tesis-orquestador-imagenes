@@ -1,0 +1,590 @@
+[
+  {
+    "request_id": "INT-2001",
+    "is_urgent": false,
+    "patient_data": {
+      "first_name": "Maria Ester",
+      "last_name": "Gomez",
+      "national_id": "22111333",
+      "internal_id": 32456,
+      "birth_date": {
+        "year": "1999",
+        "month": "04",
+        "day": "12"
+      },
+      "sex": "F"
+    },
+    "clinical_order": {
+      "modality": "CR",
+      "procedure": "Radiografia de Pelvis",
+      "diagnosis": "Control post-quirurgico",
+      "study_setting": "Rayos",
+      "requesting_physician": "Dr. Arnaldo Rossi",
+      "room": "115",
+      "bed": "4B",
+      "sector": "Traumatologia",
+      "observations": "",
+      "date": "2026-04-09T12:50:00"
+    }
+  },
+  {
+    "request_id": "INT-2002",
+    "is_urgent": true,
+    "patient_data": {
+      "first_name": "Juan Carlos",
+      "last_name": "Perez",
+      "national_id": "14222333",
+      "internal_id": 32457,
+      "birth_date": {
+        "year": "1955",
+        "month": "06",
+        "day": "15"
+      },
+      "sex": "M"
+    },
+    "clinical_order": {
+      "modality": "CT",
+      "procedure": "Tomografia de Cerebro",
+      "diagnosis": "ACV Hemorragico",
+      "study_setting": "En cama",
+      "requesting_physician": "Dra. Elena Vazquez",
+      "room": "201",
+      "bed": "1A",
+      "sector": "UTI",
+      "observations": "Paciente intubado y ventilado",
+      "date": "2026-04-09T12:20:00"
+    }
+  },
+  {
+    "request_id": "INT-2003",
+    "is_urgent": true,
+    "patient_data": {
+      "first_name": "Ana",
+      "last_name": "Martinez",
+      "national_id": "30111222",
+      "internal_id": 32458,
+      "birth_date": {
+        "year": "1983",
+        "month": "09",
+        "day": "20"
+      },
+      "sex": "F"
+    },
+    "clinical_order": {
+      "modality": "US",
+      "procedure": "Ecografia Abdominal",
+      "diagnosis": "Colecistitis aguda",
+      "study_setting": "En cama",
+      "requesting_physician": "Dr. Marcos Juarez",
+      "room": "105",
+      "bed": "2B",
+      "sector": "Cirugia General",
+      "observations": "Ayuno de 12 horas, mucho dolor",
+      "date": "2026-04-09T13:40:00"
+    }
+  },
+  {
+    "request_id": "INT-2004",
+    "is_urgent": false,
+    "patient_data": {
+      "first_name": "Luis",
+      "last_name": "Fernandez",
+      "national_id": "25999888",
+      "internal_id": 32459,
+      "birth_date": {
+        "year": "1977",
+        "month": "11",
+        "day": "03"
+      },
+      "sex": "M"
+    },
+    "clinical_order": {
+      "modality": "MR",
+      "procedure": "Resonancia de Columna Cervical",
+      "diagnosis": "Hernia de disco C5-C6",
+      "study_setting": "Rayos",
+      "requesting_physician": "Dra. Sandra Miguelez",
+      "room": "304",
+      "bed": "1A",
+      "sector": "Neurologia",
+      "observations": "",
+      "date": "2026-04-09T10:00:00"
+    }
+  },
+  {
+    "request_id": "INT-2005",
+    "is_urgent": false,
+    "patient_data": {
+      "first_name": "Carmen",
+      "last_name": "Lopez",
+      "national_id": "11444555",
+      "internal_id": 32460,
+      "birth_date": {
+        "year": "1950",
+        "month": "02",
+        "day": "28"
+      },
+      "sex": "F"
+    },
+    "clinical_order": {
+      "modality": "CR",
+      "procedure": "Radiografia de Torax",
+      "diagnosis": "Neumonia intrahospitalaria",
+      "study_setting": "En cama",
+      "requesting_physician": "Dr. Carlos Santilli",
+      "room": "110",
+      "bed": "3C",
+      "sector": "Clinica Medica",
+      "observations": "Aislamiento de contacto respiratorio",
+      "date": "2026-04-09T12:00:00"
+    }
+  },
+  {
+    "request_id": "INT-2006",
+    "is_urgent": false,
+    "patient_data": {
+      "first_name": "Roberto",
+      "last_name": "Sanchez",
+      "national_id": "20333444",
+      "internal_id": 32461,
+      "birth_date": {
+        "year": "1968",
+        "month": "12",
+        "day": "10"
+      },
+      "sex": "M"
+    },
+    "clinical_order": {
+      "modality": "CT",
+      "procedure": "Tomografia de Abdomen y Pelvis",
+      "diagnosis": "Control oncologico",
+      "study_setting": "Rayos",
+      "requesting_physician": "Dra. Monica Gatti",
+      "room": "405",
+      "bed": "1B",
+      "sector": "Oncologia",
+      "observations": "Traer via periferica permeable para contraste",
+      "date": "2026-04-09T13:30:00"
+    }
+  },
+  {
+    "request_id": "INT-2007",
+    "is_urgent": true,
+    "patient_data": {
+      "first_name": "Silvia",
+      "last_name": "Quiroga",
+      "national_id": "18555666",
+      "internal_id": 32462,
+      "birth_date": {
+        "year": "1965",
+        "month": "07",
+        "day": "25"
+      },
+      "sex": "F"
+    },
+    "clinical_order": {
+      "modality": "US",
+      "procedure": "Doppler Venoso de Miembros Inferiores",
+      "diagnosis": "TVP",
+      "study_setting": "Rayos",
+      "requesting_physician": "Dr. Esteban Quito",
+      "room": "112",
+      "bed": "2A",
+      "sector": "Cardiologia",
+      "observations": "Edema asimetrico MID, sospecha de trombo",
+      "date": "2026-04-09T13:00:00"
+    }
+  },
+  {
+    "request_id": "INT-2008",
+    "is_urgent": false,
+    "patient_data": {
+      "first_name": "Mario",
+      "last_name": "Dominguez",
+      "national_id": "35777888",
+      "internal_id": 32463,
+      "birth_date": {
+        "year": "1990",
+        "month": "08",
+        "day": "14"
+      },
+      "sex": "M"
+    },
+    "clinical_order": {
+      "modality": "CR",
+      "procedure": "Radiografia de Femur",
+      "diagnosis": "Fractura expuesta",
+      "study_setting": "Rayos",
+      "requesting_physician": "Dr. Lucio Domato",
+      "room": "116",
+      "bed": "1A",
+      "sector": "Traumatologia",
+      "observations": "Control post-reduccion",
+      "date": "2026-04-09T11:00:00"
+    }
+  },
+  {
+    "request_id": "INT-2009",
+    "is_urgent": true,
+    "patient_data": {
+      "first_name": "Elena",
+      "last_name": "Ruiz",
+      "national_id": "28111999",
+      "internal_id": 32464,
+      "birth_date": {
+        "year": "1980",
+        "month": "01",
+        "day": "05"
+      },
+      "sex": "F"
+    },
+    "clinical_order": {
+      "modality": "CT",
+      "procedure": "Angiotomografia Pulmonar",
+      "diagnosis": "TEP",
+      "study_setting": "En cama",
+      "requesting_physician": "Dra. Laura Spinelli",
+      "room": "202",
+      "bed": "3A",
+      "sector": "UTI",
+      "observations": "Saturacion baja, oxigeno dependiente",
+      "date": "2026-04-09T10:00:00"
+    }
+  },
+  {
+    "request_id": "INT-2010",
+    "is_urgent": false,
+    "patient_data": {
+      "first_name": "Hector",
+      "last_name": "Blanco",
+      "national_id": "12666777",
+      "internal_id": 32465,
+      "birth_date": {
+        "year": "1952",
+        "month": "03",
+        "day": "30"
+      },
+      "sex": "M"
+    },
+    "clinical_order": {
+      "modality": "MR",
+      "procedure": "Resonancia de Cerebro",
+      "diagnosis": "Sospecha de tumoracion",
+      "study_setting": "Rayos",
+      "requesting_physician": "Dr. Fabian Solis",
+      "room": "308",
+      "bed": "2B",
+      "sector": "Neurologia",
+      "observations": "Paciente desorientado, requiere sedacion leve",
+      "date": "2026-04-09T10:40:00"
+    }
+  },
+  {
+    "request_id": "INT-2011",
+    "is_urgent": true,
+    "patient_data": {
+      "first_name": "Sofia",
+      "last_name": "Gimenez",
+      "national_id": "50222333",
+      "internal_id": 32466,
+      "birth_date": {
+        "year": "2015",
+        "month": "10",
+        "day": "18"
+      },
+      "sex": "F"
+    },
+    "clinical_order": {
+      "modality": "US",
+      "procedure": "Ecografia Renal",
+      "diagnosis": "Colico nefritico",
+      "study_setting": "Rayos",
+      "requesting_physician": "Dra. Patricia Sosa",
+      "room": "501",
+      "bed": "1C",
+      "sector": "Pediatria",
+      "observations": "Acompa\u00f1ada de la madre, dolor agudo",
+      "date": "2026-04-09T09:45:00"
+    }
+  },
+  {
+    "request_id": "INT-2012",
+    "is_urgent": false,
+    "patient_data": {
+      "first_name": "Diego",
+      "last_name": "Navarro",
+      "national_id": "22444555",
+      "internal_id": 32467,
+      "birth_date": {
+        "year": "1971",
+        "month": "05",
+        "day": "22"
+      },
+      "sex": "M"
+    },
+    "clinical_order": {
+      "modality": "CT",
+      "procedure": "Urotomografia",
+      "diagnosis": "Litiasis renal",
+      "study_setting": "Rayos",
+      "requesting_physician": "Dr. Jorge Rinaldi",
+      "room": "108",
+      "bed": "2A",
+      "sector": "Urologia",
+      "observations": "Sin contraste",
+      "date": "2026-04-09T09:50:00"
+    }
+  },
+  {
+    "request_id": "INT-2013",
+    "is_urgent": true,
+    "patient_data": {
+      "first_name": "Lucia",
+      "last_name": "Castro",
+      "national_id": "16888999",
+      "internal_id": 32468,
+      "birth_date": {
+        "year": "1962",
+        "month": "09",
+        "day": "11"
+      },
+      "sex": "F"
+    },
+    "clinical_order": {
+      "modality": "CR",
+      "procedure": "Radiografia de Torax Portatil",
+      "diagnosis": "Control de via central",
+      "study_setting": "En cama",
+      "requesting_physician": "Dra. Beatriz Ferro",
+      "room": "205",
+      "bed": "1B",
+      "sector": "Unidad Coronaria",
+      "observations": "Realizar en cama urgente post-procedimiento",
+      "date": "2026-04-09T10:10:00"
+    }
+  },
+  {
+    "request_id": "INT-2014",
+    "is_urgent": false,
+    "patient_data": {
+      "first_name": "Martina",
+      "last_name": "Alonso",
+      "national_id": "39555444",
+      "internal_id": 32469,
+      "birth_date": {
+        "year": "1996",
+        "month": "04",
+        "day": "08"
+      },
+      "sex": "F"
+    },
+    "clinical_order": {
+      "modality": "MR",
+      "procedure": "Resonancia de Pelvis",
+      "diagnosis": "Endometriosis profunda",
+      "study_setting": "Rayos",
+      "requesting_physician": "Dr. Martin Palermo",
+      "room": "210",
+      "bed": "1A",
+      "sector": "Ginecologia",
+      "observations": "",
+      "date": "2026-04-09T10:10:00"
+    }
+  },
+  {
+    "request_id": "INT-2015",
+    "is_urgent": false,
+    "patient_data": {
+      "first_name": "Jorge",
+      "last_name": "Sosa",
+      "national_id": "17333222",
+      "internal_id": 32470,
+      "birth_date": {
+        "year": "1964",
+        "month": "11",
+        "day": "29"
+      },
+      "sex": "M"
+    },
+    "clinical_order": {
+      "modality": "CT",
+      "procedure": "Tomografia de Torax de Alta Resolucion",
+      "diagnosis": "Fibrosis pulmonar",
+      "study_setting": "Rayos",
+      "requesting_physician": "Dra. Natalia Oreiro",
+      "room": "111",
+      "bed": "4B",
+      "sector": "Clinica Medica",
+      "observations": "Paciente tosedor",
+      "date": "2026-04-09T10:30:00"
+    }
+  },
+  {
+    "request_id": "INT-2016",
+    "is_urgent": true,
+    "patient_data": {
+      "first_name": "Ruben",
+      "last_name": "Mansilla",
+      "national_id": "24111222",
+      "internal_id": 32471,
+      "birth_date": {
+        "year": "1973",
+        "month": "02",
+        "day": "09"
+      },
+      "sex": "M"
+    },
+    "clinical_order": {
+      "modality": "CT",
+      "procedure": "Tomografia de Cerebro sin contraste",
+      "diagnosis": "ACV Isquemico Agudo",
+      "study_setting": "En cama",
+      "requesting_physician": "Dra. Florencia Avila",
+      "room": "203",
+      "bed": "2A",
+      "sector": "UTI",
+      "observations": "Ventana terapeutica, evaluar trombectomia",
+      "date": "2026-04-09T08:15:00"
+    }
+  },
+  {
+    "request_id": "INT-2017",
+    "is_urgent": true,
+    "patient_data": {
+      "first_name": "Griselda",
+      "last_name": "Ibanez",
+      "national_id": "19555666",
+      "internal_id": 32472,
+      "birth_date": {
+        "year": "1967",
+        "month": "12",
+        "day": "01"
+      },
+      "sex": "F"
+    },
+    "clinical_order": {
+      "modality": "CT",
+      "procedure": "Tomografia de Abdomen con contraste",
+      "diagnosis": "Hemorragia digestiva alta",
+      "study_setting": "En cama",
+      "requesting_physician": "Dr. Ramon Bustos",
+      "room": "118",
+      "bed": "1C",
+      "sector": "UTI",
+      "observations": "Hipotensa, requerimiento de transfusiones",
+      "date": "2026-04-09T08:35:00"
+    }
+  },
+  {
+    "request_id": "INT-2018",
+    "is_urgent": false,
+    "patient_data": {
+      "first_name": "Alberto",
+      "last_name": "Paez",
+      "national_id": "13333444",
+      "internal_id": 32473,
+      "birth_date": {
+        "year": "1957",
+        "month": "06",
+        "day": "27"
+      },
+      "sex": "M"
+    },
+    "clinical_order": {
+      "modality": "US",
+      "procedure": "Ecocardiograma Transtoracico",
+      "diagnosis": "Insuficiencia cardiaca",
+      "study_setting": "En cama",
+      "requesting_physician": "Dra. Mirta Vallejos",
+      "room": "107",
+      "bed": "3B",
+      "sector": "Cardiologia",
+      "observations": "Disnea de reposo, edemas en miembros inferiores",
+      "date": "2026-04-09T09:05:00"
+    }
+  },
+  {
+    "request_id": "INT-2019",
+    "is_urgent": true,
+    "patient_data": {
+      "first_name": "Paola",
+      "last_name": "Benitez",
+      "national_id": "31111333",
+      "internal_id": 32474,
+      "birth_date": {
+        "year": "1987",
+        "month": "03",
+        "day": "19"
+      },
+      "sex": "F"
+    },
+    "clinical_order": {
+      "modality": "MR",
+      "procedure": "Resonancia de Cerebro",
+      "diagnosis": "TEP con duda diagnostica",
+      "study_setting": "Rayos",
+      "requesting_physician": "Dr. Omar Farias",
+      "room": "306",
+      "bed": "1A",
+      "sector": "Neumonologia",
+      "observations": "Embarazada de 12 semanas, evitar contraste",
+      "date": "2026-04-09T09:25:00"
+    }
+  },
+  {
+    "request_id": "INT-2020",
+    "is_urgent": false,
+    "patient_data": {
+      "first_name": "Mabel",
+      "last_name": "Godoy",
+      "national_id": "16222444",
+      "internal_id": 32475,
+      "birth_date": {
+        "year": "1961",
+        "month": "09",
+        "day": "14"
+      },
+      "sex": "F"
+    },
+    "clinical_order": {
+      "modality": "CR",
+      "procedure": "Radiografia de Abdomen",
+      "diagnosis": "Suboclusion intestinal",
+      "study_setting": "En cama",
+      "requesting_physician": "Dra. Rosa Ferreyra",
+      "room": "109",
+      "bed": "2B",
+      "sector": "Cirugia General",
+      "observations": "Distension abdominal marcada",
+      "date": "2026-04-09T09:50:00"
+    }
+  },
+  {
+    "request_id": "INT-2021",
+    "is_urgent": false,
+    "patient_data": {
+      "first_name": "Osvaldo",
+      "last_name": "Carrizo",
+      "national_id": "27888999",
+      "internal_id": 32476,
+      "birth_date": {
+        "year": "1976",
+        "month": "08",
+        "day": "07"
+      },
+      "sex": "M"
+    },
+    "clinical_order": {
+      "modality": "MR",
+      "procedure": "Resonancia de Hombro",
+      "diagnosis": "Lesion de manguito rotador",
+      "study_setting": "Rayos",
+      "requesting_physician": "Dr. Ariel Giraudo",
+      "room": "310",
+      "bed": "4A",
+      "sector": "Traumatologia",
+      "observations": "",
+      "date": "2026-04-09T11:10:00"
+    }
+  }
+]

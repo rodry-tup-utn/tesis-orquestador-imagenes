@@ -1,0 +1,11 @@
+fastapi[standard]
+sqlmodel
+asyncpg
+websockets
+alembic
+requests
+pyjwt
+httpx>=0.24.0
+pydicom>=2.4.0
+pytest
+pytest-cov

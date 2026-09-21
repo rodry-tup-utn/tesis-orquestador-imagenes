@@ -1,0 +1,335 @@
+{
+  "name": "Orquestador Imagenes",
+  "nodes": [
+    {
+      "parameters": {
+        "url": "http://mock-server:4000/internacion.json",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        240,
+        -208
+      ],
+      "id": "0bbe3a51-5816-453f-92a8-8c80d5f5951b",
+      "name": "Request Internacion"
+    },
+    {
+      "parameters": {
+        "url": "http://mock-server:4000/guardia.json",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        240,
+        0
+      ],
+      "id": "d7c620d0-5428-4fa3-8bb0-c975cc95ea9f",
+      "name": "Request Guardia"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -80,
+        0
+      ],
+      "id": "7f840917-822f-4b4b-a910-af9243b1c227",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "http://mock-server:4000/ambulatorio.json",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        240,
+        208
+      ],
+      "id": "ae21fdd5-ce84-41da-860f-367498cbf50e",
+      "name": "Request Ambulatorio"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Timestamps de medicion (benchmark Escenario B)\nlet ts_start = Date.now();\nlet cycle_id = \"schedule\";\ntry {\n  const wb = $(\"Medir Ciclo\").first().json.body;\n  if (wb) {\n    ts_start = wb.ts_start || ts_start;\n    cycle_id = wb.cycle_id || cycle_id;\n  }\n} catch (e) {}\n\n//Script para Internacion\nconst ordenesLimpias = $input.all().map((item) => {\n  const data = item.json;\n\n  // desestructuracion de datos para mejor orden\n  const paciente = data.patient_data || {};\n  const orden = data.clinical_order || {};\n\n  const nombre = paciente.first_name || \"\";\n  const apellido = paciente.last_name || \"\";\n\n  // pseudonimo de telegram\n\n  // formateo fecha nacimiento\n  const bd = paciente.birth_date || {};\n  const fechaNac = bd.year ? `${bd.year}-${bd.month.toString().padStart(2, '0')}-${bd.day.toString().padStart(2, '0')}` : \"1900-01-01\";\n\n  // urgencia como booleano\n  const prioridad = !!data.is_urgent;\n\n  // ubicacion\n  const ubicacion = `${orden.sector || \"S/D\"} - Hab: ${orden.room || \"-\"} Cama: ${orden.bed || \"-\"}`;\n  \n  let mod = orden.modality || \"DX\";\n  if (mod === \"CR\") mod = \"DX\";\n\n  let setting = orden.study_setting || \"En Efector\";\n  if (setting.toLowerCase() === \"en cama\") setting = \"En Cama\";\n  else setting = \"En Efector\";\n\n  return {\n    external_id: `I-${data.request_id}`,\n    source_system: \"INTERNACION\",\n    modality: mod,\n    description: orden.procedure || \"Estudio\",\n    origin_service: \"Internacion\",\n    diagnosis: orden.diagnosis || \"Sin diagnostico\",\n    observations: orden.observations || \"Sin observaciones\",\n    order_date: new Date(`${orden.date}-03:00`).toISOString(),\n    patient_location: ubicacion,\n    study_setting: setting,\n    patient_name: nombre,\n    patient_lastname: apellido,\n    patient_dni: String(paciente.national_id || \"0\"),\n    patient_dob: fechaNac,\n    patient_sex: paciente.sex === \"F\" ? \"FEMALE\" : (paciente.sex === \"M\" ? \"MALE\" : \"OTHER\"),\n    requesting_physician: orden.requesting_physician || \"No especificado\",\n    is_urgent: prioridad,\n    is_active: true,\n    ts_start,\n    cycle_id,\n  };\n});\n\nreturn ordenesLimpias.map((orden) => ({ json: orden }));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        544,
+        -208
+      ],
+      "id": "2c239c9e-357e-45b5-9914-ca4f7ef841ae",
+      "name": "Normalizacion Internacion"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Timestamps de medicion (benchmark Escenario B)\nlet ts_start = Date.now();\nlet cycle_id = \"schedule\";\ntry {\n  const wb = $(\"Medir Ciclo\").first().json.body;\n  if (wb) {\n    ts_start = wb.ts_start || ts_start;\n    cycle_id = wb.cycle_id || cycle_id;\n  }\n} catch (e) {}\n\n// Script para Guardia\nconst ordenesLimpias = $input.all().map((item) => {\n  const data = item.json;\n\n  const partesNombre = (data.nom_paciente || \"\").split(\", \");\n  const apellido = partesNombre[0] || \"\";\n  const nombre = partesNombre[1] || \"\";\n\n  const prioridad = data.urgente === \"SI\";\n  const prestacion = data.estudio_req || \"Sin detalle\";\n\n  let modalidadInferida = \"DX\";\n  if (prestacion.toLowerCase().includes(\"resonancia\") || prestacion.toLowerCase().includes(\"rm\")) modalidadInferida = \"MR\";\n  else if (prestacion.toLowerCase().includes(\"ecograf\") || prestacion.toLowerCase().includes(\"ecografía\")) modalidadInferida = \"US\";\n  else if (prestacion.toLowerCase().includes(\"tomograf\") || prestacion.toLowerCase().includes(\"tc\") || prestacion.toLowerCase().includes(\"tac\")) modalidadInferida = \"CT\";\n  else if (prestacion.toLowerCase().includes(\"radiograf\") || prestacion.toLowerCase().includes(\"rx\")) modalidadInferida = \"DX\";\n\n  let setting = data.lugar_estudio || \"En Efector\";\n  if (setting.toLowerCase().includes(\"cama\")) setting = \"En Cama\";\n  else setting = \"En Efector\";\n\n  return {\n    external_id: `G-${data.id_transaccion}`,\n    source_system: \"GUARDIA\",\n    modality: modalidadInferida,\n    description: prestacion,\n    diagnosis: data.diagnostico || \"Sin diagnostico\",\n    observations: data.observaciones || \"Sin observaciones\",\n    patient_location: data.ubicacion_actual || \"Guardia\",\n    origin_service: \"Guardia\",\n    order_date: new Date(`${data.fecha_hora}-03:00`).toISOString(),\n    study_setting: setting, \n    patient_name: nombre,\n    patient_lastname: apellido,\n    patient_dni: String(data.doc_identidad || \"0\"),\n    patient_dob: data.fecha_nacimiento || \"1900-01-01\",\n    patient_sex: data.sexo === \"F\" ? \"FEMALE\" : (data.sexo === \"M\" ? \"MALE\" : \"OTHER\"),\n    requesting_physician: data.solicitante || \"Solicitante no especificado\",\n    is_urgent: prioridad,\n    is_active: true,\n    ts_start,\n    cycle_id,\n  };\n});\n\nreturn ordenesLimpias.map((orden) => ({ json: orden }));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        544,
+        0
+      ],
+      "id": "f2cc57ff-d1c5-4bca-856d-c774b9397e20",
+      "name": "Normalizacion Guardia"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Timestamps de medicion (benchmark Escenario B)\nlet ts_start = Date.now();\nlet cycle_id = \"schedule\";\ntry {\n  const wb = $(\"Medir Ciclo\").first().json.body;\n  if (wb) {\n    ts_start = wb.ts_start || ts_start;\n    cycle_id = wb.cycle_id || cycle_id;\n  }\n} catch (e) {}\n\n// Script para Ambulatorio CORREGIDO\nconst ordenesLimpias = $input.all().map((item) => {\n  const data = item.json;\n\n  const partesNombre = (data.PACIENTE_DATA || \"\").split(\"^\");\n  const apellido = partesNombre[0] || \"\";\n  const nombre = partesNombre[1] || \"\";\n\n  let modalidadInferida = \"DX\";\n  const prestacion = (data.PRESTACION_DESC || \"\").toLowerCase();\n  if (prestacion.includes(\"resonancia\") || prestacion.includes(\"rm\")) modalidadInferida = \"MR\";\n  else if (prestacion.includes(\"ecograf\") || prestacion.includes(\"ecografía\")) modalidadInferida = \"US\";\n  else if (prestacion.includes(\"tomograf\") || prestacion.includes(\"tc\") || prestacion.includes(\"tac\")) modalidadInferida = \"CT\";\n\n  let fechaTurno = \"1900-01-01T00:00:00Z\";\n  try {\n      fechaTurno = new Date(`${data.FECHA_TURNO}T${data.HORA_TURNO || \"00:00\"}:00-03:00`).toISOString();\n  } catch(e) {}\n\n  return {\n    external_id: `A-${data.ID_CITA}`,\n    source_system: \"AMBULATORIO\",\n    modality: modalidadInferida,\n    description: data.PRESTACION_DESC || \"Estudio\",\n    origin_service: \"Ambulatorio\",\n    diagnosis: data.DIAGNOSTICO || \"Sin especificar\",\n    observations: data.OBSERVACIONES || \"Sin observaciones\",\n    patient_location: \"Atención Ambulatoria\",\n    order_date: fechaTurno,\n    study_setting: \"En Efector\",\n    patient_name: nombre,\n    patient_lastname: apellido,\n    patient_dni: String(data.NRO_DOCUMENTO || \"0\"),\n    patient_dob: data.FECHA_NACIMIENTO || \"1900-01-01\",\n    patient_sex: data.SEXO === \"F\" ? \"FEMALE\" : (data.SEXO === \"M\" ? \"MALE\" : \"OTHER\"),\n    requesting_physician: data.MEDICO_DERIVANTE || \"No especificado\",\n    is_urgent: false,\n    is_active: true,\n    ts_start,\n    cycle_id,\n  };\n});\n\nreturn ordenesLimpias.map((orden) => ({ json: orden }));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        544,
+        208
+      ],
+      "id": "d790a603-3e0b-4f66-bb45-a6c6c6e108d2",
+      "name": "Normalizacion Ambulatorio"
+    },
+    {
+      "parameters": {
+        "numberInputs": 3
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        928,
+        -16
+      ],
+      "id": "896b2277-cab7-4d38-9b1b-73770ab76ffb",
+      "name": "Merge Ordenes",
+      "alwaysOutputData": true,
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "orders",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1152,
+        0
+      ],
+      "id": "072d8030-289f-40de-85c7-2b39f34d504f",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://backend:8000/orders/batch",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Internal-API-Key",
+              "value": "={{ $env.INTERNAL_API_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({ orders: $json.orders, ts_start: $json.orders[0].ts_start, cycle_id: $json.orders[0].cycle_id, ts_sent: Date.now() }) }}",
+        "options": {
+          "sendCredentialsOnCrossOriginRedirect": false
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1360,
+        0
+      ],
+      "id": "540754da-a4c0-4f6a-97b8-0c2e480119ac",
+      "name": "Ingesta FastAPI",
+      "executeOnce": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "medir-ciclo",
+        "respond": "all",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -320,
+        0
+      ],
+      "id": "9f4a5c0e-1111-4a2b-8c3d-4e5f6a7b8c90",
+      "name": "Medir Ciclo",
+      "webhookId": "medir-ciclo-webhook"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Request Internacion": {
+      "main": [
+        [
+          {
+            "node": "Normalizacion Internacion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Request Guardia": {
+      "main": [
+        [
+          {
+            "node": "Normalizacion Guardia",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Request Internacion",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Request Guardia",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Request Ambulatorio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Request Ambulatorio": {
+      "main": [
+        [
+          {
+            "node": "Normalizacion Ambulatorio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalizacion Guardia": {
+      "main": [
+        [
+          {
+            "node": "Merge Ordenes",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Normalizacion Internacion": {
+      "main": [
+        [
+          {
+            "node": "Merge Ordenes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalizacion Ambulatorio": {
+      "main": [
+        [
+          {
+            "node": "Merge Ordenes",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Merge Ordenes": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Ingesta FastAPI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ingesta FastAPI": {
+      "main": [
+        []
+      ]
+    },
+    "Medir Ciclo": {
+      "main": [
+        [
+          {
+            "node": "Request Internacion",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Request Guardia",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Request Ambulatorio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "bf53129b-2cd0-4bf7-a6c2-f274f64121b1",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "68817198e4f2234f06d497b266480aeaee86e39fa21de9dd94db6e614877bfec"
+  },
+  "id": "VX9lpwEr2VqSDALR",
+  "tags": []
+}
