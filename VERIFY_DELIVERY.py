@@ -13,6 +13,7 @@ import json
 import math
 import re
 import statistics
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
@@ -132,6 +133,19 @@ def main() -> int:
     )
 
     print(f"Scripts de benchmark sin nombres indefinidos: {'OK' if not script_problems else script_problems}")
+    # 2 bis) Capitulo 6: se reconstruye el patron de referencia y la concordancia
+    # de E02/E09/E12 unicamente a partir de las tablas crudas del panel (Anexo V).
+    import subprocess
+    panel_check = subprocess.run(
+        [sys.executable, str(ROOT / "benchmark" / "verify_chapter6_panel.py")],
+        capture_output=True, text=True, cwd=str(ROOT),
+    )
+    panel_ok = panel_check.returncode == 0
+    print(f"Capítulo 6 recomputado desde panel_votos_50_ordenes.csv y motor_salida_fases_50_ordenes.csv: "
+          f"{'OK' if panel_ok else 'REVISAR'}")
+    if not panel_ok:
+        print(panel_check.stdout[-1500:], panel_check.stderr[-1500:])
+
     print(f"Cifras recomputadas (RNF-01 {api_p95}; RF-04 {ws_mean}/{ws_med}/{ws_ci}; mapeo {len(wl)*len(wl_fields)-wl_bad}/{len(wl)*len(wl_fields)}): {'OK' if figures_ok else 'REVISAR'}")
     print(f"Pruebas del motor: {engine_tests}")
     print(f"Pruebas de seguridad: {security_tests}")
@@ -154,6 +168,7 @@ def main() -> int:
         and privacy_workflow_ok
         and not script_problems
         and figures_ok
+        and panel_ok
     )
     print("VERIFICACIÓN ESTRUCTURAL:", "OK" if ok else "REVISAR")
     return 0 if ok else 1

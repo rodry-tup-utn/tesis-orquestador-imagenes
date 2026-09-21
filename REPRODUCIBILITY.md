@@ -47,6 +47,25 @@ La medición corresponde a un único cliente secuencial y no caracteriza carga c
 
 Los CSV históricos de TDCC se conservan en `benchmark/results/`. El script actual `benchmark/tdcc.py` incorpora la cabecera `X-Internal-API-Key`; no se presenta aquí una nueva corrida del script contra el stack actual como resultado de esta preparación.
 
+## Verificación mecánica del Capítulo 6 (panel de 17 evaluadores)
+
+`benchmark/verify_chapter6_panel.py` recalcula, a partir de dos CSV crudos incluidos en este ZIP
+(`benchmark/panel_votos_50_ordenes.csv`, extraído literalmente de la Tabla 32 del Anexo V, y
+`benchmark/motor_salida_fases_50_ordenes.csv`, extraído de la Tabla 33), sin depender de ninguna
+cifra publicada en el texto:
+
+- el patrón de referencia (moda de 17 evaluadores, empate → nivel más severo) y su coincidencia
+  con la columna «Patrón» de la Tabla 32;
+- la matriz de confusión y la coincidencia exacta del motor en la Fase 0 y en la Fase 4;
+- el κ de Fleiss entre los 17 evaluadores;
+- la concordancia individual de E02, E09 y E12 contra el motor (Fase 4) y contra el patrón
+  reconstruido con los 14 evaluadores restantes — las dos cifras que la sección 6.9 reporta;
+- la prueba de exclusión sistemática (17 iteraciones, un evaluador afuera por vez).
+
+Ejecutar: `python benchmark/verify_chapter6_panel.py`. Reproduce exactamente 66,0 % (Fase 0),
+78,0 % (Fase 4), κ de Fleiss ≈ 0,382, y las cifras individuales de E02/E09/E12 citadas en §6.9.
+`VERIFY_DELIVERY.py` corre este script y falla si alguna cifra deja de coincidir.
+
 ## Instrumentos para la evidencia pendiente (no ejecutados en esta entrega)
 
 `PROTOCOLOS_EVIDENCIA_ADICIONAL.md` describe cómo producir la validación predictiva independiente (`benchmark/eval_independent.py`), la medición multi-operador del Escenario A (`scenario_a_timer.py`), la prueba de usabilidad con usuarios (`sus_score.py`) y la carga concurrente/disponibilidad (`load_test.py`). Los scripts se probaron con datos sintéticos que no forman parte del estudio; **no hay resultados de estas cuatro líneas en el paquete**.
