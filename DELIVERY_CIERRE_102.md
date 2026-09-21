@@ -13,4 +13,4 @@ Esta entrega alinea código, documentación y evidencia disponible.
 Quedan fuera de esta entrega como resultados experimentales nuevos: validación humana independiente del motor, evaluación de usabilidad con usuarios externos, prueba de carga sostenida y campaña de disponibilidad de cuatro horas. Los scripts/protocolos para esas pruebas se conservan como material de trabajo futuro.
 
 ## Trazabilidad
-El árbol de esta entrega queda congelado en el commit local `35d3d7a1e1dbc8a6a54b620bdb65cdb4c45b0bcf`. El commit debe publicarse en el repositorio institucional/oficial para completar la trazabilidad externa.
+La entrega se mantiene bajo control de versiones Git. El identificador exacto del commit final se consigna en el Anexo IV.7 de la tesis. El commit debe publicarse en el repositorio institucional/oficial para completar la trazabilidad externa.
