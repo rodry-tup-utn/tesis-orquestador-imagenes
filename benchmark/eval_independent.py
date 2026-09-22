@@ -36,10 +36,8 @@ from collections import Counter
 
 BENCHMARK_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, BENCHMARK_DIR)
+from stats import LEVELS, SEVERITY, clopper_pearson, fleiss_kappa, reference_label
 import validate_motor as vm  # reutiliza el mismo motor y helpers de la regresion
-
-LEVELS = ["Crítico", "Urgente", "Prioritario", "Rutina"]
-SEVERITY = {"Crítico": 4, "Urgente": 3, "Prioritario": 2, "Rutina": 1}
 
 
 def canon(label: str) -> str:
@@ -48,31 +46,6 @@ def canon(label: str) -> str:
     if key not in vm.PRIORITY_MAP:
         raise ValueError(f"Etiqueta de prioridad no reconocida: {label!r}")
     return vm.PRIORITY_MAP[key]
-
-
-def reference_label(votes: list[str]) -> tuple[str, bool]:
-    """Moda; ante empate, el nivel mas severo (criterio del Capitulo 6)."""
-    counts = Counter(votes)
-    top = max(counts.values())
-    tied = [lvl for lvl, c in counts.items() if c == top]
-    return max(tied, key=lambda l: SEVERITY[l]), len(tied) > 1
-
-
-# ── Estadistica sin dependencias externas ─────────────────────────────────
-def _binom_cdf(k: int, n: int, p: float) -> float:
-    return sum(math.comb(n, i) * p**i * (1 - p) ** (n - i) for i in range(0, k + 1))
-
-
-def clopper_pearson(k: int, n: int, alpha: float = 0.05) -> tuple[float, float]:
-    def bisect(f, lo=0.0, hi=1.0):
-        for _ in range(80):
-            mid = (lo + hi) / 2
-            lo, hi = (mid, hi) if f(mid) > 0 else (lo, mid)
-        return (lo + hi) / 2
-    # cota inferior: P(X >= k | p) = alpha/2 ; cota superior: P(X <= k | p) = alpha/2
-    lower = 0.0 if k == 0 else bisect(lambda p: alpha / 2 - (1 - _binom_cdf(k - 1, n, p)))
-    upper = 1.0 if k == n else bisect(lambda p: _binom_cdf(k, n, p) - alpha / 2)
-    return lower, upper
 
 
 def binom_sf_ge(k: int, n: int, p: float) -> float:
@@ -92,15 +65,6 @@ def weighted_kappa(a: list[str], b: list[str]) -> float:
     po = sum(w(i, j) * obs[i][j] for i in range(m) for j in range(m)) / n
     pe = sum(w(i, j) * ra[i] * cb[j] for i in range(m) for j in range(m)) / (n * n)
     return (po - pe) / (1 - pe) if pe != 1 else float("nan")
-
-
-def fleiss_kappa(rows: list[list[str]]) -> float:
-    n_items, n_raters = len(rows), len(rows[0])
-    counts = [[r.count(l) for l in LEVELS] for r in rows]
-    p_j = [sum(c[j] for c in counts) / (n_items * n_raters) for j in range(len(LEVELS))]
-    p_i = [(sum(x * x for x in c) - n_raters) / (n_raters * (n_raters - 1)) for c in counts]
-    p_bar, pe = sum(p_i) / n_items, sum(x * x for x in p_j)
-    return (p_bar - pe) / (1 - pe) if pe != 1 else float("nan")
 
 
 def per_level(ref: list[str], pred: list[str]) -> list[dict]:

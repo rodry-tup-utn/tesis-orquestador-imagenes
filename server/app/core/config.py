@@ -3,10 +3,9 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-
-    postgres_user: str = "admin"
-    postgres_password: str = "admin"
-    postgres_db: str = "orquestador_db"
+    postgres_user: str
+    postgres_password: str
+    postgres_db: str
     postgres_host: str = "localhost"
     postgres_port: int = 5432
     secret_key: str
@@ -19,7 +18,7 @@ class Settings(BaseSettings):
     alert_webhook_key: str = ""
     url_webhook_n8n: str = ""
     triage_config: str = "desplegada"
-    
+
     # Orthanc settings
     orthanc_url: str = "http://localhost:8042"
     orthanc_user: str = ""

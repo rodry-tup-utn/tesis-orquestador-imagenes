@@ -49,7 +49,7 @@ Los CSV históricos de TDCC se conservan en `benchmark/results/`. El script actu
 
 ## Verificación mecánica del Capítulo 6 (panel de 17 evaluadores)
 
-`benchmark/verify_chapter6_panel.py` recalcula, a partir de dos CSV crudos incluidos en este ZIP
+`benchmark/verify_chapter6_panel.py` y `benchmark/stats.py` recalculan, a partir de dos CSV crudos incluidos en este ZIP
 (`benchmark/panel_votos_50_ordenes.csv`, extraído literalmente de la Tabla 32 del Anexo V, y
 `benchmark/motor_salida_fases_50_ordenes.csv`, extraído de la Tabla 33), sin depender de ninguna
 cifra publicada en el texto:
@@ -64,7 +64,7 @@ cifra publicada en el texto:
 
 Ejecutar: `python benchmark/verify_chapter6_panel.py`. Reproduce exactamente 66,0 % (Fase 0),
 78,0 % (Fase 4), κ de Fleiss ≈ 0,382, y las cifras individuales de E02/E09/E12 citadas en §6.9.
-`VERIFY_DELIVERY.py` corre este script y falla si alguna cifra deja de coincidir.
+`VERIFY_DELIVERY.py` corre este script y falla si alguna cifra deja de coincidir. El verificador estadístico es deliberadamente independiente del backend y no requiere importar FastAPI, SQLModel ni PostgreSQL.
 
 ## Instrumentos para la evidencia pendiente (no ejecutados en esta entrega)
 
@@ -102,7 +102,7 @@ El repositorio conserva los comandos previstos para análisis de dependencias, a
 ## Ejecución del entorno
 
 1. Copiar `.env.example` a `.env` y completar los secretos.
-2. Levantar el stack con Docker Compose.
+2. Levantar el stack con Docker Compose. PostgreSQL dispone de un healthcheck y el backend espera `service_healthy` antes de ejecutar las migraciones.
 3. Importar y activar los workflows de `n8n-workflow/`.
 4. Ejecutar las mediciones que correspondan y conservar sus CSV junto con la fecha y configuración utilizada.
 

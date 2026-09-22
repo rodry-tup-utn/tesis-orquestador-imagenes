@@ -32,10 +32,9 @@ import csv
 import os
 import sys
 import unicodedata
-from collections import Counter
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from eval_independent import LEVELS, SEVERITY, fleiss_kappa, reference_label  # reutiliza el mismo criterio de desempate
+from stats import LEVELS, SEVERITY, fleiss_kappa, reference_label  # solo funciones puras; sin dependencias del backend
 
 RATERS = [f"E{i:02d}" for i in range(1, 18)]
 

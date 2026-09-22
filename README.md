@@ -51,7 +51,7 @@ Abre tu terminal en la carpeta raíz del proyecto y ejecuta:
 ```bash
 docker compose up -d --build
 ```
-> Esto construirá la imagen de desarrollo del Frontend (Vite), el Backend (FastAPI), y descargará las imágenes de Postgres, n8n, Mock Server y Orthanc. Las migraciones de la base de datos se aplicarán automáticamente.
+> Esto construirá la imagen de desarrollo del Frontend (Vite), el Backend (FastAPI), y descargará las imágenes de Postgres, n8n, Mock Server y Orthanc. Las migraciones de la base de datos se aplicarán automáticamente. El backend espera a que PostgreSQL informe estado saludable antes de iniciar las migraciones.
 >
 > El Frontend corre en modo desarrollo con **Hot Module Replacement (HMR)**: los cambios en `frontend/src` se ven al instante sin rebuild. Ingresa a [http://localhost:5173](http://localhost:5173).
 
@@ -123,4 +123,4 @@ La disponibilidad sostenida, la concurrencia bajo carga, el control de acceso in
 
 ## Verificación estructural del paquete
 
-Antes de entregar, puede ejecutarse `python VERIFY_DELIVERY.py`. El script comprueba la presencia de los artefactos mínimos, el recuento estático de pruebas y el tamaño de los conjuntos de evidencia. No reemplaza una ejecución funcional del stack Docker.
+Antes de entregar, puede ejecutarse `python VERIFY_DELIVERY.py`. El script comprueba la presencia de los artefactos mínimos, el recuento estático de pruebas, la reconstrucción del capítulo 6, las cifras de evidencia, la minimización del payload externo y controles estáticos de robustez del despliegue. La reconstrucción estadística del capítulo 6 no depende del backend ni de SQLModel. No reemplaza una ejecución funcional completa del stack Docker.

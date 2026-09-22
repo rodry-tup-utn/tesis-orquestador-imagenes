@@ -64,6 +64,7 @@ def main() -> int:
         ROOT / "benchmark" / "results" / "results_ws_latency_2026-09-20.csv",
         ROOT / "benchmark" / "results" / "results_worklist_equivalence_2026-09-20.csv",
         ROOT / "benchmark" / "test_orders_regression.json",
+        ROOT / "benchmark" / "stats.py",
         ROOT / "server" / "tests" / "test_triage_engine.py",
         ROOT / "server" / "tests" / "test_security.py",
     ]
@@ -101,6 +102,18 @@ def main() -> int:
         for txt in telegram_texts
     )
 
+    # 0) Controles estáticos de robustez de la entrega.
+    compose_source = (ROOT / "docker-compose.yml").read_text(encoding="utf-8")
+    config_source = (ROOT / "server" / "app" / "core" / "config.py").read_text(encoding="utf-8")
+    websocket_source = (ROOT / "server" / "app" / "core" / "websocket.py").read_text(encoding="utf-8")
+    robustness_ok = (
+        "healthcheck:" in compose_source
+        and "condition: service_healthy" in compose_source
+        and "postgres_password: str" in config_source
+        and "postgres_password: str = \"admin\"" not in config_source
+        and "dead_connections" in websocket_source
+    )
+
     # 1) Todos los scripts de benchmark compilan y no leen nombres indefinidos.
     script_problems = {}
     for script in sorted((ROOT / "benchmark").glob("*.py")):
@@ -132,6 +145,7 @@ def main() -> int:
         and len(wl) * len(wl_fields) == 140 and wl_bad == 0
     )
 
+    print(f"Robustez de entrega (healthcheck/credenciales/WebSocket): {'OK' if robustness_ok else 'REVISAR'}")
     print(f"Scripts de benchmark sin nombres indefinidos: {'OK' if not script_problems else script_problems}")
     # 2 bis) Capitulo 6: se reconstruye el patron de referencia y la concordancia
     # de E02/E09/E12 unicamente a partir de las tablas crudas del panel (Anexo V).
@@ -167,6 +181,7 @@ def main() -> int:
         and privacy_backend_ok
         and privacy_workflow_ok
         and not script_problems
+        and robustness_ok
         and figures_ok
         and panel_ok
     )
