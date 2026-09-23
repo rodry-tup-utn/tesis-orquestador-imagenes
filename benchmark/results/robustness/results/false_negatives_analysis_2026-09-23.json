@@ -1,0 +1,374 @@
+{
+  "generated_at": "2026-09-23T20:12:24.493787+00:00",
+  "corpus_file": "/Users/nahuel/Desktop/carpeta sin título 3/tesis-orquestador-imagenes-DEFENSA_V10_4_HARDENED/benchmark/motor_salida_fases_50_ordenes.csv",
+  "metrics": {
+    "total_orders": 50,
+    "exact_matches": 39,
+    "exact_accuracy_pct": 78.0,
+    "overclassifications": 0,
+    "total_false_negatives": 11,
+    "critical_false_negatives": 2,
+    "urgent_false_negatives": 2,
+    "priority_false_negatives": 7
+  },
+  "critical_cases": [
+    {
+      "orden": "GUA-1002",
+      "clase_referencia": "CRITICO",
+      "clase_motor": "URGENTE",
+      "diferencia_niveles": 1,
+      "tipo_error": "FALSO_NEGATIVO_CRITICO",
+      "score_fase4": 18.0,
+      "diagnostico": "Traumatismo cerrado de abdomen",
+      "ubicacion": "Shock Room",
+      "servicio": "Guardia",
+      "modalidad": "Ecografia",
+      "causas_probables": [
+        "Diagnóstico 'Traumatismo cerrado de abdomen' no contiene el acrónimo exacto 'politrauma'",
+        "Ubicación Shock Room sumó +10 y Urgente +8 (total 18 pts), sin alcanzar el umbral de Crítico (40 pts)"
+      ]
+    },
+    {
+      "orden": "GUA-1004",
+      "clase_referencia": "CRITICO",
+      "clase_motor": "URGENTE",
+      "diferencia_niveles": 1,
+      "tipo_error": "FALSO_NEGATIVO_CRITICO",
+      "score_fase4": 20.0,
+      "diagnostico": "Apendicitis Aguda",
+      "ubicacion": "Sala de Espera",
+      "servicio": "Guardia",
+      "modalidad": "Ecografia",
+      "causas_probables": [
+        "Apendicitis aguda activó regla de Urgente (+20 pts); no activó shock o peritonitis",
+        "Discrepancia en el panel humano: 7/17 votaron Crítico y 6/17 votaron Urgente (acuerdo débil del 41 %)"
+      ]
+    }
+  ],
+  "urgent_cases": [
+    {
+      "orden": "INT-2011",
+      "clase_referencia": "URGENTE",
+      "clase_motor": "PRIORITARIO",
+      "diferencia_niveles": 1,
+      "tipo_error": "FALSO_NEGATIVO",
+      "score_fase4": 10.0,
+      "diagnostico": "Colico nefritico",
+      "ubicacion": "Pediatria",
+      "servicio": "Internación",
+      "modalidad": "US",
+      "causas_probables": [
+        "Cólico nefrítico carece de regla específica en diccionario; sumó solo puntaje de Pediatría (+10 pts)",
+        "Alcanza umbral de Prioritario (10 pts) pero no el de Urgente (20 pts)"
+      ]
+    },
+    {
+      "orden": "INT-2013",
+      "clase_referencia": "URGENTE",
+      "clase_motor": "RUTINA",
+      "diferencia_niveles": 2,
+      "tipo_error": "FALSO_NEGATIVO",
+      "score_fase4": 4.0,
+      "diagnostico": "Control de via central",
+      "ubicacion": "Unidad Coronaria",
+      "servicio": "Internación",
+      "modalidad": "CR",
+      "causas_probables": [
+        "Control de vía central activó regla neutra de 'control' a pesar de ubicación en Unidad Coronaria (+15 pts)",
+        "Puntaje resultante (4 pts) quedó bajo el umbral de Prioritario (10 pts)"
+      ]
+    }
+  ],
+  "priority_cases": [
+    {
+      "orden": "GUA-1003",
+      "clase_referencia": "PRIORITARIO",
+      "clase_motor": "RUTINA",
+      "diferencia_niveles": 1,
+      "tipo_error": "FALSO_NEGATIVO",
+      "score_fase4": 5.0,
+      "diagnostico": "Sospecha de Neumonia",
+      "ubicacion": "Box Amarillo",
+      "servicio": "Guardia",
+      "modalidad": "Radiologia",
+      "causas_probables": [
+        "Puntaje obtenido (5.0 pts) quedó bajo el umbral de Prioritario (umbral = 10 pts)",
+        "Falta de regla de diagnóstico o ubicación intermedia en servicio general"
+      ]
+    },
+    {
+      "orden": "GUA-1006",
+      "clase_referencia": "PRIORITARIO",
+      "clase_motor": "RUTINA",
+      "diferencia_niveles": 1,
+      "tipo_error": "FALSO_NEGATIVO",
+      "score_fase4": 9.0,
+      "diagnostico": "Caida de propia altura",
+      "ubicacion": "Sala de Espera",
+      "servicio": "Guardia",
+      "modalidad": "Radiologia",
+      "causas_probables": [
+        "Puntaje obtenido (9.0 pts) quedó bajo el umbral de Prioritario (umbral = 10 pts)",
+        "Falta de regla de diagnóstico o ubicación intermedia en servicio general"
+      ]
+    },
+    {
+      "orden": "GUA-1012",
+      "clase_referencia": "PRIORITARIO",
+      "clase_motor": "RUTINA",
+      "diferencia_niveles": 1,
+      "tipo_error": "FALSO_NEGATIVO",
+      "score_fase4": 6.0,
+      "diagnostico": "Dolor abdominal difuso",
+      "ubicacion": "Sala de Espera",
+      "servicio": "Guardia",
+      "modalidad": "Ecografia",
+      "causas_probables": [
+        "Puntaje obtenido (6.0 pts) quedó bajo el umbral de Prioritario (umbral = 10 pts)",
+        "Falta de regla de diagnóstico o ubicación intermedia en servicio general"
+      ]
+    },
+    {
+      "orden": "INT-2005",
+      "clase_referencia": "PRIORITARIO",
+      "clase_motor": "RUTINA",
+      "diferencia_niveles": 1,
+      "tipo_error": "FALSO_NEGATIVO",
+      "score_fase4": 5.0,
+      "diagnostico": "Neumonia intrahospitalaria",
+      "ubicacion": "Clinica Medica",
+      "servicio": "Internación",
+      "modalidad": "CR",
+      "causas_probables": [
+        "Puntaje obtenido (5.0 pts) quedó bajo el umbral de Prioritario (umbral = 10 pts)",
+        "Falta de regla de diagnóstico o ubicación intermedia en servicio general"
+      ]
+    },
+    {
+      "orden": "INT-2010",
+      "clase_referencia": "PRIORITARIO",
+      "clase_motor": "RUTINA",
+      "diferencia_niveles": 1,
+      "tipo_error": "FALSO_NEGATIVO",
+      "score_fase4": 9.0,
+      "diagnostico": "Sospecha de tumoracion",
+      "ubicacion": "Neurologia",
+      "servicio": "Internación",
+      "modalidad": "MR",
+      "causas_probables": [
+        "Puntaje obtenido (9.0 pts) quedó bajo el umbral de Prioritario (umbral = 10 pts)",
+        "Falta de regla de diagnóstico o ubicación intermedia en servicio general"
+      ]
+    },
+    {
+      "orden": "INT-2018",
+      "clase_referencia": "PRIORITARIO",
+      "clase_motor": "RUTINA",
+      "diferencia_niveles": 1,
+      "tipo_error": "FALSO_NEGATIVO",
+      "score_fase4": 6.0,
+      "diagnostico": "Insuficiencia cardiaca",
+      "ubicacion": "Cardiologia",
+      "servicio": "Internación",
+      "modalidad": "US",
+      "causas_probables": [
+        "Puntaje obtenido (6.0 pts) quedó bajo el umbral de Prioritario (umbral = 10 pts)",
+        "Falta de regla de diagnóstico o ubicación intermedia en servicio general"
+      ]
+    },
+    {
+      "orden": "INT-2020",
+      "clase_referencia": "PRIORITARIO",
+      "clase_motor": "RUTINA",
+      "diferencia_niveles": 1,
+      "tipo_error": "FALSO_NEGATIVO",
+      "score_fase4": 5.0,
+      "diagnostico": "Suboclusion intestinal",
+      "ubicacion": "Cirugia General",
+      "servicio": "Internación",
+      "modalidad": "CR",
+      "causas_probables": [
+        "Puntaje obtenido (5.0 pts) quedó bajo el umbral de Prioritario (umbral = 10 pts)",
+        "Falta de regla de diagnóstico o ubicación intermedia en servicio general"
+      ]
+    }
+  ],
+  "all_false_negatives": [
+    {
+      "orden": "GUA-1002",
+      "clase_referencia": "CRITICO",
+      "clase_motor": "URGENTE",
+      "diferencia_niveles": 1,
+      "tipo_error": "FALSO_NEGATIVO_CRITICO",
+      "score_fase4": 18.0,
+      "diagnostico": "Traumatismo cerrado de abdomen",
+      "ubicacion": "Shock Room",
+      "servicio": "Guardia",
+      "modalidad": "Ecografia",
+      "causas_probables": [
+        "Diagnóstico 'Traumatismo cerrado de abdomen' no contiene el acrónimo exacto 'politrauma'",
+        "Ubicación Shock Room sumó +10 y Urgente +8 (total 18 pts), sin alcanzar el umbral de Crítico (40 pts)"
+      ]
+    },
+    {
+      "orden": "GUA-1003",
+      "clase_referencia": "PRIORITARIO",
+      "clase_motor": "RUTINA",
+      "diferencia_niveles": 1,
+      "tipo_error": "FALSO_NEGATIVO",
+      "score_fase4": 5.0,
+      "diagnostico": "Sospecha de Neumonia",
+      "ubicacion": "Box Amarillo",
+      "servicio": "Guardia",
+      "modalidad": "Radiologia",
+      "causas_probables": [
+        "Puntaje obtenido (5.0 pts) quedó bajo el umbral de Prioritario (umbral = 10 pts)",
+        "Falta de regla de diagnóstico o ubicación intermedia en servicio general"
+      ]
+    },
+    {
+      "orden": "GUA-1004",
+      "clase_referencia": "CRITICO",
+      "clase_motor": "URGENTE",
+      "diferencia_niveles": 1,
+      "tipo_error": "FALSO_NEGATIVO_CRITICO",
+      "score_fase4": 20.0,
+      "diagnostico": "Apendicitis Aguda",
+      "ubicacion": "Sala de Espera",
+      "servicio": "Guardia",
+      "modalidad": "Ecografia",
+      "causas_probables": [
+        "Apendicitis aguda activó regla de Urgente (+20 pts); no activó shock o peritonitis",
+        "Discrepancia en el panel humano: 7/17 votaron Crítico y 6/17 votaron Urgente (acuerdo débil del 41 %)"
+      ]
+    },
+    {
+      "orden": "GUA-1006",
+      "clase_referencia": "PRIORITARIO",
+      "clase_motor": "RUTINA",
+      "diferencia_niveles": 1,
+      "tipo_error": "FALSO_NEGATIVO",
+      "score_fase4": 9.0,
+      "diagnostico": "Caida de propia altura",
+      "ubicacion": "Sala de Espera",
+      "servicio": "Guardia",
+      "modalidad": "Radiologia",
+      "causas_probables": [
+        "Puntaje obtenido (9.0 pts) quedó bajo el umbral de Prioritario (umbral = 10 pts)",
+        "Falta de regla de diagnóstico o ubicación intermedia en servicio general"
+      ]
+    },
+    {
+      "orden": "GUA-1012",
+      "clase_referencia": "PRIORITARIO",
+      "clase_motor": "RUTINA",
+      "diferencia_niveles": 1,
+      "tipo_error": "FALSO_NEGATIVO",
+      "score_fase4": 6.0,
+      "diagnostico": "Dolor abdominal difuso",
+      "ubicacion": "Sala de Espera",
+      "servicio": "Guardia",
+      "modalidad": "Ecografia",
+      "causas_probables": [
+        "Puntaje obtenido (6.0 pts) quedó bajo el umbral de Prioritario (umbral = 10 pts)",
+        "Falta de regla de diagnóstico o ubicación intermedia en servicio general"
+      ]
+    },
+    {
+      "orden": "INT-2005",
+      "clase_referencia": "PRIORITARIO",
+      "clase_motor": "RUTINA",
+      "diferencia_niveles": 1,
+      "tipo_error": "FALSO_NEGATIVO",
+      "score_fase4": 5.0,
+      "diagnostico": "Neumonia intrahospitalaria",
+      "ubicacion": "Clinica Medica",
+      "servicio": "Internación",
+      "modalidad": "CR",
+      "causas_probables": [
+        "Puntaje obtenido (5.0 pts) quedó bajo el umbral de Prioritario (umbral = 10 pts)",
+        "Falta de regla de diagnóstico o ubicación intermedia en servicio general"
+      ]
+    },
+    {
+      "orden": "INT-2010",
+      "clase_referencia": "PRIORITARIO",
+      "clase_motor": "RUTINA",
+      "diferencia_niveles": 1,
+      "tipo_error": "FALSO_NEGATIVO",
+      "score_fase4": 9.0,
+      "diagnostico": "Sospecha de tumoracion",
+      "ubicacion": "Neurologia",
+      "servicio": "Internación",
+      "modalidad": "MR",
+      "causas_probables": [
+        "Puntaje obtenido (9.0 pts) quedó bajo el umbral de Prioritario (umbral = 10 pts)",
+        "Falta de regla de diagnóstico o ubicación intermedia en servicio general"
+      ]
+    },
+    {
+      "orden": "INT-2011",
+      "clase_referencia": "URGENTE",
+      "clase_motor": "PRIORITARIO",
+      "diferencia_niveles": 1,
+      "tipo_error": "FALSO_NEGATIVO",
+      "score_fase4": 10.0,
+      "diagnostico": "Colico nefritico",
+      "ubicacion": "Pediatria",
+      "servicio": "Internación",
+      "modalidad": "US",
+      "causas_probables": [
+        "Cólico nefrítico carece de regla específica en diccionario; sumó solo puntaje de Pediatría (+10 pts)",
+        "Alcanza umbral de Prioritario (10 pts) pero no el de Urgente (20 pts)"
+      ]
+    },
+    {
+      "orden": "INT-2013",
+      "clase_referencia": "URGENTE",
+      "clase_motor": "RUTINA",
+      "diferencia_niveles": 2,
+      "tipo_error": "FALSO_NEGATIVO",
+      "score_fase4": 4.0,
+      "diagnostico": "Control de via central",
+      "ubicacion": "Unidad Coronaria",
+      "servicio": "Internación",
+      "modalidad": "CR",
+      "causas_probables": [
+        "Control de vía central activó regla neutra de 'control' a pesar de ubicación en Unidad Coronaria (+15 pts)",
+        "Puntaje resultante (4 pts) quedó bajo el umbral de Prioritario (10 pts)"
+      ]
+    },
+    {
+      "orden": "INT-2018",
+      "clase_referencia": "PRIORITARIO",
+      "clase_motor": "RUTINA",
+      "diferencia_niveles": 1,
+      "tipo_error": "FALSO_NEGATIVO",
+      "score_fase4": 6.0,
+      "diagnostico": "Insuficiencia cardiaca",
+      "ubicacion": "Cardiologia",
+      "servicio": "Internación",
+      "modalidad": "US",
+      "causas_probables": [
+        "Puntaje obtenido (6.0 pts) quedó bajo el umbral de Prioritario (umbral = 10 pts)",
+        "Falta de regla de diagnóstico o ubicación intermedia en servicio general"
+      ]
+    },
+    {
+      "orden": "INT-2020",
+      "clase_referencia": "PRIORITARIO",
+      "clase_motor": "RUTINA",
+      "diferencia_niveles": 1,
+      "tipo_error": "FALSO_NEGATIVO",
+      "score_fase4": 5.0,
+      "diagnostico": "Suboclusion intestinal",
+      "ubicacion": "Cirugia General",
+      "servicio": "Internación",
+      "modalidad": "CR",
+      "causas_probables": [
+        "Puntaje obtenido (5.0 pts) quedó bajo el umbral de Prioritario (umbral = 10 pts)",
+        "Falta de regla de diagnóstico o ubicación intermedia en servicio general"
+      ]
+    }
+  ]
+}
