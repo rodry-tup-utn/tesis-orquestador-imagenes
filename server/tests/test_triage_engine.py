@@ -292,3 +292,59 @@ class TestReproduccionFase4:
         assert any(p == -5 for p in pesos_negativos), (
             "La regla de evolucion (-5) debe activarse con texto con tilde gracias a NFD"
         )
+
+
+# ── Regresión Ampliada N=50 Órdenes (Incluye 10 Prioritarios y Casos Frontera) ────
+
+class TestRegresionAmpliada50Ordenes:
+    """Verifica que las 50 órdenes sintéticas del conjunto adicional
+    reproducen exactamente su prioridad esperada derivada de las reglas calibradas (100% consistencia).
+    Cubre casos frontera: Score 25 (Crítico), Score 24 (Urgente), Score 12 (Urgente),
+    Score 11 (Prioritario), Score 10 (Prioritario), Score 9 (Rutina).
+    """
+
+    @pytest.fixture
+    def regression_orders(self):
+        import json
+        import os
+        path = os.path.join(os.path.dirname(__file__), '..', 'test_orders_regression.json')
+        if not os.path.exists(path):
+            path = os.path.join(os.path.dirname(__file__), '..', '..', 'benchmark', 'test_orders_regression.json')
+        with open(path, encoding='utf-8') as fh:
+            return json.load(fh)['orders']
+
+    def test_regresion_50_ordenes_consistencia_100_por_ciento(self, regression_orders, calibrated_rules, default_settings):
+        assert len(regression_orders) == 50, f'Se esperaban 50 ordenes, se obtuvieron {len(regression_orders)}'
+        
+        map_prio = {
+            'critico': 'Crítico',
+            'urgente': 'Urgente',
+            'prioritario': 'Prioritario',
+            'rutina': 'Rutina',
+        }
+        import unicodedata
+        def _norm(v):
+            return ''.join(c for c in unicodedata.normalize('NFD', str(v).strip().lower()) if unicodedata.category(c) != 'Mn')
+
+        aciertos = 0
+        distribucion = {}
+        for o in regression_orders:
+            order_obj = make_order(
+                modality=Modality(o['modality']) if o.get('modality') else None,
+                origin_service=o.get('origin_service') or None,
+                patient_location=o.get('patient_location') or None,
+                diagnosis=o.get('diagnosis') or None,
+                is_urgent=bool(o.get('is_urgent', False)),
+                description=o.get('description') or '',
+            )
+            prio_enum, criteria = TriageEngine.evaluate(order_obj, calibrated_rules, default_settings)
+            esperado = map_prio.get(_norm(o['expected_priority']), o['expected_priority'])
+            assert prio_enum.value == esperado, f"Fallo en orden {o['id']}: esperado {esperado}, obtenido {prio_enum.value} (score {criteria['total_score']})"
+            aciertos += 1
+            distribucion[prio_enum.value] = distribucion.get(prio_enum.value, 0) + 1
+
+        assert aciertos == 50
+        assert distribucion['Prioritario'] == 10, 'Deben existir exactamente 10 casos de Prioritario en la regresion'
+        assert distribucion['Crítico'] == 12
+        assert distribucion['Urgente'] == 14
+        assert distribucion['Rutina'] == 14

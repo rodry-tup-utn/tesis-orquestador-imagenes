@@ -1,0 +1,18 @@
+{
+  "metric": "TDCC / RF-04 WebSocket Notification Latency",
+  "date": "2026-09-23",
+  "n": 50,
+  "mean_ms": 19.56,
+  "median_ms": 18.37,
+  "std_ms": 4.07,
+  "min_ms": 16.21,
+  "max_ms": 39.22,
+  "p90_ms": 21.75,
+  "p95_ms": 27.55,
+  "p99_ms": 35.0,
+  "ci_95": [
+    18.25,
+    20.86
+  ],
+  "raw_csv": "benchmark/results/results_ws_latency_extended_n50_2026-09-23.csv"
+}

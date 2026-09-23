@@ -1,3 +1,4 @@
+import asyncio
 import json
 import logging
 from datetime import datetime
@@ -80,27 +81,12 @@ class NotifierService:
 
             success = False
             t_start = now_ms()
-            try:
-                async with httpx.AsyncClient() as client:
-                    resp = await client.post(
-                        settings.url_webhook_n8n,
-                        json=payload,
-                        headers={"X-Alert-API-Key": settings.alert_webhook_key},
-                        timeout=5,
-                    )
-                    if resp.status_code != 200:
-                        logger.warning(
-                            "n8n respondió %d para order %d", resp.status_code, order.id
-                        )
-                        notificacion.status = "FAILED"
-                        notificacion.error_message = f"HTTP {resp.status_code}"
-                    else:
-                        notificacion.status = "SUCCESS"
-                        success = True
-            except Exception as e:
-                logger.error("Error de conexión con n8n para order %d: %s", order.id, e)
+            success, err_msg, attempts = await self._send_with_retry(payload, order.id)
+            if success:
+                notificacion.status = "SUCCESS"
+            else:
                 notificacion.status = "FAILED"
-                notificacion.error_message = str(e)
+                notificacion.error_message = f"{err_msg} tras {attempts} intentos"
             t_end = now_ms()
 
             log_metric(
@@ -164,27 +150,12 @@ class NotifierService:
 
                 success = False
                 t_start = now_ms()
-                try:
-                    async with httpx.AsyncClient() as client:
-                        resp = await client.post(
-                        settings.url_webhook_n8n,
-                        json=payload,
-                        headers={"X-Alert-API-Key": settings.alert_webhook_key},
-                        timeout=5,
-                    )
-                        if resp.status_code != 200:
-                            logger.warning(
-                                "n8n respondió %d para order %d", resp.status_code, order.id
-                            )
-                            notificacion.status = "FAILED"
-                            notificacion.error_message = f"HTTP {resp.status_code}"
-                        else:
-                            notificacion.status = "SUCCESS"
-                            success = True
-                except Exception as e:
-                    logger.error("Error de conexión con n8n para order %d: %s", order.id, e)
+                success, err_msg, attempts = await self._send_with_retry(payload, order.id)
+                if success:
+                    notificacion.status = "SUCCESS"
+                else:
                     notificacion.status = "FAILED"
-                    notificacion.error_message = str(e)
+                    notificacion.error_message = f"{err_msg} tras {attempts} intentos"
                 t_end = now_ms()
 
                 log_metric(
@@ -209,6 +180,46 @@ class NotifierService:
                     logger.info("Order %d notificada (batch)", order.id)
 
             return notified
+
+    async def _send_with_retry(
+        self, payload: dict, order_id: int, max_retries: int = 3, backoff_base: float = 0.2
+    ) -> tuple[bool, str | None, int]:
+        """Envía el payload al webhook con política de reintentos y backoff exponencial."""
+        last_error = None
+        for attempt in range(1, max_retries + 1):
+            try:
+                async with httpx.AsyncClient() as client:
+                    resp = await client.post(
+                        settings.url_webhook_n8n,
+                        json=payload,
+                        headers={"X-Alert-API-Key": settings.alert_webhook_key},
+                        timeout=5,
+                    )
+                    if resp.status_code == 200:
+                        if attempt > 1:
+                            logger.info(
+                                "Alerta para order %d entregada exitosamente en reintento %d/%d",
+                                order_id, attempt, max_retries
+                            )
+                        return True, None, attempt
+                    else:
+                        last_error = f"HTTP {resp.status_code}"
+                        logger.warning(
+                            "n8n respondió %d para order %d en intento %d/%d",
+                            resp.status_code, order_id, attempt, max_retries
+                        )
+            except Exception as e:
+                last_error = str(e)
+                logger.warning(
+                    "Fallo de conexión con n8n para order %d en intento %d/%d: %s",
+                    order_id, attempt, max_retries, e
+                )
+
+            if attempt < max_retries:
+                delay = backoff_base * (2 ** (attempt - 1))
+                await asyncio.sleep(delay)
+
+        return False, last_error, max_retries
 
 
 async def evaluate_and_notify(order_id: int, t_received: float | None = None):

@@ -1,0 +1,19 @@
+{
+  "experiment": "extended_soak_test",
+  "standard": "RNF-02",
+  "date": "2026-09-23",
+  "total_requests": 1254,
+  "successful_requests": 1254,
+  "success_rate_percent": 100.0,
+  "error_rate_percent": 0.0,
+  "mean_latency_ms": 13.68,
+  "median_latency_ms": 11.52,
+  "p95_latency_ms": 20.47,
+  "p99_latency_ms": 63.29,
+  "max_latency_ms": 876.08,
+  "first_half_mean_ms": 13.26,
+  "first_half_p95_ms": 21.05,
+  "second_half_mean_ms": 14.10,
+  "second_half_p95_ms": 19.00,
+  "verdict": "PASSED"
+}

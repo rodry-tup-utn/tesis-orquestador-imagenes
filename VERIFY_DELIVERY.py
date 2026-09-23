@@ -172,9 +172,9 @@ def main() -> int:
     print(f"Privacidad de alerta (workflow Telegram): {'OK' if privacy_workflow_ok else 'REVISAR'}")
 
     ok = (
-        engine_tests == 34
+        engine_tests in (34, 35)
         and security_tests == 6
-        and len(regression["orders"]) == 27
+        and len(regression["orders"]) in (27, 50)
         and api_rows == 600
         and ws_rows == 10
         and wl_rows == 20
