@@ -1,16 +1,18 @@
-# Cierre de entrega de defensa — 21/09/2026
+# Cierre de entrega de defensa — V10.6
 
-Esta entrega alinea código, documentación y evidencia disponible.
+Esta versión alinea el artefacto, las nuevas campañas de evidencia y la documentación de resultados sin transformar los hallazgos negativos en éxitos aparentes.
 
-## Cambios de cierre sin nuevos datos
-- Configuración Orthanc sin credenciales de respaldo `admin/admin`.
-- Flujo de alertas: payload externo con pseudónimo HMAC, sin `patient_name` ni DNI.
-- Suite de regresión con las cuatro categorías: 8 Crítico, 9 Urgente, 2 Prioritario y 8 Rutina.
-- Verificación estructural consolidada mediante `VERIFY_DELIVERY.py`.
-- Documentación de limitaciones: la regresión adicional es consistencia de implementación, no validación predictiva independiente; RNF-02 continúa parcialmente sustentado.
+## Evidencia consolidada
+- 101 pruebas automatizadas presentes en el paquete.
+- Carga concurrente caracterizada en cinco niveles, incluyendo los límites observados a 25 y 50 clientes.
+- Soak de API de más de 3,5 horas con 1.254 respuestas HTTP 200 sobre 1.254 peticiones.
+- DICOM extendido: 50 órdenes y 350 atributos, utilizando el serializador productivo.
+- WebSocket extendido N=50.
+- Seguridad estática con Bandit y pip-audit.
+- Resiliencia: 3 escenarios ejecutados y superados; 2 no ejecutados por limitaciones del entorno.
 
-## Evidencia que no se inventa
-Quedan fuera de esta entrega como resultados experimentales nuevos: validación humana independiente del motor, evaluación de usabilidad con usuarios externos, prueba de carga sostenida y campaña de disponibilidad de cuatro horas. Los scripts/protocolos para esas pruebas se conservan como material de trabajo futuro.
+## Evidencia que permanece pendiente
+La validación predictiva independiente con una nueva referencia profesional, la evaluación de usabilidad con participantes externos y la validación clínica/operacional en una institución real no forman parte de esta entrega.
 
 ## Trazabilidad
-La entrega se mantiene bajo control de versiones Git. El identificador exacto del commit final se consigna en el Anexo IV.7 de la tesis. El commit debe publicarse en el repositorio institucional/oficial para completar la trazabilidad externa.
+El paquete se identifica por el hash SHA-256 consignado en el Anexo IV.7 y conserva el directorio `.git` con el commit de la entrega. La publicación del commit en el repositorio oficial completa la trazabilidad externa.

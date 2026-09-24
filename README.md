@@ -110,15 +110,19 @@ El ZIP de software contiene la implementación, las pruebas automatizadas y la r
 
 ## Verificación reproducible de esta entrega
 
-La entrega asociada a esta revisión incluye evidencia técnica adicional ya ejecutada y conservada en `benchmark/results/`:
+La entrega asociada a esta revisión incluye evidencia técnica adicional ejecutada el 23/09/2026 y conservada en `benchmark/results/`:
 
-- **RNF-01:** 600 solicitudes HTTP autenticadas, 200 por cada uno de los tres endpoints de lectura. Todas respondieron HTTP 200. P95: 11,57 ms (`/orders`), 16,08 ms (`/orders/stats`) y 10,36 ms (`/orders/notifications`). La medición corresponde a un cliente secuencial y no caracteriza concurrencia ni disponibilidad sostenida.
-- **RF-04:** 10 corridas de actualización orientada a eventos mediante WebSocket. Media 43,64 ms; mediana 26,71 ms; IC 95 % [7,93; 79,34] ms. La medición no caracteriza múltiples clientes concurrentes.
-- **Equivalencia PostgreSQL ↔ DICOM Worklist:** 20 órdenes y 140 atributos comparados, con 0 discrepancias en la muestra auditada. Esto verifica el mapeo implementado en esa muestra y no constituye una garantía de interoperabilidad universal.
-- **Regresión del motor:** 27 órdenes adicionales reproducidas con 100 % de coincidencia respecto de las etiquetas derivadas de la misma especificación de reglas calibradas. Es una prueba de consistencia del artefacto, no una validación predictiva independiente.
-- **Suite automatizada:** el código contiene 34 pruebas del motor y 6 de seguridad, **40 pruebas en total**. El paquete documenta el comando de ejecución; el resultado "40 passed" no se afirma aquí como evidencia de una ejecución realizada durante la preparación de este ZIP.
+- **RNF-01:** 600 solicitudes HTTP autenticadas, 200 por cada uno de los tres endpoints de lectura. Todas respondieron HTTP 200. P95: 11,57 ms (`/orders`), 16,08 ms (`/orders/stats`) y 10,36 ms (`/orders/notifications`). Se trata de una medición secuencial de un único cliente.
+- **Carga concurrente:** cinco niveles (1, 5, 10, 25 y 50 clientes; 100 solicitudes por cliente). A 1/5/10 clientes se observaron 0 % de error; a 25 clientes, 18,32 %; a 50 clientes, 100 %. El ensayo caracteriza límites bajo carga sintética y no implica capacidad hospitalaria.
+- **Soak de API:** más de 3,5 horas, 1.254 solicitudes HTTP y 100 % de respuestas 200; P95 global 20,47 ms. Esta evidencia caracteriza estabilidad de los endpoints de lectura, no disponibilidad sostenida del servicio DICOM ni ausencia de fugas de memoria.
+- **RF-04/WebSocket:** 50 mediciones extendidas; media 19,56 ms, mediana 18,37 ms, P95 27,55 ms, IC 95 % [18,40; 20,72] ms. La prueba sigue siendo de una conexión secuencial.
+- **Equivalencia DICOM extendida:** 50 órdenes, 350 atributos, 0 discrepancias; la prueba utiliza el mismo serializador productivo `build_worklist_dataset`, por lo que acredita la lógica de serialización/mapeo sobre la muestra sintética. No sustituye una prueba C-FIND con modalidad real.
+- **Regresión del motor:** 50 órdenes adicionales con 50/50 coincidencias respecto de etiquetas derivadas de la especificación calibrada. Continúa siendo una prueba de consistencia, no validación predictiva independiente.
+- **Suite automatizada:** 101 pruebas presentes en `server/tests/`: 35 de motor, 6 de seguridad, 19 de privacidad, 33 de robustez, 4 de contrato, 1 DICOM y 3 de notificaciones. El recuento describe el artefacto; la ejecución completa depende del entorno indicado.
+- **Seguridad estática:** Bandit sin hallazgos en la corrida conservada y `pip-audit` sin vulnerabilidades conocidas en las dependencias analizadas.
+- **Resiliencia:** 3 escenarios ejecutados y superados; 2 no pudieron ejecutarse por limitaciones del entorno de prueba.
 
-La disponibilidad sostenida, la concurrencia bajo carga, el control de acceso institucional/RBAC, el etiquetado reproducible de las imágenes y la validación clínica independiente permanecen fuera del alcance de esta entrega académica.
+La validación predictiva independiente con referencia profesional nueva, la usabilidad con participantes externos y la validación clínica en entorno real permanecen fuera del alcance de esta entrega académica.
 
 
 ## Verificación estructural del paquete

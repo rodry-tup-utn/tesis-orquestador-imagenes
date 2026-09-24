@@ -4,14 +4,24 @@ Esta guía describe cómo reconstruir el artefacto y cómo interpretar la eviden
 
 ## Suite automatizada
 
-La entrega contiene 40 pruebas automatizadas: 34 en `server/tests/test_triage_engine.py` y 6 en `server/tests/test_security.py`. El comando reproducible es:
+La entrega contiene 101 pruebas automatizadas:
+
+- 35 en `server/tests/test_triage_engine.py`;
+- 6 en `server/tests/test_security.py`;
+- 19 en `server/tests/test_privacy.py`;
+- 33 en `server/tests/test_robustness.py`;
+- 4 en `server/tests/test_contract.py`;
+- 1 en `server/tests/test_dicom_mwl_equivalence.py`;
+- 3 en `server/tests/test_notifier.py`.
+
+El comando reproducible es:
 
 ```bash
 cd server
 python -m pytest tests -v
 ```
 
-El recuento de 40 pruebas describe el artefacto entregado. No se afirma en este documento que las 40 hayan sido ejecutadas en el entorno utilizado para preparar el ZIP final.
+El recuento describe el artefacto. La ejecución completa requiere un entorno con las dependencias declaradas instaladas y, para los tests que acceden a infraestructura, el backend/servicios correspondientes.
 
 ## Regresión del motor
 
@@ -19,7 +29,7 @@ El recuento de 40 pruebas describe el artefacto entregado. No se afirma en este 
 python benchmark/validate_motor.py
 ```
 
-`benchmark/test_orders_regression.json` contiene 27 órdenes adicionales. Sus etiquetas esperadas se derivan de `calibrada_fase4.json`, por lo que la coincidencia 27/27 (100 %) documentada en la entrega acredita consistencia de la implementación con la especificación calibrada y no desempeño predictivo independiente.
+`benchmark/test_orders_regression.json` contiene 50 órdenes adicionales. Sus etiquetas esperadas se derivan de `calibrada_fase4.json`, por lo que la coincidencia 27/27 (100 %) documentada en la entrega acredita consistencia de la implementación con la especificación calibrada y no desempeño predictivo independiente.
 
 ## Evidencia cuantitativa incluida
 
@@ -66,9 +76,13 @@ Ejecutar: `python benchmark/verify_chapter6_panel.py`. Reproduce exactamente 66,
 78,0 % (Fase 4), κ de Fleiss ≈ 0,382, y las cifras individuales de E02/E09/E12 citadas en §6.9.
 `VERIFY_DELIVERY.py` corre este script y falla si alguna cifra deja de coincidir. El verificador estadístico es deliberadamente independiente del backend y no requiere importar FastAPI, SQLModel ni PostgreSQL.
 
-## Instrumentos para la evidencia pendiente (no ejecutados en esta entrega)
+## Evidencia adicional ejecutada en esta entrega
 
-`PROTOCOLOS_EVIDENCIA_ADICIONAL.md` describe cómo producir la validación predictiva independiente (`benchmark/eval_independent.py`), la medición multi-operador del Escenario A (`scenario_a_timer.py`), la prueba de usabilidad con usuarios (`sus_score.py`) y la carga concurrente/disponibilidad (`load_test.py`). Los scripts se probaron con datos sintéticos que no forman parte del estudio; **no hay resultados de estas cuatro líneas en el paquete**.
+La entrega conserva resultados de carga concurrente (`benchmark/results/load_suite/`), soak de API (`benchmark/results/soak_test/`), resiliencia (`benchmark/results/resilience/`), equivalencia DICOM extendida (`benchmark/results/results_worklist_equivalence_extended_2026-09-23.csv`), seguridad (`benchmark/results/security/`) y WebSocket extendido. Estas campañas caracterizan el artefacto bajo condiciones sintéticas y controladas.
+
+## Instrumentos que continúan pendientes
+
+`PROTOCOLOS_EVIDENCIA_ADICIONAL.md` mantiene el protocolo para la validación predictiva independiente (`benchmark/eval_independent.py`), la medición multi-operador del Escenario A (`scenario_a_timer.py`) y la prueba de usabilidad con usuarios (`sus_score.py`). No se ejecutaron porque requieren participación humana independiente.
 
 ## Notas de interpretación de las mediciones del 20/09/2026
 
@@ -106,4 +120,4 @@ El repositorio conserva los comandos previstos para análisis de dependencias, a
 3. Importar y activar los workflows de `n8n-workflow/`.
 4. Ejecutar las mediciones que correspondan y conservar sus CSV junto con la fecha y configuración utilizada.
 
-La disponibilidad sostenida, la concurrencia bajo carga, el RBAC institucional, la configuración de TLS/proxy y la validación clínica independiente permanecen fuera del alcance de este MVP académico.
+La validación de disponibilidad del servicio DICOM ≥ 99 % en horario operativo, el RBAC institucional, la configuración de TLS/proxy y la validación clínica independiente permanecen fuera del alcance de este MVP. La API sí cuenta con una campaña de soak sostenido y la carga concurrente fue caracterizada experimentalmente.

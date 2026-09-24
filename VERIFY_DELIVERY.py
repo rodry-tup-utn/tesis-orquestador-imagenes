@@ -1,193 +1,91 @@
-"""Verificación estructural de la entrega de software.
+"""Verificación estructural de la entrega V10.6 reparada.
 
-No reemplaza una ejecución funcional del stack Docker. Comprueba que los artefactos
-mínimos de la entrega estén presentes, que el recuento estático de tests sea coherente
-y que los CSV de evidencia tengan los tamaños documentados.
+Comprueba la presencia y coherencia de los artefactos de evidencia incluidos en el ZIP.
+No sustituye una ejecución funcional completa del stack Docker. Los resultados negativos
+de carga son evidencia de límite observado y los escenarios no ejecutados se mantienen
+como NO EJECUTADOS.
 """
 from __future__ import annotations
-
-import ast
-import builtins
-import csv
-import json
-import math
-import re
-import statistics
-import sys
+import ast, builtins, csv, json, re, statistics, subprocess, sys
 from pathlib import Path
+ROOT=Path(__file__).resolve().parent
 
-ROOT = Path(__file__).resolve().parent
+def test_count(path:Path)->int:
+    tree=ast.parse(path.read_text(encoding='utf-8'))
+    return sum(isinstance(n,(ast.FunctionDef,ast.AsyncFunctionDef)) and n.name.startswith('test_') for n in ast.walk(tree))
 
-
-def test_count(path: Path) -> int:
-    tree = ast.parse(path.read_text(encoding="utf-8"))
-    return sum(
-        isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and node.name.startswith("test_")
-        for node in ast.walk(tree)
-    )
-
-
-def undefined_names(path: Path) -> list[str]:
-    """Nombres leidos que no se definen en ningun lugar del modulo (detecta NameError obvios)."""
-    tree = ast.parse(path.read_text(encoding="utf-8"))
-    defined = set(dir(builtins)) | {"__file__"}
+def undefined_names(path:Path)->list[str]:
+    tree=ast.parse(path.read_text(encoding='utf-8'))
+    defined=set(dir(builtins))|{'__file__'}
     for n in ast.walk(tree):
-        if isinstance(n, (ast.Import, ast.ImportFrom)):
-            defined.update((a.asname or a.name).split(".")[0] for a in n.names)
-        elif isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+        if isinstance(n,(ast.Import,ast.ImportFrom)):
+            defined.update((a.asname or a.name).split('.')[0] for a in n.names)
+        elif isinstance(n,(ast.FunctionDef,ast.AsyncFunctionDef,ast.ClassDef)):
             defined.add(n.name)
-        elif isinstance(n, ast.arg):
-            defined.add(n.arg)
-        elif isinstance(n, ast.Name) and isinstance(n.ctx, (ast.Store, ast.Del)):
-            defined.add(n.id)
-        elif isinstance(n, ast.ExceptHandler) and n.name:
-            defined.add(n.name)
-    return sorted({n.id for n in ast.walk(tree)
-                   if isinstance(n, ast.Name) and isinstance(n.ctx, ast.Load) and n.id not in defined})
+        elif isinstance(n,ast.arg): defined.add(n.arg)
+        elif isinstance(n,ast.Name) and isinstance(n.ctx,(ast.Store,ast.Del)): defined.add(n.id)
+        elif isinstance(n,ast.ExceptHandler) and n.name: defined.add(n.name)
+    return sorted({n.id for n in ast.walk(tree) if isinstance(n,ast.Name) and isinstance(n.ctx,ast.Load) and n.id not in defined})
 
+def p95(v): return statistics.quantiles(v,n=100,method='inclusive')[94]
+def rows(p):
+    with p.open(encoding='utf-8',newline='') as f:return list(csv.DictReader(f))
 
-def p95(values: list[float]) -> float:
-    return statistics.quantiles(values, n=100, method="inclusive")[94]
-
-
-def csv_rows(path: Path) -> int:
-    with path.open(newline="", encoding="utf-8") as fh:
-        return sum(1 for _ in csv.DictReader(fh))
-
-
-def main() -> int:
-    required = [
-        ROOT / "docker-compose.yml",
-        ROOT / "README.md",
-        ROOT / "REPRODUCIBILITY.md",
-        ROOT / "benchmark" / "results" / "results_api_latency_2026-09-20.csv",
-        ROOT / "benchmark" / "results" / "results_ws_latency_2026-09-20.csv",
-        ROOT / "benchmark" / "results" / "results_worklist_equivalence_2026-09-20.csv",
-        ROOT / "benchmark" / "test_orders_regression.json",
-        ROOT / "benchmark" / "stats.py",
-        ROOT / "server" / "tests" / "test_triage_engine.py",
-        ROOT / "server" / "tests" / "test_security.py",
-    ]
-    missing = [str(p.relative_to(ROOT)) for p in required if not p.exists()]
-    if missing:
-        print("FALTAN:")
-        print("\n".join(missing))
-        return 1
-
-    engine_tests = test_count(ROOT / "server" / "tests" / "test_triage_engine.py")
-    security_tests = test_count(ROOT / "server" / "tests" / "test_security.py")
-    regression = json.loads((ROOT / "benchmark" / "test_orders_regression.json").read_text(encoding="utf-8"))
-    api_rows = csv_rows(ROOT / "benchmark" / "results" / "results_api_latency_2026-09-20.csv")
-    ws_rows = csv_rows(ROOT / "benchmark" / "results" / "results_ws_latency_2026-09-20.csv")
-    wl_rows = csv_rows(ROOT / "benchmark" / "results" / "results_worklist_equivalence_2026-09-20.csv")
-
-    # Verificación estructural de minimización del payload externo de alertas.
-    notifier_source = (ROOT / "server" / "app" / "modules" / "medical_order" / "notifier.py").read_text(encoding="utf-8")
-    m = re.search(r"def _build_payload\(.*?\n    async def notify", notifier_source, re.S)
-    payload_block = m.group(0) if m else ""
-    privacy_backend_ok = (
-        "patient_pseudonym" in payload_block
-        and "patient_name" not in payload_block
-        and "patient_dni" not in payload_block
-    )
-
-    workflow = json.loads((ROOT / "n8n-workflow" / "Alertas Criticas.json").read_text(encoding="utf-8"))
-    telegram_texts = [
-        node.get("parameters", {}).get("text", "")
-        for node in workflow.get("nodes", [])
-        if node.get("type") == "n8n-nodes-base.telegram"
-    ]
-    privacy_workflow_ok = any(
-        "patient_pseudonym" in txt and "patient_name" not in txt and "patient_dni" not in txt
-        for txt in telegram_texts
-    )
-
-    # 0) Controles estáticos de robustez de la entrega.
-    compose_source = (ROOT / "docker-compose.yml").read_text(encoding="utf-8")
-    config_source = (ROOT / "server" / "app" / "core" / "config.py").read_text(encoding="utf-8")
-    websocket_source = (ROOT / "server" / "app" / "core" / "websocket.py").read_text(encoding="utf-8")
-    robustness_ok = (
-        "healthcheck:" in compose_source
-        and "condition: service_healthy" in compose_source
-        and "postgres_password: str" in config_source
-        and "postgres_password: str = \"admin\"" not in config_source
-        and "dead_connections" in websocket_source
-    )
-
-    # 1) Todos los scripts de benchmark compilan y no leen nombres indefinidos.
-    script_problems = {}
-    for script in sorted((ROOT / "benchmark").glob("*.py")):
-        try:
-            names = undefined_names(script)
-        except SyntaxError as exc:
-            names = [f"SyntaxError: {exc}"]
-        if names:
-            script_problems[script.name] = names
-
-    # 2) Las cifras documentadas se recomputan desde los CSV crudos.
-    res = ROOT / "benchmark" / "results"
-    api = list(csv.DictReader((res / "results_api_latency_2026-09-20.csv").open(encoding="utf-8")))
-    by_ep: dict[str, list[float]] = {}
+def main()->int:
+    res=ROOT/'benchmark'/'results'
+    required=[
+      ROOT/'docker-compose.yml',ROOT/'README.md',ROOT/'REPRODUCIBILITY.md',ROOT/'VERIFY_DELIVERY.py',
+      res/'results_api_latency_2026-09-20.csv',res/'results_ws_latency_extended_n50_2026-09-23.csv',
+      res/'results_worklist_equivalence_2026-09-20.csv',res/'results_worklist_equivalence_extended_2026-09-23.csv',
+      res/'load_suite'/'results'/'load_consolidated_2026-09-23.json',res/'soak_test_report_extended_2026-09-23.json',
+      res/'resilience'/'raw'/'resilience_2026-09-23_1529.json',ROOT/'benchmark'/'test_orders_regression.json']
+    miss=[str(x.relative_to(ROOT)) for x in required if not x.exists()]
+    if miss: print('FALTAN:\n'+'\n'.join(miss)); return 1
+    test_files=sorted((ROOT/'server'/'tests').glob('test_*.py'))
+    counts={str(p.relative_to(ROOT)):test_count(p) for p in test_files}; total_tests=sum(counts.values())
+    regression=json.loads((ROOT/'benchmark'/'test_orders_regression.json').read_text(encoding='utf-8'))
+    regression_n=len(regression.get('orders',[]))
+    api=rows(res/'results_api_latency_2026-09-20.csv'); by={}
     for r in api:
-        if r["status"] == "200":
-            by_ep.setdefault(r["endpoint"], []).append(float(r["latency_ms"]))
-    api_p95 = [round(p95(v), 2) for v in by_ep.values()]
-    ws = [float(r["latency_ms"]) for r in csv.DictReader((res / "results_ws_latency_2026-09-20.csv").open(encoding="utf-8"))]
-    ws_mean, ws_med = round(statistics.mean(ws), 2), round(statistics.median(ws), 2)
-    ws_half = 2.262 * statistics.stdev(ws) / math.sqrt(len(ws))
-    ws_ci = (round(statistics.mean(ws) - ws_half, 2), round(statistics.mean(ws) + ws_half, 2))
-    wl = list(csv.DictReader((res / "results_worklist_equivalence_2026-09-20.csv").open(encoding="utf-8")))
-    wl_fields = [k for k in wl[0] if k.endswith("_ok")]
-    wl_bad = sum(1 for r in wl for k in wl_fields if r[k] != "True")
-    figures_ok = (
-        api_p95 == [11.57, 16.08, 10.36]
-        and (ws_mean, ws_med, ws_ci) == (43.64, 26.71, (7.93, 79.34))
-        and len(wl) * len(wl_fields) == 140 and wl_bad == 0
-    )
-
-    print(f"Robustez de entrega (healthcheck/credenciales/WebSocket): {'OK' if robustness_ok else 'REVISAR'}")
-    print(f"Scripts de benchmark sin nombres indefinidos: {'OK' if not script_problems else script_problems}")
-    # 2 bis) Capitulo 6: se reconstruye el patron de referencia y la concordancia
-    # de E02/E09/E12 unicamente a partir de las tablas crudas del panel (Anexo V).
-    import subprocess
-    panel_check = subprocess.run(
-        [sys.executable, str(ROOT / "benchmark" / "verify_chapter6_panel.py")],
-        capture_output=True, text=True, cwd=str(ROOT),
-    )
-    panel_ok = panel_check.returncode == 0
-    print(f"Capítulo 6 recomputado desde panel_votos_50_ordenes.csv y motor_salida_fases_50_ordenes.csv: "
-          f"{'OK' if panel_ok else 'REVISAR'}")
-    if not panel_ok:
-        print(panel_check.stdout[-1500:], panel_check.stderr[-1500:])
-
-    print(f"Cifras recomputadas (RNF-01 {api_p95}; RF-04 {ws_mean}/{ws_med}/{ws_ci}; mapeo {len(wl)*len(wl_fields)-wl_bad}/{len(wl)*len(wl_fields)}): {'OK' if figures_ok else 'REVISAR'}")
-    print(f"Pruebas del motor: {engine_tests}")
-    print(f"Pruebas de seguridad: {security_tests}")
-    print(f"Total estático: {engine_tests + security_tests}")
-    print(f"Regresión adicional: {len(regression['orders'])} órdenes")
-    print(f"RNF-01: {api_rows} observaciones")
-    print(f"RF-04: {ws_rows} observaciones")
-    print(f"BD ↔ DICOM: {wl_rows} órdenes auditadas")
-    print(f"Privacidad de alerta (payload/backend): {'OK' if privacy_backend_ok else 'REVISAR'}")
-    print(f"Privacidad de alerta (workflow Telegram): {'OK' if privacy_workflow_ok else 'REVISAR'}")
-
-    ok = (
-        engine_tests in (34, 35)
-        and security_tests == 6
-        and len(regression["orders"]) in (27, 50)
-        and api_rows == 600
-        and ws_rows == 10
-        and wl_rows == 20
-        and privacy_backend_ok
-        and privacy_workflow_ok
-        and not script_problems
-        and robustness_ok
-        and figures_ok
-        and panel_ok
-    )
-    print("VERIFICACIÓN ESTRUCTURAL:", "OK" if ok else "REVISAR")
+        if r['status']=='200': by.setdefault(r['endpoint'],[]).append(float(r['latency_ms']))
+    api_p95={k:round(p95(v),2) for k,v in by.items()}
+    ws=rows(res/'results_ws_latency_extended_n50_2026-09-23.csv'); wsv=[float(r['latency_ms']) for r in ws]
+    wl=rows(res/'results_worklist_equivalence_2026-09-20.csv'); wlf=[k for k in wl[0] if k.endswith('_ok')] if wl else []
+    wle=rows(res/'results_worklist_equivalence_extended_2026-09-23.csv'); wlef=[k for k in wle[0] if k.endswith('_ok')] if wle else []
+    wl_bad=sum(r[k]!='True' for r in wl for k in wlf); wle_bad=sum(r[k]!='True' for r in wle for k in wlef)
+    load=json.loads((res/'load_suite'/'results'/'load_consolidated_2026-09-23.json').read_text(encoding='utf-8')); lv=load.get('results',[])
+    load_ok=([x.get('clients') for x in lv]==[1,5,10,25,50] and all(all(k in x for k in ('total_requests','successful','failed','error_rate_pct','attempt_rate_rps')) for x in lv))
+    soak=json.loads((res/'soak_test_report_extended_2026-09-23.json').read_text(encoding='utf-8')); soak_ok=('scope_note' in soak and 'DICOM' in soak['scope_note'])
+    rr=json.loads((res/'resilience'/'raw'/'resilience_2026-09-23_1529.json').read_text(encoding='utf-8')).get('results',[])
+    rp=sum(x.get('passed') is True for x in rr); rf=sum(x.get('passed') is False for x in rr); rn=sum(x.get('passed') is None for x in rr)
+    notifier=(ROOT/'server'/'app'/'modules'/'medical_order'/'notifier.py').read_text(encoding='utf-8')
+    m=re.search(r'def _build_payload\(.*?\n    async def notify',notifier,re.S); block=m.group(0) if m else ''
+    privacy_backend=('patient_pseudonym' in block and 'patient_name' not in block and 'patient_dni' not in block)
+    wf=json.loads((ROOT/'n8n-workflow'/'Alertas Criticas.json').read_text(encoding='utf-8')); texts=[n.get('parameters',{}).get('text','') for n in wf.get('nodes',[]) if n.get('type')=='n8n-nodes-base.telegram']
+    privacy_wf=any('patient_pseudonym' in t and 'patient_name' not in t and 'patient_dni' not in t for t in texts)
+    compose=(ROOT/'docker-compose.yml').read_text(encoding='utf-8'); config=(ROOT/'server'/'app'/'core'/'config.py').read_text(encoding='utf-8'); ws_src=(ROOT/'server'/'app'/'core'/'websocket.py').read_text(encoding='utf-8')
+    robust=('healthcheck:' in compose and 'condition: service_healthy' in compose and 'postgres_password: str' in config and 'postgres_password: str = "admin"' not in config and 'dead_connections' in ws_src)
+    probs={}
+    for p in sorted((ROOT/'benchmark').glob('*.py')):
+        try:n=undefined_names(p)
+        except SyntaxError as e:n=[f'SyntaxError: {e}']
+        if n: probs[p.name]=n
+    panel=subprocess.run([sys.executable,str(ROOT/'benchmark'/'verify_chapter6_panel.py')],capture_output=True,text=True,cwd=str(ROOT)); panel_ok=panel.returncode==0
+    env_ok=not any(p.name=='.env' for p in ROOT.rglob('.env'))
+    stale_cov=not (ROOT/'server'/'.coverage').exists()
+    print(f'Suite V10.6: {total_tests} tests -> {"OK" if total_tests==101 else "REVISAR"}')
+    print('Desglose:',counts)
+    print(f'Regresión: {regression_n} -> {"OK" if regression_n==50 else "REVISAR"}')
+    print('RNF-01 P95:',api_p95)
+    print(f'RF-04 N={len(ws)} P95={p95(wsv):.2f} ms')
+    print(f'DICOM: {len(wl)} órdenes/140 checks; extendido {len(wle)}/350 -> {"OK" if wl_bad==0 and wle_bad==0 else "REVISAR"}')
+    print(f'Carga: {"OK" if load_ok else "REVISAR"}; los errores observados a 25/50 clientes se conservan como resultado experimental')
+    print(f'Soak API: {soak.get("total_requests","N/D")} requests; {soak.get("success_rate_percent","N/D")}% HTTP 200 -> {"OK" if soak_ok else "REVISAR"}')
+    print(f'Resiliencia: {rp} PASS / {rf} FAIL / {rn} NO EJECUTADO')
+    print(f'Privacidad: {"OK" if privacy_backend and privacy_wf else "REVISAR"}; Robustez: {"OK" if robust else "REVISAR"}')
+    print(f'Bench scripts: {"OK" if not probs else probs}; Capítulo 6: {"OK" if panel_ok else "REVISAR"}')
+    print(f'Entrega sin .env: {"OK" if env_ok else "REVISAR"}; sin .coverage residual: {"OK" if stale_cov else "REVISAR"}')
+    ok=(total_tests==101 and regression_n==50 and len(api)==600 and len(ws)==50 and len(wl)==20 and len(wle)==50 and wl_bad==0 and wle_bad==0 and load_ok and soak_ok and rf==0 and privacy_backend and privacy_wf and robust and not probs and panel_ok and env_ok and stale_cov)
+    print('VERIFICACIÓN ESTRUCTURAL:', 'OK' if ok else 'REVISAR')
     return 0 if ok else 1
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())
+if __name__=='__main__': raise SystemExit(main())

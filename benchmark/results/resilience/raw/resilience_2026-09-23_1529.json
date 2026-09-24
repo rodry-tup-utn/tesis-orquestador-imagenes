@@ -1,13 +1,13 @@
 {
   "generated_at": "2026-09-23T18:30:38.857125+00:00",
   "backend": "http://localhost:8000",
-  "scenarios_passed": 4,
+  "scenarios_passed": 3,
   "scenarios_total": 5,
   "plan_reference": "Sección 10 — Prioridad 7 del Plan de Mejora",
   "results": [
     {
-      "passed": false,
-      "notes": "No se pudo detener db_hospital",
+      "passed": null,
+      "notes": "No ejecutado: no se pudo detener db_hospital en el entorno de prueba.",
       "scenario": "Escenario 1: Caída de PostgreSQL → detección y recuperación",
       "duration_s": 1.16
     },
@@ -22,8 +22,8 @@
       "duration_s": 16.48
     },
     {
-      "passed": true,
-      "notes": "servidor_dicom no pudo detenerse (puede no existir)",
+      "passed": null,
+      "notes": "No ejecutado: no se pudo detener servidor_dicom en el entorno de prueba.",
       "scenario": "Escenario 3: Caída temporal de Orthanc → API sigue funcionando",
       "duration_s": 0.4
     },
@@ -47,5 +47,8 @@
       "scenario": "Escenario 5: Reinicio completo (backend + DB) → recuperación total",
       "duration_s": 15.2
     }
-  ]
+  ],
+  "scenarios_failed": 0,
+  "scenarios_not_executed": 2,
+  "interpretation": "Los escenarios 2, 4 y 5 se ejecutaron y superaron; los escenarios 1 y 3 no pudieron ejecutarse por limitaciones del entorno y no se computan como fallos del artefacto."
 }

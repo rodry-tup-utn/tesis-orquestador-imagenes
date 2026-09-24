@@ -1,6 +1,6 @@
 # Protocolos para la evidencia que la tesis declara pendiente
 
-Cada sección deja lista la evidencia que hoy figura como limitación abierta (`ESTADO_Y_LIMITACIONES_V9.md`).
+Cada sección deja lista la evidencia que hoy figura como limitación abierta (`ESTADO_Y_LIMITACIONES_V10_6.md`).
 Los instrumentos están en `benchmark/`, probados con datos sintéticos que **no** forman parte del estudio.
 Regla común: **se publica lo que resulte**, sin repetir la medición hasta obtener un valor favorable.
 
@@ -8,7 +8,7 @@ Regla común: **se publica lo que resulte**, sin repetir la medición hasta obte
 
 ## 1. Validación predictiva independiente del motor (`eval_independent.py`)
 
-**Qué cierra:** la limitación 1 de `ESTADO_Y_LIMITACIONES_V9.md`; el 78 % del Capítulo 6 se midió sobre el mismo conjunto en que se calibró, y la regresión de 27 órdenes es consistencia, no validación.
+**Qué cierra:** la limitación 1 de `ESTADO_Y_LIMITACIONES_V10_6.md`; el 78 % del Capítulo 6 se midió sobre el mismo conjunto en que se calibró, y la regresión de 27 órdenes es consistencia, no validación.
 
 **Requisitos**
 - ≥ 60 órdenes nuevas, **redactadas por clínicos que no son autores** y que no participaron de la calibración. Texto libre con abreviaturas, sinónimos, errores de tipeo y campos vacíos. Estratificar: ≈ 15 por nivel esperado.

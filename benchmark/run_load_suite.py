@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Suite de test de carga concurrente — Prioridad 1 del Plan de Mejora.
+"""Suite de caracterización de carga concurrente — Prioridad 1 del Plan de Mejora.
 
 Ejecuta 5 niveles de concurrencia (1, 5, 10, 25, 50 clientes) con 100 solicitudes
-por nivel y captura P50/P95/P99, tasa de error, throughput y métricas de recursos
-Docker (CPU/RAM). Genera datos crudos por nivel y una tabla consolidada.
+por nivel y captura P50/P95/P99, tasa de error y ritmo de solicitudes observadas.
+Las métricas describen el comportamiento bajo carga sintética; no implican capacidad
+operativa garantizada ni convierten un nivel fallido en un resultado exitoso.
 
 Evidencia generada:
   benchmark/results/load_suite/raw/load_Nc_YYYY-MM-DD.csv   (por nivel)
@@ -153,7 +154,7 @@ def run_level(base: str, token: str, n_clients: int, n_requests: int,
         "failed": len(err),
         "error_rate_pct": round(100 * len(err) / len(out), 3) if out else 0,
         "elapsed_s": round(elapsed, 2),
-        "throughput_rps": round(len(out) / elapsed, 2) if elapsed > 0 else 0,
+        "attempt_rate_rps": round(len(out) / elapsed, 2) if elapsed > 0 else 0,
         "csv_raw": csv_path,
         "docker_cpu_post": docker_post.get("cpu_perc", "N/D"),
         "docker_mem_post": docker_post.get("mem_usage", "N/D"),
@@ -193,7 +194,7 @@ def run_level(base: str, token: str, n_clients: int, n_requests: int,
 
     cumple = "✓ CUMPLE" if metrics.get("rnf01_p95_cumple") else "✗ NO CUMPLE"
     print(f"     total={len(out)} ok={len(ok)} err={len(err)} "
-          f"tput={metrics['throughput_rps']}req/s "
+          f"attempt_rate={metrics['attempt_rate_rps']}req/s "
           f"P50={metrics.get('p50_ms','N/D')}ms "
           f"P95={metrics.get('p95_ms','N/D')}ms "
           f"P99={metrics.get('p99_ms','N/D')}ms  RNF-01: {cumple}")
@@ -257,14 +258,14 @@ def main() -> None:
         f.write(f"**Backend:** {a.backend}  \n")
         f.write(f"**Solicitudes por cliente por nivel:** {a.requests}  \n\n")
         f.write("| Clientes | Total req | Exitosas | Fallidas | Error % | "
-                "P50 (ms) | P95 (ms) | P99 (ms) | Throughput (req/s) | RNF-01 P95<500ms |\n")
+                "P50 (ms) | P95 (ms) | P99 (ms) | Ritmo observado (req/s) | RNF-01 P95<500ms |\n")
         f.write("|---:|---:|---:|---:|---:|---:|---:|---:|---:|:---:|\n")
         for m in all_metrics:
             cumple = "✓" if m.get("rnf01_p95_cumple") else "✗"
             f.write(f"| {m['clients']} | {m['total_requests']} | {m['successful']} | "
                     f"{m['failed']} | {m['error_rate_pct']} | {m.get('p50_ms','N/D')} | "
                     f"{m.get('p95_ms','N/D')} | {m.get('p99_ms','N/D')} | "
-                    f"{m['throughput_rps']} | {cumple} |\n")
+                    f"{m.get('attempt_rate_rps', 'N/D')} | {cumple} |\n")
         f.write("\n")
         f.write("**Interpretación:** La disponibilidad reportada corresponde a la API bajo "
                 "carga sintética de lectura bajo las condiciones experimentales definidas. "
@@ -273,14 +274,14 @@ def main() -> None:
     print(f"\n{'='*70}")
     print(f"  TABLA CONSOLIDADA\n")
     print(f"  {'Clientes':>8} | {'Total':>6} | {'Exitosas':>8} | {'Error%':>6} | "
-          f"{'P50ms':>7} | {'P95ms':>7} | {'P99ms':>7} | {'RPS':>6} | RNF-01")
+          f"{'P50ms':>7} | {'P95ms':>7} | {'P99ms':>7} | {'Req/s':>7} | RNF-01")
     print(f"  {'-'*80}")
     for m in all_metrics:
         cumple = "CUMPLE" if m.get("rnf01_p95_cumple") else "NO CMP"
         print(f"  {m['clients']:>8} | {m['total_requests']:>6} | {m['successful']:>8} | "
               f"{m['error_rate_pct']:>6} | {str(m.get('p50_ms','N/D')):>7} | "
               f"{str(m.get('p95_ms','N/D')):>7} | {str(m.get('p99_ms','N/D')):>7} | "
-              f"{m['throughput_rps']:>6} | {cumple}")
+              f"{m.get('attempt_rate_rps', 'N/D'):>7} | {cumple}")
 
     print(f"\n  JSON: {json_path}")
     print(f"  MD:   {md_path}")

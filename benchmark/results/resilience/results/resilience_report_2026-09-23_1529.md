@@ -1,14 +1,16 @@
 ## Pruebas de Recuperación ante Fallos
 
-**Fecha:** 2026-09-23  
-**Escenarios pasados:** 4/5  
+**Fecha:** 2026-09-23
+**Escenarios pasados:** 3/5
+**Fallidos:** 0
+**No ejecutados:** 2
 
 | Escenario | Resultado | T. Recuperación | Datos Perdidos | Notas |
 |---|:---:|---:|:---:|---|
-| Escenario 1: Caída de PostgreSQL → detección y rec | ✗ | N/Ds | N/D | No se pudo detener db_hospital |
-| Escenario 2: Reinicio del backend → tiempo de reco | ✓ | 8.2s | No | Backend recuperado en 8.2s tras reinicio |
-| Escenario 3: Caída temporal de Orthanc → API sigue | ✓ | N/Ds | N/D | servidor_dicom no pudo detenerse (puede no existir) |
-| Escenario 4: Persistencia de datos ante caída y re | ✓ | 0.0s | No | Órdenes antes: 1, después: 1 |
-| Escenario 5: Reinicio completo (backend + DB) → re | ✓ | 10.0s | N/D | Tras reinicio completo, API responde OK en 156.3ms |
+| Caída de PostgreSQL → detección y recuperación | ○ | N/D | N/D | No se pudo detener db_hospital en el entorno de prueba. |
+| Reinicio del backend → tiempo de reconexión | ✓ | 8,2 s | No | Backend recuperado tras reinicio. |
+| Caída temporal de Orthanc → API sigue funcionando | ○ | N/D | N/D | No se pudo detener servidor_dicom en el entorno de prueba. |
+| Persistencia de datos ante caída y recuperación de DB | ✓ | 0,0 s | No | Órdenes antes: 1; después: 1. |
+| Reinicio completo (backend + DB) → recuperación total | ✓ | 10,0 s | N/D | API respondió HTTP 200 tras el reinicio. |
 
-**Interpretación:** Los escenarios de recuperación demuestran la capacidad del sistema para restablecer su funcionamiento ante fallos de componentes individuales bajo condiciones de prueba controladas.
+**Interpretación:** los escenarios marcados como ✓ fueron ejecutados y superados. Los escenarios marcados como ○ no pudieron ejecutarse por una limitación del entorno de prueba y no se computan como fallos ni como éxitos. La campaña caracteriza la recuperación observada bajo las condiciones efectivamente ejecutadas y no constituye una garantía de resiliencia en producción.

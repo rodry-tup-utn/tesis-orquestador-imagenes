@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Soak Test / Disponibilidad Sostenida — Prioridad 2 del Plan de Mejora.
+"""Soak test de estabilidad de la API — Prioridad 2 del Plan de Mejora.
 
 Ejecuta un heartbeat periódico contra los endpoints de la API durante una campaña
 larga (por defecto 8h). Registra disponibilidad por ventana de 1 minuto, reinicios
@@ -121,7 +121,7 @@ def main() -> None:
     t_end = t_start + duration_s
 
     print(f"\n{'='*70}")
-    print(f"  SOAK TEST — Plan de Mejora Prioridad 2 (RNF-02)")
+    print(f"  SOAK TEST DE API — estabilidad sostenida")
     print(f"  Duración: {a.hours:.1f}h  |  Heartbeat: {a.interval_s}s")
     print(f"  Backend: {a.backend}")
     print(f"  Inicio: {datetime.now(timezone.utc).isoformat()}")
@@ -204,10 +204,11 @@ def main() -> None:
         "worst_minute_index": min_avail[1],
         "windows_checked": len(minutes),
         "csv_raw": csv_path,
-        "plan_reference": "Sección 5 — Prioridad 2 del Plan de Mejora (RNF-02)",
+        "plan_reference": "Sección 5 — Prioridad 2 del Plan de Mejora",
+        "scope_note": "Estabilidad sostenida de los endpoints de lectura del backend; no acredita disponibilidad del servicio DICOM ni ausencia de fugas de memoria.",
         "interpretation": (
-            f"Durante una campaña de {duration_real_h:.1f} horas, el sistema presentó "
-            f"{avail_global:.2f}% de disponibilidad observada bajo las condiciones "
+            f"Durante una campaña de {duration_real_h:.1f} horas, los endpoints de lectura del backend presentaron "
+            f"{avail_global:.2f}% de respuestas HTTP 200 bajo las condiciones "
             f"experimentales definidas (heartbeat sintético, carga de lectura, entorno "
             f"de evaluación local)."
         ),
@@ -220,7 +221,7 @@ def main() -> None:
     # Markdown para la tesis
     md_path = os.path.join(RESULTS_DIR, f"soak_summary_{stamp}.md")
     with open(md_path, "w", encoding="utf-8") as f:
-        f.write("## Resultados del Soak Test (Disponibilidad Sostenida — RNF-02)\n\n")
+        f.write("## Resultados del Soak Test de API — estabilidad sostenida\n\n")
         f.write(f"**Fecha:** {datetime.now(timezone.utc).strftime('%Y-%m-%d')}  \n")
         f.write(f"**Duración planificada:** {a.hours:.1f}h  \n")
         f.write(f"**Duración real:** {duration_real_h:.2f}h  \n")

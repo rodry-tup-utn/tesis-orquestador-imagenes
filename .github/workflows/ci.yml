@@ -48,7 +48,7 @@ jobs:
 
       - name: Auditoría de Vulnerabilidades de Dependencias (pip-audit)
         run: |
-          pip-audit || true
+          pip-audit
 
       - name: Ejecutar Suite de Tests Unitarios y de Integración con Cobertura
         env:

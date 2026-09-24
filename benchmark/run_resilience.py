@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
 """Pruebas de recuperación ante fallos — Prioridad 7 del Plan de Mejora.
 
-Prueba 6 escenarios de resiliencia del sistema usando docker compose:
+Prueba cinco escenarios de resiliencia del sistema usando docker compose:
   1. Caída de PostgreSQL → detección y recuperación
   2. Reinicio del backend → tiempo de reconexión
   3. Caída temporal de Orthanc → verificar comportamiento
   4. Recuperación de PostgreSQL → verificar que no se perdieron datos
   5. Reinicio simultáneo backend + DB → recuperación total
-  6. Verificación de estado final del sistema
 
 Genera:
   benchmark/results/resilience/raw/resilience_YYYY-MM-DD.json
@@ -67,18 +66,17 @@ def api_check(base: str, token: str, endpoint: str = "/orders/stats",
         return False, (time.perf_counter() - t0) * 1000, 0
 
 
-def wait_for_recovery(base: str, token: str, max_wait_s: int = 60,
-                      poll_s: float = 2.0) -> tuple[bool, float]:
+def wait_for_recovery(base: str, user: str, pwd: str, token: str, max_wait_s: int = 60,
+                      poll_s: float = 2.0) -> tuple[bool, float, str]:
     """Espera hasta que la API vuelva a responder. Devuelve (recovered, time_s)."""
     t0 = time.time()
     while time.time() - t0 < max_wait_s:
-        # Re-autenticar por si el token expiró durante la caída
-        new_token = login(base, token, token, timeout=5) or token
+        new_token = login(base, user, pwd, timeout=5) or token
         ok, _, status = api_check(base, new_token, timeout=5)
         if ok and status == 200:
-            return True, time.time() - t0
+            return True, time.time() - t0, new_token
         time.sleep(poll_s)
-    return False, time.time() - t0
+    return False, time.time() - t0, token
 
 
 def docker_cmd(args: list[str]) -> tuple[int, str]:
@@ -113,7 +111,7 @@ def run_scenario(name: str, fn, *args, **kwargs) -> dict:
         elapsed = time.time() - t0
         result["scenario"] = name
         result["duration_s"] = round(elapsed, 2)
-        status = "✓ PASSED" if result.get("passed") else "✗ FAILED"
+        status = "✓ PASSED" if result.get("passed") is True else ("○ NO EJECUTADO" if result.get("passed") is None else "✗ FAILED")
         print(f"     → {status}  ({elapsed:.1f}s)")
         if result.get("notes"):
             print(f"     ℹ  {result['notes']}")
@@ -131,7 +129,7 @@ def scenario_postgres_down(base: str, token: str, user: str, pwd: str) -> dict:
     # Detener postgres
     rc, _ = docker_cmd(["stop", "db_hospital"])
     if rc != 0:
-        return {"passed": False, "notes": "No se pudo detener db_hospital"}
+        return {"passed": None, "notes": "No se pudo detener db_hospital; escenario no ejecutado"}
 
     # Esperar hasta que la API falle
     t0 = time.time()
@@ -149,7 +147,7 @@ def scenario_postgres_down(base: str, token: str, user: str, pwd: str) -> dict:
 
     # Esperar recuperación
     token2 = login(base, user, pwd) or token
-    recovered, recovery_s = wait_for_recovery(base, token2, max_wait_s=90)
+    recovered, recovery_s, _ = wait_for_recovery(base, user, pwd, token2, max_wait_s=90)
     orders_after = count_orders(base, token2) if recovered else -1
 
     return {
@@ -177,7 +175,7 @@ def scenario_backend_restart(base: str, token: str, user: str, pwd: str) -> dict
 
     # Esperar recuperación
     token2 = login(base, user, pwd) or token
-    recovered, recovery_s = wait_for_recovery(base, token2, max_wait_s=60)
+    recovered, recovery_s, _ = wait_for_recovery(base, user, pwd, token2, max_wait_s=60)
     orders_after = count_orders(base, token2) if recovered else -1
 
     return {
@@ -194,7 +192,7 @@ def scenario_orthanc_down(base: str, token: str) -> dict:
     """Detiene Orthanc y verifica que el backend sigue funcionando."""
     rc, _ = docker_cmd(["stop", "servidor_dicom"])
     if rc != 0:
-        return {"passed": True, "notes": "servidor_dicom no pudo detenerse (puede no existir)"}
+        return {"passed": None, "notes": "servidor_dicom no pudo detenerse; escenario no ejecutado"}
 
     time.sleep(3)
     ok, lat, status = api_check(base, token)
@@ -252,13 +250,17 @@ def scenario_postgres_recovery_no_data_loss(base: str, token: str,
     orders_before = count_orders(base, token)
 
     # Simular caída y recuperación de DB
-    docker_cmd(["stop", "db_hospital"])
+    stop_rc, _ = docker_cmd(["stop", "db_hospital"])
+    if stop_rc != 0:
+        return {"passed": None, "orders_before_failure": orders_before, "orders_after_recovery": "N/D",
+                "data_lost": "N/D", "recovery_s": "N/D",
+                "notes": "No se pudo detener db_hospital; escenario no ejecutado"}
     time.sleep(5)
     docker_cmd(["start", "db_hospital"])
     time.sleep(10)
 
     token2 = login(base, user, pwd) or token
-    recovered, recovery_s = wait_for_recovery(base, token2, max_wait_s=60)
+    recovered, recovery_s, _ = wait_for_recovery(base, user, pwd, token2, max_wait_s=60)
     orders_after = count_orders(base, token2) if recovered else -1
 
     return {
@@ -279,8 +281,8 @@ def scenario_full_restart(base: str, user: str, pwd: str) -> dict:
 
     token = login(base, user, pwd)
     if not token:
-        recovered, recovery_s = wait_for_recovery(
-            base, "dummy", max_wait_s=120, poll_s=5
+        recovered, recovery_s, _ = wait_for_recovery(
+            base, user, pwd, token or "", max_wait_s=120, poll_s=5
         )
         token = login(base, user, pwd)
     else:
@@ -362,7 +364,9 @@ def main() -> None:
         scenario_full_restart, a.backend, user, pwd,
     ))
 
-    passed = sum(1 for r in scenarios_results if r.get("passed"))
+    passed = sum(1 for r in scenarios_results if r.get("passed") is True)
+    failed = sum(1 for r in scenarios_results if r.get("passed") is False)
+    not_executed = sum(1 for r in scenarios_results if r.get("passed") is None)
     total = len(scenarios_results)
 
     # Guardar JSON crudo
@@ -372,6 +376,8 @@ def main() -> None:
             "generated_at": datetime.now(timezone.utc).isoformat(),
             "backend": a.backend,
             "scenarios_passed": passed,
+            "scenarios_failed": failed,
+            "scenarios_not_executed": not_executed,
             "scenarios_total": total,
             "plan_reference": "Sección 10 — Prioridad 7 del Plan de Mejora",
             "results": scenarios_results,
@@ -386,19 +392,18 @@ def main() -> None:
         f.write("| Escenario | Resultado | T. Recuperación | Datos Perdidos | Notas |\n")
         f.write("|---|:---:|---:|:---:|---|\n")
         for r in scenarios_results:
-            result_icon = "✓" if r.get("passed") else "✗"
+            result_icon = "✓" if r.get("passed") is True else ("○" if r.get("passed") is None else "✗")
             rec_s = r.get("recovery_s", "N/D")
             data_lost = r.get("data_lost", "N/D")
             if isinstance(data_lost, bool):
                 data_lost = "Sí" if data_lost else "No"
             notes = r.get("notes", "")[:80]
             f.write(f"| {r['scenario'][:50]} | {result_icon} | {rec_s}s | {data_lost} | {notes} |\n")
-        f.write("\n**Interpretación:** Los escenarios de recuperación demuestran la capacidad "
-                "del sistema para restablecer su funcionamiento ante fallos de componentes "
-                "individuales bajo condiciones de prueba controladas.\n")
+        f.write("\n**Interpretación:** los escenarios ejecutados y superados aportan evidencia de recuperación bajo las condiciones de prueba. "
+                "Los escenarios marcados como no ejecutados no se contabilizan como éxitos ni como fallos y no sustentan una conclusión sobre el comportamiento no observado.\n")
 
     print(f"\n{'='*70}")
-    print(f"  RESULTADO: {passed}/{total} escenarios pasados")
+    print(f"  RESULTADO: {passed} PASS / {failed} FAIL / {not_executed} NO EJECUTADOS de {total}")
     print(f"  JSON: {json_path}")
     print(f"  MD:   {md_path}")
     print(f"{'='*70}")
