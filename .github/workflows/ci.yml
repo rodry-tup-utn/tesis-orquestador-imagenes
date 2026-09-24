@@ -52,9 +52,15 @@ jobs:
 
       - name: Ejecutar Suite de Tests Unitarios y de Integración con Cobertura
         env:
-          DATABASE_URL: postgresql+asyncpg://postgres:hospital_secure_password@localhost:5434/hospital_db
-          JWT_SECRET: supersecretjwtkeyforhospitalenvironment2026!
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: hospital_secure_password
+          POSTGRES_DB: hospital_db
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: "5434"
+          SECRET_KEY: supersecretjwtkeyforhospitalenvironment2026-ci-only!
+          PSEUDONYM_SECRET: supersecretpseudonymkeyforhospitalenvironment2026-ci-only!
           ALERT_WEBHOOK_KEY: supersecretalertwebhookkeyforhospital2026!
+          AUTH_PASSWORD: supersecretauthpasswordforci2026!
         run: |
           cd server
           pytest tests/ --cov=app --cov-report=xml --cov-report=term-missing --durations=10
