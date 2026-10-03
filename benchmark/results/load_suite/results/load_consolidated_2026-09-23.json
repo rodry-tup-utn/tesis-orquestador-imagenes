@@ -50,7 +50,8 @@
           "p99": 13.03
         }
       },
-      "attempt_rate_rps": 73.89
+      "attempt_rate_rps": 73.89,
+      "interpretable_for_load_capacity": true
     },
     {
       "clients": 5,
@@ -91,7 +92,8 @@
           "p99": 119.36
         }
       },
-      "attempt_rate_rps": 77.82
+      "attempt_rate_rps": 77.82,
+      "interpretable_for_load_capacity": true
     },
     {
       "clients": 10,
@@ -132,7 +134,8 @@
           "p99": 366.55
         }
       },
-      "attempt_rate_rps": 66.65
+      "attempt_rate_rps": 66.65,
+      "interpretable_for_load_capacity": true
     },
     {
       "clients": 25,
@@ -173,7 +176,9 @@
           "p99": 851.12
         }
       },
-      "attempt_rate_rps": 70.4
+      "attempt_rate_rps": 70.4,
+      "interpretable_for_load_capacity": false,
+      "interpretation_note": "No interpretable as a load-capacity limit: the raw run overlaps the backend restart in the resilience campaign. The P95 of 827.15 ms refers only to the 2,042 successful requests recorded before the interruption."
     },
     {
       "clients": 50,
@@ -214,7 +219,10 @@
           "p99": "N/D"
         }
       },
-      "attempt_rate_rps": 815.52
+      "attempt_rate_rps": 815.52,
+      "interpretable_for_load_capacity": false,
+      "interpretation_note": "No interpretable as a load-capacity limit: the raw run overlaps the backend restart in the resilience campaign and contains connection rejections."
     }
-  ]
+  ],
+  "interpretation_scope": "The 23/09/2026 concurrent-load campaign is retained as raw evidence. Levels 1, 5 and 10 are interpreted as observed load points. The 25- and 50-client windows overlap the backend restart of the resilience campaign and therefore their error rates are not used to establish load-capacity limits."
 }

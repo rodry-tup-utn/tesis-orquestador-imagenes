@@ -1,5 +1,7 @@
-# Dependencias directas fijadas para la entrega de defensa V10.6.
-# Ver server/requirements.lock para la referencia de instalación reproducible.
+# Lock de dependencias directas y de validacion para la entrega V10.6.
+# Las versiones se fijan explicitamente para evitar que una corrida del jurado
+# resuelva otra version de un paquete directo en la fecha de ejecucion.
+# Python objetivo de CI/validacion: 3.11+.
 fastapi==0.142.2
 sqlmodel==0.0.47
 SQLAlchemy==2.0.54

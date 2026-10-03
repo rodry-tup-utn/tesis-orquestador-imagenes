@@ -3,10 +3,10 @@
   "metadata": {
     "n_total": 50,
     "distribucion_esperada": {
-      "CRITICO": 8,
-      "URGENTE": 9,
-      "PRIORITARIO": 2,
-      "RUTINA": 8
+      "CRITICO": 12,
+      "URGENTE": 14,
+      "PRIORITARIO": 10,
+      "RUTINA": 14
     },
     "reglas_aplicadas": "calibrada_fase4.json",
     "umbrales": {
@@ -14,7 +14,7 @@
       "urgent": 12,
       "priority": 10
     },
-    "nota": "Las etiquetas esperadas documentan la salida prevista de la configuración calibrada; el conjunto no contiene anotación profesional independiente y por tanto se utiliza como prueba de consistencia/regresión, no como validación predictiva."
+    "nota": "Las etiquetas esperadas documentan la salida prevista de la configuración calibrada; el conjunto ampliado contiene 50 órdenes y se utiliza como prueba de consistencia/regresión, no como validación predictiva independiente."
   },
   "orders": [
     {

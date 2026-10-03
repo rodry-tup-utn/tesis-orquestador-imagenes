@@ -15,6 +15,10 @@ Uso:
     python benchmark/run_load_suite.py
     python benchmark/run_load_suite.py --clients 1 5 10 --requests 200
     python benchmark/run_load_suite.py --skip-docker-stats   # si no hay acceso a docker stats
+
+No ejecutar esta suite en paralelo con run_resilience.py. Los niveles de 25 y 50 clientes
+deben medirse en aislamiento respecto de reinicios provocados por resiliencia para que sus
+tasas de error sean interpretables.
 """
 from __future__ import annotations
 import argparse

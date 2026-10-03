@@ -56,7 +56,7 @@ def _print_stats(label: str, values: list) -> None:
     p95_flag = ""
     if label == "T_proc":
         if p95 < RNF_01_P95_THRESHOLD_MS:
-            p95_flag = f"  -> Descriptor bajo el umbral de diseño; RNF-01 queda parcialmente sustentado (P95={p95:.1f} ms)"
+            p95_flag = f"  -> Descriptor bajo el umbral de diseño para el conjunto analizado (P95={p95:.1f} ms); consulte el alcance del ensayo en el Anexo VII.1"
         else:
             p95_flag = f"  -> Descriptor fuera del umbral de diseño; RNF-01 no queda sustentado por este indicador (P95={p95:.1f} ms)"
     print(

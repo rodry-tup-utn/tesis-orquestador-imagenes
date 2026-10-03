@@ -1,7 +1,23 @@
 """Fixtures compartidas para los tests del motor de triaje."""
 import sys
 import os
+import json
+from pathlib import Path
+
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+
+# Valores exclusivamente de prueba: permiten ejecutar la suite documentada
+# sin exigir un archivo .env ni secretos reales. Cualquier variable definida
+# por el entorno del ejecutor tiene precedencia gracias a setdefault().
+os.environ.setdefault("POSTGRES_USER", "test_postgres_user")
+os.environ.setdefault("POSTGRES_PASSWORD", "test_postgres_password")
+os.environ.setdefault("POSTGRES_DB", "test_postgres_db")
+os.environ.setdefault("SECRET_KEY", "test-secret-key-for-jwt-32-bytes-minimum!!")
+os.environ.setdefault("PSEUDONYM_SECRET", "test-pseudonym-secret-key-para-tests-unitarios")
+os.environ.setdefault("AUTH_PASSWORD", "clave-de-prueba")
+os.environ.setdefault("AUTH_USERNAME", "admin")
+os.environ.setdefault("INTERNAL_API_KEY", "api-key-de-prueba")
+os.environ.setdefault("ALERT_WEBHOOK_KEY", "alert-webhook-key-de-prueba")
 
 import pytest
 from unittest.mock import MagicMock
@@ -9,6 +25,31 @@ from datetime import date, datetime, timezone
 
 from app.modules.medical_order.model import Modality, OrderSetting, Sex, OrderState, MedicalPriority
 from app.modules.triage.model import TriageOperator
+
+
+CALIBRATION_PATH = Path(__file__).resolve().parents[1] / "app" / "modules" / "triage" / "configs" / "calibrada_fase4.json"
+
+
+def load_calibrated_config():
+    """Carga la configuración calibrada versionada que acompaña a la entrega."""
+    with CALIBRATION_PATH.open(encoding="utf-8") as f:
+        return json.load(f)
+
+
+def load_calibrated_rules():
+    """Construye los mocks de regla directamente desde calibrada_fase4.json."""
+    config = load_calibrated_config()
+    return [
+        make_rule(
+            rule["field"],
+            TriageOperator(rule["operator"]),
+            rule["value"],
+            rule["weight"],
+            rule.get("name"),
+            rule.get("enabled", True),
+        )
+        for rule in config["rules"]
+    ]
 
 
 def make_settings(critical=25, urgent=12, priority=10):
@@ -61,34 +102,16 @@ def make_order(
 
 @pytest.fixture
 def default_settings():
-    """Umbrales de la configuracion calibrada (Fase 4)."""
-    return make_settings(critical=25, urgent=12, priority=10)
+    """Umbrales de la configuración calibrada (Fase 4) versionados en JSON."""
+    thresholds = load_calibrated_config()["thresholds"]
+    return make_settings(
+        critical=thresholds["critical"],
+        urgent=thresholds["urgent"],
+        priority=thresholds["priority"],
+    )
 
 
 @pytest.fixture
 def calibrated_rules():
-    """Subconjunto de reglas calibradas (Fase 4) para tests reproducibles."""
-    rules = [
-        make_rule("diagnosis",        TriageOperator.CONTAINS, "ACV",          20, "ACV"),
-        make_rule("diagnosis",        TriageOperator.CONTAINS, "politrauma",    18, "Politraumatismo"),
-        make_rule("diagnosis",        TriageOperator.CONTAINS, "hemorragia",    12, "Hemorragia"),
-        make_rule("diagnosis",        TriageOperator.CONTAINS, "TEP",          10, "TEP"),
-        make_rule("diagnosis",        TriageOperator.CONTAINS, "colecistitis",  10, "Colecistitis"),
-        make_rule("diagnosis",        TriageOperator.CONTAINS, "apendicitis",   10, "Apendicitis"),
-        make_rule("diagnosis",        TriageOperator.CONTAINS, "fractura",       9, "Fractura"),
-        make_rule("modality",         TriageOperator.EQUALS,   "CT",             6, "CT"),
-        make_rule("modality",         TriageOperator.EQUALS,   "MR",             5, "MR"),
-        make_rule("modality",         TriageOperator.EQUALS,   "US",             2, "US"),
-        make_rule("modality",         TriageOperator.EQUALS,   "DX",             1, "DX"),
-        make_rule("patient_location", TriageOperator.CONTAINS, "UTI",            6, "UTI"),
-        make_rule("patient_location", TriageOperator.CONTAINS, "Shock Room",     8, "Shock Room"),
-        make_rule("patient_location", TriageOperator.CONTAINS, "Box Rojo",       6, "Box Rojo"),
-        make_rule("origin_service",   TriageOperator.CONTAINS, "guardia",        4, "Guardia"),
-        make_rule("origin_service",   TriageOperator.CONTAINS, "internacion",    4, "Internacion"),
-        make_rule("origin_service",   TriageOperator.CONTAINS, "ambulatorio",  -50, "Ambulatorio"),
-        make_rule("is_urgent",        TriageOperator.EQUALS,   "True",           4, "Urgente origen"),
-        make_rule("diagnosis",        TriageOperator.CONTAINS, "control",       -5, "Control"),
-        make_rule("diagnosis",        TriageOperator.CONTAINS, "seguimiento",   -5, "Seguimiento"),
-        make_rule("diagnosis",        TriageOperator.CONTAINS, "evolucion",     -5, "Evolucion"),
-    ]
-    return rules
+    """Reglas calibradas cargadas desde el archivo versionado de Fase 4."""
+    return load_calibrated_rules()

@@ -4,7 +4,7 @@ Esta guía describe cómo reconstruir el artefacto y cómo interpretar la eviden
 
 ## Suite automatizada
 
-La entrega contiene 101 pruebas automatizadas:
+La entrega contiene 101 pruebas automatizadas y la configuración de pruebas define valores de entorno de uso exclusivo para la suite en `server/tests/conftest.py`:
 
 - 35 en `server/tests/test_triage_engine.py`;
 - 6 en `server/tests/test_security.py`;
@@ -29,7 +29,7 @@ El recuento describe el artefacto. La ejecución completa requiere un entorno co
 python benchmark/validate_motor.py
 ```
 
-`benchmark/test_orders_regression.json` contiene 50 órdenes adicionales. Sus etiquetas esperadas se derivan de `calibrada_fase4.json`, por lo que la coincidencia 27/27 (100 %) documentada en la entrega acredita consistencia de la implementación con la especificación calibrada y no desempeño predictivo independiente.
+`benchmark/test_orders_regression.json` contiene 50 órdenes adicionales. Sus etiquetas esperadas se derivan de `calibrada_fase4.json`, por lo que la coincidencia 50/50 documentada en la entrega acredita consistencia de la implementación con la especificación calibrada y no desempeño predictivo independiente. La metadata del conjunto se mantiene sincronizada con la distribución 12/14/10/14.
 
 ## Evidencia cuantitativa incluida
 
@@ -89,7 +89,7 @@ La entrega conserva resultados de carga concurrente (`benchmark/results/load_sui
 - **RF-04 (`ws_latency.py`):** el instante final se toma cuando la petición de persistencia ya retornó y el backend emite el evento antes de responder; la cifra es una **cota superior** que incluye la duración completa de la ingesta y no aísla la propagación del evento.
 - **Equivalencia BD ↔ worklist (`verify_worklist_mapping.py`):** el valor esperado proviene del servicio que genera el archivo; se comparan 7 atributos (no Accession Number, AET ni fecha/hora del paso).
 - **RNF-01 (`api_latency.py`):** un solo cliente, secuencial, sobre una base de desarrollo con pocas órdenes.
-- **`benchmark/results/diagnostico/results_tdcc_FAILED_2026-09-20.csv`:** corrida de TDCC del 20/09/2026 con estado `FAILED` (una fila). Se conserva como registro; no integra las series del Capítulo 5 y su causa no fue diagnosticada. La cadena de alertas con autenticación debe re-verificarse de extremo a extremo (procedimiento: `python benchmark/tdcc.py`).
+- **`benchmark/results/diagnostico/results_tdcc_FAILED_2026-09-20.csv`:** corrida de TDCC del 20/09/2026 con estado `FAILED` (una fila). Se conserva como registro; no integra las series del Capítulo 5 y su causa no fue diagnosticada. El intento quedó conservado como evidencia de un resultado `FAILED`; la causa exacta no quedó diagnosticada en el artefacto conservado. Por transparencia, no se presenta como corrida exitosa ni se mezcla con las series del Capítulo 5. Una corrida de extremo a extremo con la composición entregada sigue siendo una verificación posterior recomendada.
 
 ## Scripts de análisis
 
@@ -101,7 +101,7 @@ La entrega conserva resultados de carga concurrente (`benchmark/results/load_sui
 
 ## Prácticas DevSecOps
 
-El repositorio conserva los comandos previstos para análisis de dependencias, análisis estático y cobertura, pero **no se presentan como resultados cuantitativos auditados de esta entrega**. Cualquier cifra de cobertura o de vulnerabilidades debe considerarse válida únicamente si se vuelve a ejecutar en el entorno fijado y se conserva el informe correspondiente.
+El repositorio conserva los comandos de análisis estático y cobertura. La cobertura reproducible de la revisión entregada se obtiene mediante `pytest.ini`; la cifra histórica auditada fue 43 % global, con 100 % en `triage.py`, 34 % en `notifier.py` y 0 % en `service.py`. Estas cifras describen la ejecución auditada y no implican cobertura total del sistema. Cualquier cifra de cobertura o de vulnerabilidades debe considerarse válida únicamente si se vuelve a ejecutar en el entorno fijado y se conserva el informe correspondiente.
 
 ## Seguridad del MVP
 
@@ -121,3 +121,8 @@ El repositorio conserva los comandos previstos para análisis de dependencias, a
 4. Ejecutar las mediciones que correspondan y conservar sus CSV junto con la fecha y configuración utilizada.
 
 La validación de disponibilidad del servicio DICOM ≥ 99 % en horario operativo, el RBAC institucional, la configuración de TLS/proxy y la validación clínica independiente permanecen fuera del alcance de este MVP. La API sí cuenta con una campaña de soak sostenido y la carga concurrente fue caracterizada experimentalmente.
+
+
+## Bloqueo de dependencias
+
+`server/requirements.txt` y `server/requirements.lock` fijan las dependencias directas de aplicación y de prueba. La integración continua instala el archivo de bloqueo y `pip-audit` lo utiliza como entrada.

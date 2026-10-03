@@ -1,6 +1,6 @@
 # Middleware de Orquestación y Triaje para Diagnóstico por Imágenes 🏥🚀
 
-**Entrega de defensa — 21 de septiembre de 2026**
+**Entrega de defensa — versión reparada tras la cuarta auditoría**
 
 Este paquete corresponde a la versión de software asociada a la tesis final. Incluye el código del MVP, las mediciones adicionales de RNF-01/RF-04, la verificación de mapeo PostgreSQL ↔ DICOM y la prueba de regresión del motor.
 
@@ -113,14 +113,14 @@ El ZIP de software contiene la implementación, las pruebas automatizadas y la r
 La entrega asociada a esta revisión incluye evidencia técnica adicional ejecutada el 23/09/2026 y conservada en `benchmark/results/`:
 
 - **RNF-01:** 600 solicitudes HTTP autenticadas, 200 por cada uno de los tres endpoints de lectura. Todas respondieron HTTP 200. P95: 11,57 ms (`/orders`), 16,08 ms (`/orders/stats`) y 10,36 ms (`/orders/notifications`). Se trata de una medición secuencial de un único cliente.
-- **Carga concurrente:** cinco niveles (1, 5, 10, 25 y 50 clientes; 100 solicitudes por cliente). A 1/5/10 clientes se observaron 0 % de error; a 25 clientes, 18,32 %; a 50 clientes, 100 %. El ensayo caracteriza límites bajo carga sintética y no implica capacidad hospitalaria.
-- **Soak de API:** más de 3,5 horas, 1.254 solicitudes HTTP y 100 % de respuestas 200; P95 global 20,47 ms. Esta evidencia caracteriza estabilidad de los endpoints de lectura, no disponibilidad sostenida del servicio DICOM ni ausencia de fugas de memoria.
+- **Carga concurrente:** la campaña del 23/09/2026 conserva cinco niveles (1, 5, 10, 25 y 50 clientes; 100 solicitudes por cliente). Los niveles de 1, 5 y 10 clientes son interpretables. Las tasas de error publicadas para 25 y 50 no se utilizan como límites de carga porque sus ventanas se superpusieron con el reinicio del backend de la campaña de resiliencia; el P95 de 827,15 ms se conserva únicamente para las solicitudes exitosas anteriores a la interrupción.
+- **Soak de API:** más de 4,3 horas (516 ciclos), con 1.548 solicitudes HTTP y 100 % de respuestas 200 en el CSV crudo completo; media 13,32 ms, P95 20,08 ms y P99 57,89 ms. El archivo `soak_test_report_extended_2026-09-23.json/.md` conserva un corte parcial histórico de 1.254 solicitudes (P95 20,47 ms) y no sustituye al recálculo sobre el CSV completo. La evidencia caracteriza estabilidad de los endpoints de lectura, no disponibilidad sostenida del servicio DICOM ni ausencia de fugas de memoria.
 - **RF-04/WebSocket:** 50 mediciones extendidas; media 19,56 ms, mediana 18,37 ms, P95 27,55 ms, IC 95 % [18,40; 20,72] ms. La prueba sigue siendo de una conexión secuencial.
 - **Equivalencia DICOM extendida:** 50 órdenes, 350 atributos, 0 discrepancias; la prueba utiliza el mismo serializador productivo `build_worklist_dataset`, por lo que acredita la lógica de serialización/mapeo sobre la muestra sintética. No sustituye una prueba C-FIND con modalidad real.
 - **Regresión del motor:** 50 órdenes adicionales con 50/50 coincidencias respecto de etiquetas derivadas de la especificación calibrada. Continúa siendo una prueba de consistencia, no validación predictiva independiente.
-- **Suite automatizada:** 101 pruebas presentes en `server/tests/`: 35 de motor, 6 de seguridad, 19 de privacidad, 33 de robustez, 4 de contrato, 1 DICOM y 3 de notificaciones. El recuento describe el artefacto; la ejecución completa depende del entorno indicado.
-- **Seguridad estática:** Bandit sin hallazgos en la corrida conservada y `pip-audit` sin vulnerabilidades conocidas en las dependencias analizadas.
-- **Resiliencia:** 3 escenarios ejecutados y superados; 2 no pudieron ejecutarse por limitaciones del entorno de prueba.
+- **Suite automatizada:** 101 pruebas presentes en `server/tests/`: 35 de motor, 6 de seguridad, 19 de privacidad, 33 de robustez, 4 de contrato, 1 DICOM y 3 de notificaciones. La ejecución documentada queda autocontenida mediante valores de prueba en `server/tests/conftest.py`.
+- **Seguridad estática:** Bandit y `pip-audit` están configurados para la revisión entregada; `pip-audit` toma como entrada `server/requirements.lock`. Las salidas históricas se mantienen como evidencia fechada y no se reinterpretan como nuevas corridas.
+- **Resiliencia:** se conservan los resultados de los escenarios efectivamente ejecutados; los escenarios no ejecutados se mantienen como no ejecutados y no se contabilizan como éxitos.
 
 La validación predictiva independiente con referencia profesional nueva, la usabilidad con participantes externos y la validación clínica en entorno real permanecen fuera del alcance de esta entrega académica.
 
@@ -128,3 +128,17 @@ La validación predictiva independiente con referencia profesional nueva, la usa
 ## Verificación estructural del paquete
 
 Antes de entregar, puede ejecutarse `python VERIFY_DELIVERY.py`. El script comprueba la presencia de los artefactos mínimos, el recuento estático de pruebas, la reconstrucción del capítulo 6, las cifras de evidencia, la minimización del payload externo y controles estáticos de robustez del despliegue. La reconstrucción estadística del capítulo 6 no depende del backend ni de SQLModel. No reemplaza una ejecución funcional completa del stack Docker.
+
+
+## Reproducción rápida de la suite
+Desde la raíz del repositorio, las pruebas automatizadas pueden ejecutarse con:
+
+```bash
+python -m pytest server/tests -v
+```
+
+Los valores de prueba se proveen desde `server/tests/conftest.py`; no deben utilizarse secretos reales.
+
+## Entrega y trazabilidad Git
+
+La versión auditada se conserva en `tesis-v10.6-reparada`. Las correcciones de esta entrega deben integrarse sin modificar esa rama, creando `tesis-v10.7` a partir de su estado auditado. El commit final del software se registra con la identidad Git del autor que corresponda y su SHA real se consigna en la tesis definitiva, que se mantiene como documento de entrega separado del repositorio de software.

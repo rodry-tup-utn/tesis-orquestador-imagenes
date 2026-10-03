@@ -83,5 +83,5 @@ Regla común: **se publica lo que resulte**, sin repetir la medición hasta obte
 3. Documentar hardware, volumen de datos en la base y versión de la imagen.
 
 **Alcance:** mide la API bajo carga de lectura; **no** incluye Orthanc ni n8n. Para RNF-02 completo agregar un chequeo periódico de C-ECHO a Orthanc.
-**En la tesis:** anexar a VII.1 y pasar RNF-02 de «parcialmente sustentado» a «verificado en la ventana ensayada» (con la ventana explícita).
+**En la tesis:** documentar el soak como caracterización de estabilidad de la API. No reclasificar RNF-02 como verificado, porque el ensayo no mide directamente la disponibilidad sostenida de Orthanc ni una ventana operativa institucional.
 **Tiempo:** 1 día (la corrida larga corre sola).

@@ -97,7 +97,7 @@ def main() -> None:
 
     # ── 1. Bandit — análisis estático Python ──────────────────────────────────
     if not a.skip_bandit:
-        install_if_missing("bandit", "bandit")
+        install_if_missing("bandit==1.9.4", "bandit")
         bandit_out = os.path.join(RESULTS_DIR, f"bandit_{stamp}.txt")
         bandit_json_out = os.path.join(RESULTS_DIR, f"bandit_{stamp}.json")
 
@@ -133,14 +133,14 @@ def main() -> None:
 
     # ── 2. pip-audit — auditoría de dependencias Python ───────────────────────
     if not a.skip_pip_audit:
-        install_if_missing("pip-audit", "pip-audit")
+        install_if_missing("pip-audit==2.10.1", "pip-audit")
         pip_audit_out = os.path.join(RESULTS_DIR, f"pip_audit_{stamp}.json")
         pip_audit_txt = os.path.join(RESULTS_DIR, f"pip_audit_{stamp}.txt")
 
         rc, pip_output = run_cmd(
             "pip-audit — vulnerabilidades en dependencias Python",
             [sys.executable, "-m", "pip_audit",
-             "-r", os.path.join(SERVER_DIR, "requirements.txt"),
+             "-r", os.path.join(SERVER_DIR, "requirements.lock"),
              "--format", "json"],
             cwd=SERVER_DIR, out_file=pip_audit_out,
         )
@@ -148,7 +148,7 @@ def main() -> None:
         run_cmd(
             "pip-audit — salida texto",
             [sys.executable, "-m", "pip_audit",
-             "-r", os.path.join(SERVER_DIR, "requirements.txt")],
+             "-r", os.path.join(SERVER_DIR, "requirements.lock")],
             cwd=SERVER_DIR, out_file=pip_audit_txt,
         )
 
@@ -247,7 +247,7 @@ def main() -> None:
         f.write("### Herramientas Ejecutadas\n\n")
         f.write("| Herramienta | Alcance | Resultado |\n|---|---|---|\n")
         f.write(f"| Bandit | Código Python del backend (app/) | ver bandit_{stamp}.txt |\n")
-        f.write(f"| pip-audit | Dependencias Python (requirements.txt) | ver pip_audit_{stamp}.json |\n")
+        f.write(f"| pip-audit | Dependencias Python (requirements.lock) | ver pip_audit_{stamp}.json |\n")
         if not a.skip_npm:
             f.write(f"| npm audit | Dependencias frontend | ver npm_audit_{stamp}.json |\n")
         f.write(f"| Escaneo de secretos | Código fuente completo | {len(found_lines)} referencias |\n\n")

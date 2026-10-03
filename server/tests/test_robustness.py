@@ -32,43 +32,16 @@ os.environ.setdefault("INTERNAL_API_KEY", "api-key-de-prueba")
 
 import pytest
 from app.modules.triage.triage import TriageEngine
-from app.modules.triage.model import TriageOperator
 from app.modules.medical_order.model import MedicalPriority, Modality
-from tests.conftest import make_settings, make_rule, make_order
+from tests.conftest import make_order, load_calibrated_rules, load_calibrated_config
 
-CALIBRATED_RULES = []
-DEFAULT_SETTINGS = None
-
-
-def setup_rules():
-    global CALIBRATED_RULES, DEFAULT_SETTINGS
-    DEFAULT_SETTINGS = make_settings(critical=25, urgent=12, priority=10)
-    CALIBRATED_RULES = [
-        make_rule("diagnosis", TriageOperator.CONTAINS, "ACV", 20, "ACV"),
-        make_rule("diagnosis", TriageOperator.CONTAINS, "politrauma", 18, "Politraumatismo"),
-        make_rule("diagnosis", TriageOperator.CONTAINS, "hemorragia", 12, "Hemorragia"),
-        make_rule("diagnosis", TriageOperator.CONTAINS, "TEP", 10, "TEP"),
-        make_rule("diagnosis", TriageOperator.CONTAINS, "colecistitis", 10, "Colecistitis"),
-        make_rule("diagnosis", TriageOperator.CONTAINS, "apendicitis", 10, "Apendicitis"),
-        make_rule("diagnosis", TriageOperator.CONTAINS, "fractura", 9, "Fractura"),
-        make_rule("modality", TriageOperator.EQUALS, "CT", 6, "CT"),
-        make_rule("modality", TriageOperator.EQUALS, "MR", 5, "MR"),
-        make_rule("modality", TriageOperator.EQUALS, "US", 2, "US"),
-        make_rule("modality", TriageOperator.EQUALS, "DX", 1, "DX"),
-        make_rule("patient_location", TriageOperator.CONTAINS, "UTI", 6, "UTI"),
-        make_rule("patient_location", TriageOperator.CONTAINS, "Shock Room", 8, "Shock Room"),
-        make_rule("patient_location", TriageOperator.CONTAINS, "Box Rojo", 6, "Box Rojo"),
-        make_rule("origin_service", TriageOperator.CONTAINS, "guardia", 4, "Guardia"),
-        make_rule("origin_service", TriageOperator.CONTAINS, "internacion", 4, "Internacion"),
-        make_rule("origin_service", TriageOperator.CONTAINS, "ambulatorio", -50, "Ambulatorio"),
-        make_rule("is_urgent", TriageOperator.EQUALS, "True", 4, "Urgente origen"),
-        make_rule("diagnosis", TriageOperator.CONTAINS, "control", -5, "Control"),
-        make_rule("diagnosis", TriageOperator.CONTAINS, "seguimiento", -5, "Seguimiento"),
-        make_rule("diagnosis", TriageOperator.CONTAINS, "evolucion", -5, "Evolucion"),
-    ]
-
-
-setup_rules()
+CALIBRATED_RULES = load_calibrated_rules()
+_cfg = load_calibrated_config()
+DEFAULT_SETTINGS = type("Settings", (), {
+    "triage_critical_threshold": _cfg["thresholds"]["critical"],
+    "triage_urgent_threshold": _cfg["thresholds"]["urgent"],
+    "triage_priority_threshold": _cfg["thresholds"]["priority"],
+})()
 
 
 def evaluate(diagnosis, modality="DX", origin="Guardia", location="Box Comun", urgent=False):
@@ -151,9 +124,9 @@ class TestVariacionesTildes:
         assert "apendicitis" in patterns_activated(c)
 
     def test_diagnostico_con_y_sin_tilde_mismo_score(self):
-        """Tildes no cambian el score gracias a normalizacion NFD."""
+        """La normalizacion NFD debe mantener el mismo score con y sin tilde."""
         _, c1 = evaluate("Control diagnostico anual", "DX", origin="Internacion")
-        _, c2 = evaluate("Control diagnostico anual", "DX", origin="Internacion")
+        _, c2 = evaluate("Control diagnóstico anual", "DX", origin="Internacion")
         assert c1["total_score"] == c2["total_score"]
 
 

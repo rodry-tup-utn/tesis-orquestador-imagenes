@@ -10,3 +10,6 @@ benchmark/results_*.csv
 
 .coverage
 server/.coverage
+
+# macOS
+.DS_Store
