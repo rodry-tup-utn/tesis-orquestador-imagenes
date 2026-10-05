@@ -1,9 +1,9 @@
-# Resumen de verificación — entrega de defensa V10.6 reparada
+# Resumen de verificación — entrega de defensa
 
 ## Identificación
 - Artefacto: Middleware de Orquestación y Triaje para Diagnóstico por Imágenes.
 - Evidencia técnica adicional: campañas conservadas en `benchmark/results/`.
-- La versión de software parte del estado auditado de la rama `tesis-v10.6-reparada` y se integra en la rama final `tesis-v10.7`; el hash del commit final se debe completar en la tesis una vez realizado el commit de entrega en el repositorio oficial.
+- La versión evaluada se conserva en la rama `tesis-v10.6-reparada` y la versión final de entrega corresponde a la rama `tesis-v10.7`.
 
 ## Evidencia incluida
 
@@ -22,7 +22,7 @@
 
 ## Reconciliación del soak
 
-El archivo `benchmark/results/soak_test_report_extended_2026-09-23.json` corresponde a un corte parcial de la serie histórica y conserva sus cifras originales (1.254 solicitudes; P95 20,47 ms). Para la entrega final, las cifras declaradas en la tesis y en este resumen se recalcualan sobre el CSV crudo completo `benchmark/results/soak_test/raw/soak_2026-09-23_1540.csv` (1.548 solicitudes; P95 20,08 ms). No se modifica el artefacto histórico para evitar alterar la evidencia original.
+El archivo `benchmark/results/soak_test_report_extended_2026-09-23.json` corresponde a un corte parcial de la serie histórica y conserva sus cifras originales (1.254 solicitudes; P95 20,47 ms). Para la entrega final, las cifras declaradas en la tesis y en este resumen se recalculan sobre el CSV crudo completo `benchmark/results/soak_test/raw/soak_2026-09-23_1540.csv` (1.548 solicitudes; P95 20,08 ms). No se modifica el artefacto histórico para evitar alterar la evidencia original.
 
 ## Límites
 La validación predictiva independiente con referencia profesional nueva, la evaluación de usabilidad con participantes externos y la validación clínica/operacional real permanecen fuera del alcance. RNF-02 no se presenta como plenamente verificado: el soak caracteriza estabilidad de la API, no disponibilidad sostenida del servicio DICOM.

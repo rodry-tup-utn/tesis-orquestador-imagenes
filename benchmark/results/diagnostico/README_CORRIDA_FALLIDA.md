@@ -1,4 +1,4 @@
-# Registro A-03 — intento fallido del canal de alertas
+# Registro del intento fallido del canal de alertas (20/09/2026)
 
 El archivo `results_tdcc_FAILED_2026-09-20.csv` conserva un intento de notificación de la orden `CRIT-001` con estado `FAILED` y TDCC de 109,0 ms.
 

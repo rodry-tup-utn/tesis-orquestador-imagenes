@@ -1,4 +1,4 @@
-"""Verificación estructural de la entrega V10.6 reparada.
+"""Verificación estructural de la entrega.
 
 Comprueba la presencia y coherencia de los artefactos de evidencia incluidos en el ZIP.
 No sustituye una ejecución funcional completa del stack Docker. Los resultados negativos
@@ -37,7 +37,7 @@ def main()->int:
       ROOT/'docker-compose.yml',ROOT/'README.md',ROOT/'REPRODUCIBILITY.md',ROOT/'VERIFY_DELIVERY.py',
       res/'results_api_latency_2026-09-20.csv',res/'results_ws_latency_extended_n50_2026-09-23.csv',
       res/'results_worklist_equivalence_2026-09-20.csv',res/'results_worklist_equivalence_extended_2026-09-23.csv',
-      res/'load_suite'/'results'/'load_consolidated_2026-09-23.json',res/'load_suite'/'results'/'load_consolidated_2026-09-23.md',res/'diagnostico'/'README_A03.md',res/'soak_test_report_extended_2026-09-23.json',res/'soak_test'/'raw'/'soak_2026-09-23_1540.csv',ROOT/'server'/'requirements.lock',
+      res/'load_suite'/'results'/'load_consolidated_2026-09-23.json',res/'load_suite'/'results'/'load_consolidated_2026-09-23.md',res/'diagnostico'/'README_CORRIDA_FALLIDA.md',res/'soak_test_report_extended_2026-09-23.json',res/'soak_test'/'raw'/'soak_2026-09-23_1540.csv',ROOT/'server'/'requirements.lock',
       res/'resilience'/'raw'/'resilience_2026-09-23_1529.json',ROOT/'benchmark'/'test_orders_regression.json']
     miss=[str(x.relative_to(ROOT)) for x in required if not x.exists()]
     if miss: print('FALTAN:\n'+'\n'.join(miss)); return 1
@@ -80,10 +80,10 @@ def main()->int:
     env_ok=not any(p.name=='.env' for p in ROOT.rglob('.env'))
     stale_cov=not (ROOT/'server'/'.coverage').exists()
     deps_files_ok=deps_ok and (ROOT/'server'/'requirements.lock').exists() and not telegram_hardcoded
-    a03_note=(res/'diagnostico'/'README_A03.md').read_text(encoding='utf-8').lower()
+    a03_note=(res/'diagnostico'/'README_CORRIDA_FALLIDA.md').read_text(encoding='utf-8').lower()
     a03_ok=('failed' in a03_note and 'no se inventa una causa' in a03_note)
 
-    # The package must not contain the obsolete interpretation that the 25/50 errors are load limits.
+    # El paquete no debe conservar la interpretación obsoleta de que los errores con 25/50 clientes son límites de carga.
     stale_texts=[]
     for p in ROOT.rglob('*'):
         if p.is_file() and p.name != 'VERIFY_DELIVERY.py' and p.suffix.lower() in {'.md','.py','.yml','.txt'}:
@@ -92,7 +92,7 @@ def main()->int:
             if 'caracterización sintética de límites' in t or 'caracteriza límites bajo carga' in t:
                 stale_texts.append(str(p.relative_to(ROOT)))
     stale_claims_ok=not stale_texts
-    print(f'Suite V10.6: {total_tests} tests -> {"OK" if total_tests==101 else "REVISAR"}')
+    print(f'Suite de pruebas: {total_tests} tests -> {"OK" if total_tests==101 else "REVISAR"}')
     print('Desglose:',counts)
     print(f'Regresión: {regression_n} -> {"OK" if regression_n==50 else "REVISAR"}')
     print('RNF-01 P95:',api_p95)
@@ -103,7 +103,7 @@ def main()->int:
     print(f'Resiliencia: {rp} PASS / {rf} FAIL / {rn} NO EJECUTADO')
     print(f'Privacidad: {"OK" if privacy_backend and privacy_wf else "REVISAR"}; Robustez: {"OK" if robust else "REVISAR"}')
     print(f'Bench scripts: {"OK" if not probs else probs}; Capítulo 6: {"OK" if panel_ok else "REVISAR"}')
-    print(f'Entrega sin .env: {"OK" if env_ok else "REVISAR"}; sin .coverage residual: {"OK" if stale_cov else "REVISAR"}; dependencias/Telegram: {"OK" if deps_files_ok else "REVISAR"}; A-03: {"OK" if a03_ok else "REVISAR"}; claims carga: {"OK" if stale_claims_ok else stale_texts}')
+    print(f'Entrega sin .env: {"OK" if env_ok else "REVISAR"}; sin .coverage residual: {"OK" if stale_cov else "REVISAR"}; dependencias/Telegram: {"OK" if deps_files_ok else "REVISAR"}; corrida fallida: {"OK" if a03_ok else "REVISAR"}; claims carga: {"OK" if stale_claims_ok else stale_texts}')
     ok=(total_tests==101 and regression_n==50 and len(api)==600 and len(ws)==50 and len(wl)==20 and len(wle)==50 and wl_bad==0 and wle_bad==0 and load_ok and soak_ok and rf==0 and privacy_backend and privacy_wf and robust and not probs and panel_ok and env_ok and stale_cov and deps_files_ok and a03_ok and stale_claims_ok)
     print('VERIFICACIÓN ESTRUCTURAL:', 'OK' if ok else 'REVISAR')
     return 0 if ok else 1

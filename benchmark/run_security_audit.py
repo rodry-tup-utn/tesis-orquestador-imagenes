@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Script de auditoría de seguridad estática y dependencias — Prioridad 5.
+"""Script de auditoría de seguridad estática y de dependencias.
 
 Ejecuta bandit, pip-audit, npm audit y detección de secretos.
 Genera un resumen consolidado en benchmark/results/security/.
@@ -88,7 +88,7 @@ def main() -> None:
     stamp = time.strftime("%Y-%m-%d_%H%M")
 
     print(f"\n{'='*70}")
-    print(f"  AUDITORÍA DE SEGURIDAD ESTÁTICA — Plan de Mejora Prioridad 5")
+    print(f"  AUDITORÍA DE SEGURIDAD ESTÁTICA")
     print(f"  Fecha: {datetime.now(timezone.utc).isoformat()}")
     print(f"  Servidor: {SERVER_DIR}")
     print(f"{'='*70}")
@@ -115,18 +115,18 @@ def main() -> None:
         # Parsear JSON para resumen
         bandit_summary = {"tool": "bandit", "status": "ok", "issues": []}
         try:
-            # El JSON de bandit está dentro del output después del header
-            for line in bandit_output.splitlines():
-                if line.strip().startswith("{"):
-                    bdata = json.loads(line)
-                    issues = bdata.get("results", [])
-                    bandit_summary["total_issues"] = len(issues)
-                    for sev in ["HIGH", "MEDIUM", "LOW"]:
-                        bandit_summary[f"severity_{sev.lower()}"] = sum(
-                            1 for i in issues if i.get("issue_severity") == sev
-                        )
-                    break
-        except Exception:
+            # El archivo empieza con un encabezado de comentarios y el JSON de
+            # bandit ocupa varias líneas: se decodifica desde la primera llave.
+            with open(bandit_json_out, encoding="utf-8") as f:
+                contenido = f.read()
+            bdata, _ = json.JSONDecoder().raw_decode(contenido[contenido.index("{"):])
+            issues = bdata.get("results", [])
+            bandit_summary["total_issues"] = len(issues)
+            for sev in ["HIGH", "MEDIUM", "LOW"]:
+                bandit_summary[f"severity_{sev.lower()}"] = sum(
+                    1 for i in issues if i.get("issue_severity") == sev
+                )
+        except (OSError, ValueError):
             pass
         results["bandit"] = bandit_summary
         print(f"     → Issues: {bandit_summary.get('total_issues', 'ver archivo')}")
@@ -192,12 +192,15 @@ def main() -> None:
     patterns = ["SECRET_KEY", "PASSWORD", "API_KEY", "TOKEN", "PRIVATE_KEY",
                 "PSEUDONYM_SECRET", "AUTH_PASSWORD"]
     found_lines = []
-    exclude_dirs = {".git", "__pycache__", "node_modules", "htmlcov", ".env"}
+    exclude_dirs = {".git", "__pycache__", "node_modules", "htmlcov", ".env",
+                    ".venv", "venv"}
     exclude_exts = {".env", ".pyc", ".png", ".jpg", ".ico", ".woff", ".ttf"}
     exclude_files = {".env", ".env.example"}
 
     for root, dirs, files in os.walk(REPO_ROOT):
-        dirs[:] = [d for d in dirs if d not in exclude_dirs]
+        # Se omiten también las salidas de este script para no escanearlas.
+        dirs[:] = [d for d in dirs if d not in exclude_dirs
+                   and os.path.join(root, d) != RESULTS_DIR]
         for fname in files:
             if fname in exclude_files:
                 continue
@@ -269,7 +272,6 @@ def main() -> None:
             "generated_at": datetime.now(timezone.utc).isoformat(),
             "repo_root": REPO_ROOT,
             "tools": results,
-            "plan_reference": "Sección 8 — Prioridad 5 del Plan de Mejora",
         }, f, indent=2, ensure_ascii=False)
 
     print(f"\n{'='*70}")

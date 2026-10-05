@@ -1,5 +1,5 @@
-# Dependencias directas fijadas para la entrega de defensa V10.6.
-# Ver server/requirements.lock para la referencia de instalación reproducible.
+# Dependencias directas del servidor y de las pruebas, con versiones fijadas.
+# El lock completo, con dependencias transitivas, está en server/requirements.lock.
 fastapi==0.142.2
 sqlmodel==0.0.47
 SQLAlchemy==2.0.54

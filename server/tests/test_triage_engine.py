@@ -235,7 +235,7 @@ class TestReproduccionFase4:
     """Reproduce escenarios representativos del Capitulo 6 con scores exactos conocidos.
 
     El experimento original uso el mismo conjunto de 50 ordenes para calibrar y
-    evaluar (hallazgo A-01 del dictamen). Estos tests verifican que la logica del
+    evaluar. Estos tests verifican que la logica del
     motor produce los resultados correctos para casos con scores documentados.
     """
 

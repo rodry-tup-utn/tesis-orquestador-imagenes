@@ -1,6 +1,6 @@
 # Middleware de Orquestación y Triaje para Diagnóstico por Imágenes 🏥🚀
 
-**Entrega de defensa — versión reparada tras la cuarta auditoría**
+**Versión de software asociada a la tesis final**
 
 Este paquete corresponde a la versión de software asociada a la tesis final. Incluye el código del MVP, las mediciones adicionales de RNF-01/RF-04, la verificación de mapeo PostgreSQL ↔ DICOM y la prueba de regresión del motor.
 
@@ -131,14 +131,17 @@ Antes de entregar, puede ejecutarse `python VERIFY_DELIVERY.py`. El script compr
 
 
 ## Reproducción rápida de la suite
-Desde la raíz del repositorio, las pruebas automatizadas pueden ejecutarse con:
+Las dependencias del servidor, incluidas las transitivas y las herramientas de prueba, están fijadas en `server/requirements.lock` (generado con Python 3.12). Desde la raíz del repositorio:
 
 ```bash
-python -m pytest server/tests -v
+python3.12 -m venv .venv
+source .venv/bin/activate
+pip install -r server/requirements.lock
+cd server && pytest
 ```
 
-Los valores de prueba se proveen desde `server/tests/conftest.py`; no deben utilizarse secretos reales.
+No hace falta definir variables de entorno: los valores de prueba se proveen desde `server/tests/conftest.py`; no deben utilizarse secretos reales.
 
 ## Entrega y trazabilidad Git
 
-La versión auditada se conserva en `tesis-v10.6-reparada`. Las correcciones de esta entrega deben integrarse sin modificar esa rama, creando `tesis-v10.7` a partir de su estado auditado. El commit final del software se registra con la identidad Git del autor que corresponda y su SHA real se consigna en la tesis definitiva, que se mantiene como documento de entrega separado del repositorio de software.
+La versión evaluada se conserva en la rama `tesis-v10.6-reparada`. La versión final de entrega corresponde a la rama `tesis-v10.7`.
