@@ -13,3 +13,4 @@ server/.coverage
 
 # macOS
 .DS_Store
+benchmark/results/coverage/
