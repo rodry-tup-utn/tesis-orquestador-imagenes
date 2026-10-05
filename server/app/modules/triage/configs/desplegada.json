@@ -1,0 +1,106 @@
+{
+  "description": "Configuracion desplegada del motor de triaje. Es la vigente en la corrida de evidencia del 23 de agosto de 2026 y la que sustenta la distribucion de prioridades publicada en el Capitulo 5 y la traza del Anexo IV.6.",
+  "origin_service_vocabulary": [
+    "Guardia",
+    "Internacion",
+    "Ambulatorio"
+  ],
+  "thresholds": {
+    "critical": 25,
+    "urgent": 15,
+    "priority": 10
+  },
+  "rules": [
+    {
+      "name": "ACV",
+      "field": "diagnosis",
+      "operator": "contains",
+      "value": "ACV",
+      "weight": 20
+    },
+    {
+      "name": "Politraumatismo",
+      "field": "diagnosis",
+      "operator": "contains",
+      "value": "politrauma",
+      "weight": 18
+    },
+    {
+      "name": "Hemorragia",
+      "field": "diagnosis",
+      "operator": "contains",
+      "value": "hemorragia",
+      "weight": 12
+    },
+    {
+      "name": "Fractura",
+      "field": "diagnosis",
+      "operator": "contains",
+      "value": "fractura",
+      "weight": 9
+    },
+    {
+      "name": "Tomografía (CT)",
+      "field": "modality",
+      "operator": "equals",
+      "value": "CT",
+      "weight": 6
+    },
+    {
+      "name": "Resonancia (MR)",
+      "field": "modality",
+      "operator": "equals",
+      "value": "MR",
+      "weight": 5
+    },
+    {
+      "name": "Ecografía (US)",
+      "field": "modality",
+      "operator": "equals",
+      "value": "US",
+      "weight": 2
+    },
+    {
+      "name": "Radiografía (DX)",
+      "field": "modality",
+      "operator": "equals",
+      "value": "DX",
+      "weight": 1
+    },
+    {
+      "name": "Ubicación en UTI",
+      "field": "patient_location",
+      "operator": "contains",
+      "value": "UTI",
+      "weight": 6
+    },
+    {
+      "name": "Servicio: Guardia",
+      "field": "origin_service",
+      "operator": "contains",
+      "value": "guardia",
+      "weight": 4
+    },
+    {
+      "name": "Servicio: Internación",
+      "field": "origin_service",
+      "operator": "contains",
+      "value": "internacion",
+      "weight": 4
+    },
+    {
+      "name": "Servicio: Ambulatorio",
+      "field": "origin_service",
+      "operator": "contains",
+      "value": "ambulatorio",
+      "weight": -50
+    },
+    {
+      "name": "Urgente desde origen",
+      "field": "is_urgent",
+      "operator": "equals",
+      "value": "True",
+      "weight": 4
+    }
+  ]
+}

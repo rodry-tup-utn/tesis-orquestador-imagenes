@@ -1,0 +1,24 @@
+{
+  "generated_at": "2026-10-05T14:01:42.513562+00:00",
+  "repo_root": "/var/www/tesis-orquestador-imagenes",
+  "tools": {
+    "bandit": {
+      "tool": "bandit",
+      "status": "ok",
+      "issues": [],
+      "total_issues": 0,
+      "severity_high": 0,
+      "severity_medium": 0,
+      "severity_low": 0
+    },
+    "pip_audit": {
+      "tool": "pip-audit",
+      "status": "ok",
+      "total_vulns": 0
+    },
+    "secrets_scan": {
+      "tool": "grep-secrets",
+      "references_found": 39
+    }
+  }
+}

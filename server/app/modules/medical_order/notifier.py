@@ -1,14 +1,15 @@
-import logging
-import httpx
-import hashlib
+import asyncio
 import json
+import logging
 from datetime import datetime
 from zoneinfo import ZoneInfo
+import httpx
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select, col
 from app.core.config import settings
 from app.core.database import get_session
 from app.core.unit_of_work import UnitOfWork
+from app.core.metrics import now_ms, log_metric
 from app.modules.medical_order.model import MedicalOrder, MedicalPriority
 from app.modules.systemsettings.model import SystemSettings
 from app.modules.medical_order.notification_model import NotificacionEmitida
@@ -35,17 +36,14 @@ class NotifierService:
         return True
 
     def _build_payload(self, order: MedicalOrder) -> dict:
-        # Seudonimización con SHA-256 según requerimientos de tesis
-        raw_str = f"{settings.secret_key}:{order.patient_dni}"
-        pseudonym = hashlib.sha256(raw_str.encode("utf-8")).hexdigest()
-        
-        # Para la demo incluimos nombre y apellido, aunque en un entorno real 
-        # estrictamente solo se mandaría el seudónimo por protección de datos PHI.
+        # El backend ya calculó y persistió el pseudónimo HMAC-SHA256.
+        pseudonym = order.patient_pseudonym
+
         payload = {
             "message": "Alerta médica crítica",
             "patient_pseudonym": pseudonym,
-            "patient_name": f"{order.patient_lastname}, {order.patient_name}",
-            "diagnosis": order.diagnosis,
+            "study": order.description,
+            "modality": order.modality.value,
             "priority": order.triage_priority.value,
             "date": datetime.now(ZoneInfo("America/Argentina/Mendoza")).strftime("%d/%m/%Y %H:%M"),
             "location": order.patient_location,
@@ -55,7 +53,9 @@ class NotifierService:
         logger.info("PAYLOAD a n8n: %s", payload)
         return payload
 
-    async def notify(self, order_id: int) -> bool:
+    async def notify(
+        self, order_id: int, cycle_id: str | None = None, t_received: float | None = None
+    ) -> bool:
         async with UnitOfWork(self._session) as uow:
             order = await uow.orders.get_by_id(order_id)
             if not order or order.was_notified:
@@ -73,23 +73,34 @@ class NotifierService:
                 status="PENDING"
             )
 
+            baseline_ms = (
+                t_received
+                if t_received is not None
+                else order.created_at.timestamp() * 1000
+            )
+
             success = False
-            try:
-                async with httpx.AsyncClient() as client:
-                    resp = await client.post(settings.url_webhook_n8n, json=payload, timeout=5)
-                    if resp.status_code != 200:
-                        logger.warning(
-                            "n8n respondió %d para order %d", resp.status_code, order.id
-                        )
-                        notificacion.status = "FAILED"
-                        notificacion.error_message = f"HTTP {resp.status_code}"
-                    else:
-                        notificacion.status = "SUCCESS"
-                        success = True
-            except Exception as e:
-                logger.error("Error de conexión con n8n para order %d: %s", order.id, e)
+            t_start = now_ms()
+            success, err_msg, attempts = await self._send_with_retry(payload, order.id)
+            if success:
+                notificacion.status = "SUCCESS"
+            else:
                 notificacion.status = "FAILED"
-                notificacion.error_message = str(e)
+                notificacion.error_message = f"{err_msg} tras {attempts} intentos"
+            t_end = now_ms()
+
+            log_metric(
+                "tdcc",
+                cycle_id=cycle_id,
+                order_id=order.id,
+                external_id=order.external_id,
+                priority=order.triage_priority.value,
+                status=notificacion.status,
+                t_received=round(baseline_ms, 3),
+                t_notify_start=round(t_start, 3),
+                t_notify_end=round(t_end, 3),
+                TDCC=round(t_end - baseline_ms, 3),
+            )
 
             uow.session.add(notificacion)
 
@@ -100,7 +111,12 @@ class NotifierService:
             
             return success
 
-    async def notify_many(self, order_ids: list[int]) -> int:
+    async def notify_many(
+        self,
+        order_ids: list[int],
+        cycle_id: str | None = None,
+        t_received: float | None = None,
+    ) -> int:
         if not order_ids:
             return 0
 
@@ -126,23 +142,34 @@ class NotifierService:
                     status="PENDING"
                 )
 
+                baseline_ms = (
+                    t_received
+                    if t_received is not None
+                    else order.created_at.timestamp() * 1000
+                )
+
                 success = False
-                try:
-                    async with httpx.AsyncClient() as client:
-                        resp = await client.post(settings.url_webhook_n8n, json=payload, timeout=5)
-                        if resp.status_code != 200:
-                            logger.warning(
-                                "n8n respondió %d para order %d", resp.status_code, order.id
-                            )
-                            notificacion.status = "FAILED"
-                            notificacion.error_message = f"HTTP {resp.status_code}"
-                        else:
-                            notificacion.status = "SUCCESS"
-                            success = True
-                except Exception as e:
-                    logger.error("Error de conexión con n8n para order %d: %s", order.id, e)
+                t_start = now_ms()
+                success, err_msg, attempts = await self._send_with_retry(payload, order.id)
+                if success:
+                    notificacion.status = "SUCCESS"
+                else:
                     notificacion.status = "FAILED"
-                    notificacion.error_message = str(e)
+                    notificacion.error_message = f"{err_msg} tras {attempts} intentos"
+                t_end = now_ms()
+
+                log_metric(
+                    "tdcc",
+                    cycle_id=cycle_id,
+                    order_id=order.id,
+                    external_id=order.external_id,
+                    priority=order.triage_priority.value,
+                    status=notificacion.status,
+                    t_received=round(baseline_ms, 3),
+                    t_notify_start=round(t_start, 3),
+                    t_notify_end=round(t_end, 3),
+                    TDCC=round(t_end - baseline_ms, 3),
+                )
 
                 uow.session.add(notificacion)
 
@@ -154,26 +181,72 @@ class NotifierService:
 
             return notified
 
+    async def _send_with_retry(
+        self, payload: dict, order_id: int, max_retries: int = 3, backoff_base: float = 0.2
+    ) -> tuple[bool, str | None, int]:
+        """Envía el payload al webhook con política de reintentos y backoff exponencial."""
+        last_error = None
+        for attempt in range(1, max_retries + 1):
+            try:
+                async with httpx.AsyncClient() as client:
+                    resp = await client.post(
+                        settings.url_webhook_n8n,
+                        json=payload,
+                        headers={"X-Alert-API-Key": settings.alert_webhook_key},
+                        timeout=5,
+                    )
+                    if resp.status_code == 200:
+                        if attempt > 1:
+                            logger.info(
+                                "Alerta para order %d entregada exitosamente en reintento %d/%d",
+                                order_id, attempt, max_retries
+                            )
+                        return True, None, attempt
+                    else:
+                        last_error = f"HTTP {resp.status_code}"
+                        logger.warning(
+                            "n8n respondió %d para order %d en intento %d/%d",
+                            resp.status_code, order_id, attempt, max_retries
+                        )
+            except Exception as e:
+                last_error = str(e)
+                logger.warning(
+                    "Fallo de conexión con n8n para order %d en intento %d/%d: %s",
+                    order_id, attempt, max_retries, e
+                )
 
-async def evaluate_and_notify(order_id: int):
+            if attempt < max_retries:
+                delay = backoff_base * (2 ** (attempt - 1))
+                await asyncio.sleep(delay)
+
+        return False, last_error, max_retries
+
+
+async def evaluate_and_notify(order_id: int, t_received: float | None = None):
     if not settings.url_webhook_n8n:
         logger.warning("URL_WEBHOOK_N8N no configurada")
         return
     try:
         async for session in get_session():
-            await NotifierService(session).notify(order_id)
+            await NotifierService(session).notify(order_id, t_received=t_received)
             await session.commit()
     except Exception as e:
         logger.error("Error en notificador para order %d: %s", order_id, e)
 
 
-async def evaluate_and_notify_many(order_ids: list[int]):
+async def evaluate_and_notify_many(
+    order_ids: list[int],
+    cycle_id: str | None = None,
+    t_received: float | None = None,
+):
     if not settings.url_webhook_n8n or not order_ids:
         logger.warning("URL_WEBHOOK_N8N no configurada o sin órdenes")
         return
     try:
         async for session in get_session():
-            notified = await NotifierService(session).notify_many(order_ids)
+            notified = await NotifierService(session).notify_many(
+                order_ids, cycle_id=cycle_id, t_received=t_received
+            )
             await session.commit()
             if notified:
                 logger.info(

@@ -1,4 +1,16 @@
-*.env
+.env
+.env.*
+!.env.example
 node_modules/
 .venv/
 __pycache__/
+.pytest_cache/
+*.pyc
+benchmark/results_*.csv
+
+.coverage
+server/.coverage
+
+# macOS
+.DS_Store
+benchmark/results/coverage/

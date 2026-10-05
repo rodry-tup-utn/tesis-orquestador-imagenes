@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_session
 from app.modules.systemsettings.schemas import SystemSettingsRead, SystemSettingsUpdate
 from app.modules.systemsettings.service import SystemSettingsService
+from app.core.security import get_current_principal
 
 router = APIRouter(prefix="/settings", tags=["Settings"])
 
@@ -14,7 +15,10 @@ def get_settings_service(
 
 
 @router.get("", response_model=SystemSettingsRead)
-async def get_settings(svc: SystemSettingsService = Depends(get_settings_service)):
+async def get_settings(
+    svc: SystemSettingsService = Depends(get_settings_service),
+    _principal: dict = Depends(get_current_principal),
+):
     return await svc.get()
 
 
@@ -22,5 +26,6 @@ async def get_settings(svc: SystemSettingsService = Depends(get_settings_service
 async def update_settings(
     data: SystemSettingsUpdate,
     svc: SystemSettingsService = Depends(get_settings_service),
+    _principal: dict = Depends(get_current_principal),
 ):
     return await svc.update(data)

@@ -1,9 +1,15 @@
+from enum import Enum
 from app.modules.medical_order.model import MedicalOrder, MedicalPriority
 from app.modules.triage.model import TriageRule, TriageOperator
 from app.modules.systemsettings.model import SystemSettings
+import unicodedata
 
 
 class TriageEngine:
+
+    @staticmethod
+    def _to_text(value) -> str:
+        return value.value if isinstance(value, Enum) else str(value)
 
     @staticmethod
     def evaluate(
@@ -19,11 +25,12 @@ class TriageEngine:
             field_value = getattr(order, rule.field, None)
             if field_value is None:
                 continue
-            if TriageEngine._matches(str(field_value), rule.operator, rule.value):
+            text_value = TriageEngine._to_text(field_value)
+            if TriageEngine._matches(text_value, rule.operator, rule.value):
                 score += rule.weight
                 criterios["rules_matched"].append({
                     "field": rule.field,
-                    "value_matched": str(field_value),
+                    "value_matched": text_value,
                     "operator": rule.operator,
                     "pattern": rule.value,
                     "weight": rule.weight
@@ -33,14 +40,24 @@ class TriageEngine:
         return TriageEngine._map_priority(score, settings), criterios
 
     @staticmethod
+    def _norm(text: str) -> str:
+        decomposed = unicodedata.normalize("NFD", text.lower())
+        return "".join(c for c in decomposed if not unicodedata.combining(c))
+
+    @staticmethod
     def _matches(field_value: str, operator: TriageOperator, pattern: str) -> bool:
+        value = TriageEngine._norm(field_value)
+        target = TriageEngine._norm(pattern)
         match operator:
             case TriageOperator.EQUALS:
-                return field_value.lower() == pattern.lower()
+                return value == target
             case TriageOperator.CONTAINS:
-                return pattern.lower() in field_value.lower()
+                return target in value
             case TriageOperator.STARTSWITH:
-                return field_value.lower().startswith(pattern.lower())
+                return value.startswith(target)
+            case _:
+                # Operador desconocido: nunca coincide, evita retorno None implícito
+                return False
 
     @staticmethod
     def _map_priority(score: int, settings: SystemSettings) -> MedicalPriority:

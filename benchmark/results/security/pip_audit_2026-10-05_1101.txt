@@ -1,0 +1,6 @@
+# pip-audit — salida texto
+# Comando: /var/www/tesis-orquestador-imagenes/.venv/bin/python -m pip_audit -r /var/www/tesis-orquestador-imagenes/server/requirements.lock
+# Directorio: /var/www/tesis-orquestador-imagenes/server
+# Fecha: 2026-10-05T14:01:42.478799+00:00
+
+No known vulnerabilities found

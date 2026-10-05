@@ -1,0 +1,15 @@
+{
+  "generated_at": "2026-09-23T18:28:45.788071+00:00",
+  "motor_csv": "/Users/nahuel/Desktop/carpeta sin título 3/tesis-orquestador-imagenes-DEFENSA_V10_4_HARDENED/benchmark/motor_salida_fases_50_ordenes.csv",
+  "panel_csv": "/Users/nahuel/Desktop/carpeta sin título 3/tesis-orquestador-imagenes-DEFENSA_V10_4_HARDENED/benchmark/panel_votos_50_ordenes.csv",
+  "stats": {
+    "total": 50,
+    "correct": 0,
+    "false_negatives": 0,
+    "critical_false_negatives": 0,
+    "false_positives_overclassification": 0
+  },
+  "false_negatives": [],
+  "overclassifications": [],
+  "plan_reference": "Sección 14 — Prioridad 11 del Plan de Mejora"
+}

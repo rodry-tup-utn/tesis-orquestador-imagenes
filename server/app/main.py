@@ -5,12 +5,15 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.middleware.cors import CORSMiddleware
 from app.modules.medical_order.router import router as medical_router
+from app.modules.auth.router import router as auth_router
 from app.modules.triage.router import router as triage_router
 from app.modules.systemsettings.router import router as settings_router
 from app.modules.systemsettings.seed import seed_system_settings
 from app.modules.triage.seed import seed_triage_rules
 from app.modules.medical_order import notification_model  # Para registro de la metadata
 from app.core.websocket import manager
+from app.core.security import decode_access_token
+import asyncio
 import json
 
 
@@ -44,15 +47,27 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(auth_router)
 app.include_router(medical_router)
 app.include_router(triage_router)
 app.include_router(settings_router)
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
-    await manager.connect(websocket)
+    # La primera trama es obligatoriamente de autenticacion para no exponer el
+    # canal de eventos a clientes anonimos. El token no viaja en la URL.
+    await websocket.accept()
     try:
+        raw_auth = await asyncio.wait_for(websocket.receive_text(), timeout=5)
+        message = json.loads(raw_auth)
+        token = message.get("token") if message.get("type") == "auth" else None
+        if not token or decode_access_token(token) is None:
+            await websocket.close(code=1008, reason="No autorizado")
+            return
+
+        manager.active_connections.append(websocket)
+        await websocket.send_text("authenticated")
         while True:
-            data = await websocket.receive_text()
-    except WebSocketDisconnect:
+            await websocket.receive_text()
+    except (WebSocketDisconnect, asyncio.TimeoutError, json.JSONDecodeError):
         manager.disconnect(websocket)

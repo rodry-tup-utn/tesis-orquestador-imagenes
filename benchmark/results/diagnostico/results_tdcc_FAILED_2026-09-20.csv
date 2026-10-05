@@ -1,0 +1,2 @@
+run,cycle_id,external_id,order_id,priority,status,t_notify_end,TDCC
+1,C-001,CRIT-001,1,Crítico,FAILED,1789939250893.177,109.025

@@ -1,24 +1,28 @@
 # Middleware de Orquestación y Triaje para Diagnóstico por Imágenes 🏥🚀
 
+**Versión de software asociada a la tesis final**
+
+Este paquete corresponde a la versión de software asociada a la tesis final. Incluye el código del MVP, las mediciones adicionales de RNF-01/RF-04, la verificación de mapeo PostgreSQL ↔ DICOM y la prueba de regresión del motor.
+
 ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)
 ![PostgreSQL](https://img.shields.io/badge/postgresql-4169e1?style=for-the-badge&logo=postgresql&logoColor=white)
 ![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)
 ![n8n](https://img.shields.io/badge/n8n-FF6600?style=for-the-badge&logo=n8n&logoColor=white)
 
-Este proyecto es el Trabajo Integrador Final para la **Tecnicatura Universitaria en Programación (UTN FRM)**. Se trata de un middleware no invasivo basado en microservicios, diseñado para centralizar, normalizar y priorizar automáticamente órdenes médicas provenientes de distintos sistemas hospitalarios (HIS) heterogéneos, integrándolos hacia un servidor PACS/DICOM y emitiendo alertas críticas en tiempo real.
+Este proyecto es el Trabajo Integrador Final para la **Tecnicatura Universitaria en Programación (UTN FRM)**. Se trata de un middleware no invasivo basado en servicios contenerizados, diseñado para centralizar, normalizar y priorizar automáticamente órdenes médicas provenientes de distintos sistemas hospitalarios (HIS) heterogéneos, integrándolos hacia un servidor PACS/DICOM y emitiendo alertas críticas en tiempo real.
 
 ---
 
 ## 🏗️ Arquitectura y Stack Tecnológico
 
-El sistema utiliza una arquitectura orientada a microservicios orquestada íntegramente mediante contenedores Docker:
+El sistema utiliza una arquitectura orientada a servicios contenerizados, orquestada íntegramente mediante contenedores Docker:
 
 *   **n8n (Orquestador ETL):** Realiza la ingesta automatizada de datos (mediante polling HTTP GET no invasivo), normalización semántica y empuje de lotes hacia el backend.
-*   **FastAPI + PostgreSQL (Motor de Triaje):** API REST asíncrona que valida datos con Pydantic, aplica reglas configurables de triaje (Niveles: Crítico, Urgente, Prioritario, Rutinario) y persiste el estado.
-*   **Orthanc (VNA/PACS):** Servidor DICOM que expone el servicio de *Modality Worklist* (MWL) para que los resonadores/tomógrafos consuman la lista de pacientes.
-*   **React + Vite (Tablero SPA):** Frontend (Feature-Sliced Design) servido vía Nginx, con actualizaciones en tiempo real (WebSockets) para monitoreo de la cola de trabajo clínica.
-*   **Telegram Bot API:** Subsistema asíncrono para notificaciones proactivas al equipo médico con datos de pacientes seudonimizados (SHA-256).
+*   **FastAPI + PostgreSQL (Motor de Triaje):** API REST asíncrona que valida datos con Pydantic, aplica reglas configurables de triaje (Niveles: Crítico, Urgente, Prioritario y Rutina) y persiste el estado. Los niveles de prioridad utilizados por el artefacto son Crítico, Urgente, Prioritario y Rutina.
+*   **Orthanc (PACS):** Servidor DICOM que expone el servicio de *Modality Worklist* (MWL) para que los resonadores/tomógrafos consuman la lista de pacientes.
+*   **React + Vite (Tablero SPA):** Frontend (Feature-Sliced Design) con Vite. En el entorno de validación se ejecuta mediante el servidor de desarrollo de Vite; un despliegue productivo debe servir el artefacto estático detrás de un proxy inverso (por ejemplo, Nginx). Las actualizaciones se realizan en tiempo real mediante WebSockets.
+*   **Telegram Bot API:** Subsistema asíncrono para notificaciones proactivas al equipo médico con datos de pacientes seudonimizados mediante HMAC-SHA256.
 *   **Python Mock Server:** Simulador que emula APIs de sistemas HIS (Guardia, Internación, Ambulatorio) generando escenarios de prueba sintéticos.
 
 ---
@@ -38,15 +42,20 @@ Sigue estos pasos cuidadosamente para levantar el entorno completo desde cero (i
 ### 1. Variables de Entorno
 Asegúrate de que el archivo `.env` exista en la raíz del proyecto `tesis-orquestador-imagenes` (puedes usar `.env.example` como plantilla) con tus credenciales de base de datos y Orthanc.
 
-### 2. Levantar la Infraestructura
+### 2. Variables obligatorias de seguridad
+El MVP exige secretos separados: `SECRET_KEY` para JWT, `PSEUDONYM_SECRET` para HMAC-SHA256, `INTERNAL_API_KEY` para autenticar la ingesta máquina-a-máquina desde n8n y `ALERT_WEBHOOK_KEY` para autenticar el backend frente al webhook interno de alertas. Configure también `AUTH_USERNAME` y `AUTH_PASSWORD` para el usuario del tablero. Ninguno debe quedar versionado.
+
+### 3. Levantar la Infraestructura
 Abre tu terminal en la carpeta raíz del proyecto y ejecuta:
 
 ```bash
 docker compose up -d --build
 ```
-> Esto construirá la imagen optimizada del Frontend (Nginx), el Backend (FastAPI), y descargará las imágenes de Postgres, n8n, Mock Server y Orthanc. Las migraciones de la base de datos se aplicarán automáticamente.
+> Esto construirá la imagen de desarrollo del Frontend (Vite), el Backend (FastAPI), y descargará las imágenes de Postgres, n8n, Mock Server y Orthanc. Las migraciones de la base de datos se aplicarán automáticamente. El backend espera a que PostgreSQL informe estado saludable antes de iniciar las migraciones.
+>
+> El Frontend corre en modo desarrollo con **Hot Module Replacement (HMR)**: los cambios en `frontend/src` se ven al instante sin rebuild. Ingresa a [http://localhost:5173](http://localhost:5173).
 
-### 3. Configurar el Orquestador (n8n)
+### 4. Configurar el Orquestador (n8n)
 La primera vez que n8n inicie, estará "en blanco".
 1. Ingresa a [http://localhost:5678](http://localhost:5678) y crea una cuenta de administrador local.
 2. Ve a **Workflows** > **Add Workflow**.
@@ -54,14 +63,14 @@ La primera vez que n8n inicie, estará "en blanco".
 4. Importa el archivo `n8n-workflow/Orquestador Imagenes.json`, guárdalo y **actívalo** (Toggle "Active").
 5. Repite el paso para el archivo `n8n-workflow/Alertas Criticas.json`.
 
-### 4. Configurar el Bot de Alertas (Telegram)
+### 5. Configurar el Bot de Alertas (Telegram)
 Para recibir alertas sobre pacientes en estado "Crítico":
 1. En Telegram, busca a `@BotFather`, envía `/newbot` y sigue los pasos para obtener un **Token de Acceso**.
 2. En n8n, abre el flujo **Alertas Criticas** y haz doble clic en el nodo de Telegram.
 3. En `Credential to connect with`, selecciona **Create New Credential** y pega tu Token.
-4. Para obtener tu `Chat ID` personal, háblale al bot `@userinfobot` en Telegram. Coloca ese ID numérico en el nodo de n8n y guarda.
+4. Para obtener tu `Chat ID` personal, háblale al bot `@userinfobot` en Telegram y coloca ese valor en `TELEGRAM_CHAT_ID` dentro de `.env`. El workflow de n8n toma el destino desde esa variable y no contiene un identificador de canal hardcodeado. **Nota de privacidad:** El sistema está diseñado para enviar únicamente el pseudónimo criptográfico (HMAC-SHA256) del paciente, de modo que el nombre real no se incluya en el payload enviado al canal externo.
 
-### 5. Enlazar el Backend con n8n (Webhook)
+### 6. Enlazar el Backend con n8n (Webhook)
 Cuando el motor de triaje de FastAPI detecta un caso crítico, avisa a n8n mediante un webhook.
 1. En el flujo **Alertas Criticas** de n8n, haz doble clic en el nodo **Webhook** y copia la **Test URL** o **Production URL**.
 2. Debería ser algo como `http://n8n:5678/webhook/<ID>`. *(Se usa `n8n` como host porque ocurre dentro de la red interna de Docker).*
@@ -79,8 +88,8 @@ Cuando el motor de triaje de FastAPI detecta un caso crítico, avisa a n8n media
 ## 🖥️ Uso del Sistema (Demostración)
 
 Con el sistema en marcha:
-1.  **Dashboard:** Ingresa a [http://localhost](http://localhost) para ver el tablero de control principal, donde las órdenes irán apareciendo coloreadas por su nivel de triaje.
-2.  **Alertas:** Mantén abierto tu Telegram; las órdenes marcadas como críticas te notificarán en menos de 5 segundos con el código del paciente seudonimizado.
+1.  **Autenticación y Dashboard:** Ingresa a [http://localhost:5173](http://localhost:5173), inicia sesión con `AUTH_USERNAME`/`AUTH_PASSWORD` y luego accede al tablero de control principal. Las órdenes irán apareciendo coloreadas por su nivel de triaje.
+2.  **Alertas:** Mantén abierto tu Telegram; las órdenes marcadas como críticas te notificarán dentro del umbral experimental de 10 segundos con el código del paciente seudonimizado.
 3.  **DICOM/PACS:** El servidor Orthanc estará escuchando conexiones de modalidades en el puerto `4242` y exponiendo su interfaz web en [http://localhost:8042](http://localhost:8042).
 
 ---
@@ -91,3 +100,48 @@ Con el sistema en marcha:
 *   Rodrigo Ramírez
 *   Leandro Mercado
 
+
+---
+
+## Materiales experimentales complementarios
+
+El ZIP de software contiene la implementación, las pruebas automatizadas y la regresión de consistencia del motor. Los archivos completos del experimento humano del Capítulo 6 (por ejemplo, órdenes de evaluación y planillas individuales de los evaluadores) se conservan como material académico complementario separado y no se incluyen en este paquete de software. La ausencia de esos archivos en el ZIP no debe interpretarse como ausencia de la evaluación descrita en la tesis.
+
+
+## Verificación reproducible de esta entrega
+
+La entrega asociada a esta revisión incluye evidencia técnica adicional ejecutada el 23/09/2026 y conservada en `benchmark/results/`:
+
+- **RNF-01:** 600 solicitudes HTTP autenticadas, 200 por cada uno de los tres endpoints de lectura. Todas respondieron HTTP 200. P95: 11,57 ms (`/orders`), 16,08 ms (`/orders/stats`) y 10,36 ms (`/orders/notifications`). Se trata de una medición secuencial de un único cliente.
+- **Carga concurrente:** la campaña del 23/09/2026 conserva cinco niveles (1, 5, 10, 25 y 50 clientes; 100 solicitudes por cliente). Los niveles de 1, 5 y 10 clientes son interpretables. Las tasas de error publicadas para 25 y 50 no se utilizan como límites de carga porque sus ventanas se superpusieron con el reinicio del backend de la campaña de resiliencia; el P95 de 827,15 ms se conserva únicamente para las solicitudes exitosas anteriores a la interrupción.
+- **Soak de API:** más de 4,3 horas (516 ciclos), con 1.548 solicitudes HTTP y 100 % de respuestas 200 en el CSV crudo completo; media 13,32 ms, P95 20,08 ms y P99 57,89 ms. El archivo `soak_test_report_extended_2026-09-23.json/.md` conserva un corte parcial histórico de 1.254 solicitudes (P95 20,47 ms) y no sustituye al recálculo sobre el CSV completo. La evidencia caracteriza estabilidad de los endpoints de lectura, no disponibilidad sostenida del servicio DICOM ni ausencia de fugas de memoria.
+- **RF-04/WebSocket:** 50 mediciones extendidas; media 19,56 ms, mediana 18,37 ms, P95 27,55 ms, IC 95 % [18,40; 20,72] ms. La prueba sigue siendo de una conexión secuencial.
+- **Equivalencia DICOM extendida:** 50 órdenes, 350 atributos, 0 discrepancias; la prueba utiliza el mismo serializador productivo `build_worklist_dataset`, por lo que acredita la lógica de serialización/mapeo sobre la muestra sintética. No sustituye una prueba C-FIND con modalidad real.
+- **Regresión del motor:** 50 órdenes adicionales con 50/50 coincidencias respecto de etiquetas derivadas de la especificación calibrada. Continúa siendo una prueba de consistencia, no validación predictiva independiente.
+- **Suite automatizada:** 101 pruebas presentes en `server/tests/`: 35 de motor, 6 de seguridad, 19 de privacidad, 33 de robustez, 4 de contrato, 1 DICOM y 3 de notificaciones. La ejecución documentada queda autocontenida mediante valores de prueba en `server/tests/conftest.py`.
+- **Seguridad estática:** Bandit y `pip-audit` están configurados para la revisión entregada; `pip-audit` toma como entrada `server/requirements.lock`. Las salidas históricas se mantienen como evidencia fechada y no se reinterpretan como nuevas corridas.
+- **Resiliencia:** se conservan los resultados de los escenarios efectivamente ejecutados; los escenarios no ejecutados se mantienen como no ejecutados y no se contabilizan como éxitos.
+
+La validación predictiva independiente con referencia profesional nueva, la usabilidad con participantes externos y la validación clínica en entorno real permanecen fuera del alcance de esta entrega académica.
+
+
+## Verificación estructural del paquete
+
+Antes de entregar, puede ejecutarse `python VERIFY_DELIVERY.py`. El script comprueba la presencia de los artefactos mínimos, el recuento estático de pruebas, la reconstrucción del capítulo 6, las cifras de evidencia, la minimización del payload externo y controles estáticos de robustez del despliegue. La reconstrucción estadística del capítulo 6 no depende del backend ni de SQLModel. No reemplaza una ejecución funcional completa del stack Docker.
+
+
+## Reproducción rápida de la suite
+Las dependencias del servidor, incluidas las transitivas y las herramientas de prueba, están fijadas en `server/requirements.lock` (generado con Python 3.12). Desde la raíz del repositorio:
+
+```bash
+python3.12 -m venv .venv
+source .venv/bin/activate
+pip install -r server/requirements.lock
+cd server && pytest
+```
+
+No hace falta definir variables de entorno: los valores de prueba se proveen desde `server/tests/conftest.py`; no deben utilizarse secretos reales.
+
+## Entrega y trazabilidad Git
+
+La versión evaluada se conserva en la rama `tesis-v10.6-reparada`. La versión final de entrega corresponde a la rama `tesis-v10.7`.

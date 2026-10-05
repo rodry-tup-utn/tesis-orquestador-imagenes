@@ -1,0 +1,32 @@
+# Bandit — análisis estático Python (texto)
+# Comando: bandit -r app/ -f txt --exit-zero
+# Directorio: /var/www/tesis-orquestador-imagenes/server
+# Fecha: 2026-10-05T14:01:20.261297+00:00
+
+Run started:2026-10-05 14:01:20.226526+00:00
+
+Test results:
+	No issues identified.
+
+Code scanned:
+	Total lines of code: 1615
+	Total lines skipped (#nosec): 0
+	Total potential issues skipped due to specifically being disabled (e.g., #nosec BXXX): 0
+
+Run metrics:
+	Total issues (by severity):
+		Undefined: 0
+		Low: 0
+		Medium: 0
+		High: 0
+	Total issues (by confidence):
+		Undefined: 0
+		Low: 0
+		Medium: 0
+		High: 0
+Files skipped (0):
+[main]	INFO	profile include tests: None
+[main]	INFO	profile exclude tests: None
+[main]	INFO	cli include tests: None
+[main]	INFO	cli exclude tests: None
+[main]	INFO	running on Python 3.12.14

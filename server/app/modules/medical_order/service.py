@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.unit_of_work import UnitOfWork
+from app.core.security import derive_patient_pseudonym
 from app.modules.medical_order.model import MedicalOrder, OrderState
 from app.modules.medical_order.schemas import (
     MedicalOrderCreate,
@@ -11,6 +12,7 @@ from app.modules.medical_order.schemas import (
     OrderBatchPayload,
     UpdateState,
     UpdateObservations,
+    OrderStats,
 )
 from app.modules.triage.triage import TriageEngine
 from pydicom.uid import generate_uid
@@ -27,6 +29,10 @@ class MedicalOrderService:
         async with UnitOfWork(self._session) as uow:
             items, total = await uow.orders.find_all_filtered(filters)
             return [MedicalOrderRead.from_orm(o) for o in items], total
+
+    async def get_stats(self) -> "OrderStats":
+        async with UnitOfWork(self._session) as uow:
+            return await uow.orders.get_stats()
 
     async def list_notifications(self, limit: int = 50, offset: int = 0):
         from app.modules.medical_order.notification_model import NotificacionEmitida
@@ -70,7 +76,7 @@ class MedicalOrderService:
         priority, criterios = TriageEngine.evaluate(order, rules, settings)
         order.triage_priority = priority
         order.criterios_evaluados = criterios
-        order.triaged_at = datetime.utcnow()
+        order.triaged_at = datetime.now(timezone.utc)
         return order
 
     async def get_by_id(self, order_id: int) -> MedicalOrderRead:
@@ -78,10 +84,10 @@ class MedicalOrderService:
             order = await self._get_or_404(uow, order_id)
             return MedicalOrderRead.from_orm(order)
 
-    async def _send_to_orthanc(self, order: MedicalOrder) -> None:
+    async def _send_to_orthanc(self, order: MedicalOrder) -> bool:
         if not order.study_instance_uid:
-            return
-            
+            order.study_instance_uid = generate_uid()
+
         fecha_prog = order.order_date.strftime("%Y%m%d")
         hora_prog = order.order_date.strftime("%H%M%S")
         
@@ -107,27 +113,28 @@ class MedicalOrderService:
         client = OrthancClient()
         success = await client.create_worklist(dicom_json)
         order.sent_to_orthanc = success
+        return success
 
     async def create(self, data: MedicalOrderCreate) -> MedicalOrderRead:
         async with UnitOfWork(self._session) as uow:
-            order = MedicalOrder.model_validate(data)
+            payload = data.model_dump()
+            payload["patient_pseudonym"] = derive_patient_pseudonym(data.patient_dni)
+            order = MedicalOrder.model_validate(payload)
             await self._apply_triage(uow, order)
-            
+
             order.study_instance_uid = generate_uid()
             order = await uow.orders.add(order)
             await uow.session.flush()
-            
-            await self._send_to_orthanc(order)
-            uow.session.add(order)
-            
-            await manager.broadcast("orders_updated")
-            return MedicalOrderRead.from_orm(order)
+            result = MedicalOrderRead.from_orm(order)
+
+        await manager.broadcast("orders_updated")
+        return result
 
     async def create_batch(self, payload: OrderBatchPayload) -> BatchOrderResponse:
         async with UnitOfWork(self._session) as uow:
             rules = await uow.triage_rules.get_enabled()
             settings = await self._get_system_settings_or_404(uow)
-            now = datetime.utcnow()
+            now = datetime.now(timezone.utc)
 
             existing = await uow.orders.find_existing_external_ids(
                 [o.external_id for o in payload.orders]
@@ -136,7 +143,9 @@ class MedicalOrderService:
             for data in payload.orders:
                 if data.external_id in existing:
                     continue
-                order = MedicalOrder.model_validate(data)
+                payload_data = data.model_dump()
+                payload_data["patient_pseudonym"] = derive_patient_pseudonym(data.patient_dni)
+                order = MedicalOrder.model_validate(payload_data)
                 priority, criterios = TriageEngine.evaluate(order, rules, settings)
                 order.triage_priority = priority
                 order.criterios_evaluados = criterios
@@ -147,36 +156,35 @@ class MedicalOrderService:
             if orders:
                 uow.orders.session.add_all(orders)
                 await uow.orders.session.flush()
-                
-                for order in orders:
-                    await self._send_to_orthanc(order)
-                    uow.orders.session.add(order)
 
             created_ids = [o.id for o in orders] if orders else []
-            
-            if created_ids:
-                await manager.broadcast("orders_updated")
-                
-            return BatchOrderResponse(
+
+            result = BatchOrderResponse(
                 status="success",
                 processed=len(payload.orders),
                 created=len(orders),
                 created_ids=created_ids,
             )
 
+        if created_ids:
+            await manager.broadcast("orders_updated")
+        return result
+
     async def retriage(self, order_id: int) -> MedicalOrderRead:
         async with UnitOfWork(self._session) as uow:
             order = await self._get_or_404(uow, order_id)
             await self._apply_triage(uow, order)
             uow.orders.session.add(order)
-            await manager.broadcast("orders_updated")
-            return MedicalOrderRead.from_orm(order)
+            result = MedicalOrderRead.from_orm(order)
+
+        await manager.broadcast("orders_updated")
+        return result
 
     async def update_state(self, order_id: int, data: UpdateState) -> MedicalOrderRead:
         async with UnitOfWork(self._session) as uow:
             order = await self._get_or_404(uow, order_id)
             order.order_state = data.order_state
-            now = datetime.utcnow()
+            now = datetime.now(timezone.utc)
 
             if data.order_state == OrderState.FINALIZED:
                 order.completed_at = now
@@ -184,15 +192,29 @@ class MedicalOrderService:
                 order.canceled_at = now
 
             uow.orders.session.add(order)
-            await manager.broadcast("orders_updated")
-            return MedicalOrderRead.from_orm(order)
+            result = MedicalOrderRead.from_orm(order)
+
+        await manager.broadcast("orders_updated")
+        return result
 
     async def update_observations(
         self, order_id: int, data: UpdateObservations
     ) -> MedicalOrderRead:
         async with UnitOfWork(self._session) as uow:
             order = await self._get_or_404(uow, order_id)
-
             order.observations = data.observations
             uow.orders.session.add(order)
-            return MedicalOrderRead.from_orm(order)
+            result = MedicalOrderRead.from_orm(order)
+
+        await manager.broadcast("orders_updated")
+        return result
+
+    async def send_to_orthanc(self, order_id: int) -> MedicalOrderRead:
+        async with UnitOfWork(self._session) as uow:
+            order = await self._get_or_404(uow, order_id)
+            await self._send_to_orthanc(order)
+            uow.orders.session.add(order)
+            result = MedicalOrderRead.from_orm(order)
+
+        await manager.broadcast("orders_updated")
+        return result

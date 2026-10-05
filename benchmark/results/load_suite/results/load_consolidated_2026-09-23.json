@@ -1,0 +1,228 @@
+{
+  "generated_at": "2026-09-23T18:30:03.247373+00:00",
+  "backend": "http://localhost:8000",
+  "requests_per_client": 100,
+  "levels_tested": [
+    1,
+    5,
+    10,
+    25,
+    50
+  ],
+  "plan_reference": "Sección 4 — Prioridad 1 del Plan de Mejora",
+  "results": [
+    {
+      "clients": 1,
+      "total_requests": 100,
+      "successful": 100,
+      "failed": 0,
+      "error_rate_pct": 0.0,
+      "elapsed_s": 1.35,
+      "csv_raw": "/Users/nahuel/Desktop/carpeta sin título 3/tesis-orquestador-imagenes-DEFENSA_V10_4_HARDENED/benchmark/results/load_suite/raw/load_1c_2026-09-23.csv",
+      "docker_cpu_post": "N/D",
+      "docker_mem_post": "N/D",
+      "p50_ms": 13.12,
+      "p95_ms": 18.23,
+      "p99_ms": 21.07,
+      "mean_ms": 13.51,
+      "median_ms": 13.12,
+      "min_ms": 8.09,
+      "max_ms": 21.09,
+      "stdev_ms": 3.16,
+      "rnf01_p95_cumple": true,
+      "by_endpoint": {
+        "/orders?limit=10&offset=0": {
+          "n": 34,
+          "p50": 13.07,
+          "p95": 14.57,
+          "p99": 14.75
+        },
+        "/orders/stats": {
+          "n": 33,
+          "p50": 16.96,
+          "p95": 20.57,
+          "p99": 21.08
+        },
+        "/orders/notifications": {
+          "n": 33,
+          "p50": 10.32,
+          "p95": 12.5,
+          "p99": 13.03
+        }
+      },
+      "attempt_rate_rps": 73.89,
+      "interpretable_for_load_capacity": true
+    },
+    {
+      "clients": 5,
+      "total_requests": 500,
+      "successful": 500,
+      "failed": 0,
+      "error_rate_pct": 0.0,
+      "elapsed_s": 6.42,
+      "csv_raw": "/Users/nahuel/Desktop/carpeta sin título 3/tesis-orquestador-imagenes-DEFENSA_V10_4_HARDENED/benchmark/results/load_suite/raw/load_5c_2026-09-23.csv",
+      "docker_cpu_post": "N/D",
+      "docker_mem_post": "N/D",
+      "p50_ms": 57.75,
+      "p95_ms": 105.35,
+      "p99_ms": 208.7,
+      "mean_ms": 61.96,
+      "median_ms": 57.75,
+      "min_ms": 12.06,
+      "max_ms": 303.08,
+      "stdev_ms": 28.65,
+      "rnf01_p95_cumple": true,
+      "by_endpoint": {
+        "/orders?limit=10&offset=0": {
+          "n": 167,
+          "p50": 58.69,
+          "p95": 105.93,
+          "p99": 177.47
+        },
+        "/orders/stats": {
+          "n": 167,
+          "p50": 66.88,
+          "p95": 108.59,
+          "p99": 214.09
+        },
+        "/orders/notifications": {
+          "n": 166,
+          "p50": 43.39,
+          "p95": 75.91,
+          "p99": 119.36
+        }
+      },
+      "attempt_rate_rps": 77.82,
+      "interpretable_for_load_capacity": true
+    },
+    {
+      "clients": 10,
+      "total_requests": 1000,
+      "successful": 1000,
+      "failed": 0,
+      "error_rate_pct": 0.0,
+      "elapsed_s": 15.0,
+      "csv_raw": "/Users/nahuel/Desktop/carpeta sin título 3/tesis-orquestador-imagenes-DEFENSA_V10_4_HARDENED/benchmark/results/load_suite/raw/load_10c_2026-09-23.csv",
+      "docker_cpu_post": "N/D",
+      "docker_mem_post": "N/D",
+      "p50_ms": 124.81,
+      "p95_ms": 310.4,
+      "p99_ms": 478.18,
+      "mean_ms": 148.04,
+      "median_ms": 124.81,
+      "min_ms": 10.27,
+      "max_ms": 626.71,
+      "stdev_ms": 82.1,
+      "rnf01_p95_cumple": true,
+      "by_endpoint": {
+        "/orders?limit=10&offset=0": {
+          "n": 334,
+          "p50": 121.21,
+          "p95": 287.84,
+          "p99": 395.43
+        },
+        "/orders/stats": {
+          "n": 333,
+          "p50": 163.47,
+          "p95": 423.28,
+          "p99": 545.21
+        },
+        "/orders/notifications": {
+          "n": 333,
+          "p50": 91.34,
+          "p95": 266.64,
+          "p99": 366.55
+        }
+      },
+      "attempt_rate_rps": 66.65,
+      "interpretable_for_load_capacity": true
+    },
+    {
+      "clients": 25,
+      "total_requests": 2500,
+      "successful": 2042,
+      "failed": 458,
+      "error_rate_pct": 18.32,
+      "elapsed_s": 35.51,
+      "csv_raw": "/Users/nahuel/Desktop/carpeta sin título 3/tesis-orquestador-imagenes-DEFENSA_V10_4_HARDENED/benchmark/results/load_suite/raw/load_25c_2026-09-23.csv",
+      "docker_cpu_post": "N/D",
+      "docker_mem_post": "N/D",
+      "p50_ms": 373.01,
+      "p95_ms": 827.15,
+      "p99_ms": 1252.17,
+      "mean_ms": 426.79,
+      "median_ms": 373.01,
+      "min_ms": 83.31,
+      "max_ms": 1838.94,
+      "stdev_ms": 204.78,
+      "rnf01_p95_cumple": false,
+      "by_endpoint": {
+        "/orders?limit=10&offset=0": {
+          "n": 682,
+          "p50": 376.12,
+          "p95": 797.8,
+          "p99": 1058.07
+        },
+        "/orders/stats": {
+          "n": 678,
+          "p50": 451.61,
+          "p95": 1119.46,
+          "p99": 1379.93
+        },
+        "/orders/notifications": {
+          "n": 682,
+          "p50": 299.37,
+          "p95": 646.17,
+          "p99": 851.12
+        }
+      },
+      "attempt_rate_rps": 70.4,
+      "interpretable_for_load_capacity": false,
+      "interpretation_note": "No interpretable as a load-capacity limit: the raw run overlaps the backend restart in the resilience campaign. The P95 of 827.15 ms refers only to the 2,042 successful requests recorded before the interruption."
+    },
+    {
+      "clients": 50,
+      "total_requests": 5000,
+      "successful": 0,
+      "failed": 5000,
+      "error_rate_pct": 100.0,
+      "elapsed_s": 6.13,
+      "csv_raw": "/Users/nahuel/Desktop/carpeta sin título 3/tesis-orquestador-imagenes-DEFENSA_V10_4_HARDENED/benchmark/results/load_suite/raw/load_50c_2026-09-23.csv",
+      "docker_cpu_post": "N/D",
+      "docker_mem_post": "N/D",
+      "p50_ms": "N/D",
+      "p95_ms": "N/D",
+      "p99_ms": "N/D",
+      "mean_ms": "N/D",
+      "median_ms": "N/D",
+      "min_ms": "N/D",
+      "max_ms": "N/D",
+      "stdev_ms": "N/D",
+      "rnf01_p95_cumple": false,
+      "by_endpoint": {
+        "/orders?limit=10&offset=0": {
+          "n": 0,
+          "p50": "N/D",
+          "p95": "N/D",
+          "p99": "N/D"
+        },
+        "/orders/stats": {
+          "n": 0,
+          "p50": "N/D",
+          "p95": "N/D",
+          "p99": "N/D"
+        },
+        "/orders/notifications": {
+          "n": 0,
+          "p50": "N/D",
+          "p95": "N/D",
+          "p99": "N/D"
+        }
+      },
+      "attempt_rate_rps": 815.52,
+      "interpretable_for_load_capacity": false,
+      "interpretation_note": "No interpretable as a load-capacity limit: the raw run overlaps the backend restart in the resilience campaign and contains connection rejections."
+    }
+  ],
+  "interpretation_scope": "The 23/09/2026 concurrent-load campaign is retained as raw evidence. Levels 1, 5 and 10 are interpreted as observed load points. The 25- and 50-client windows overlap the backend restart of the resilience campaign and therefore their error rates are not used to establish load-capacity limits."
+}

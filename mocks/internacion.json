@@ -418,5 +418,173 @@
       "observations": "Paciente tosedor",
       "date": "2026-04-09T10:30:00"
     }
+  },
+  {
+    "request_id": "INT-2016",
+    "is_urgent": true,
+    "patient_data": {
+      "first_name": "Ruben",
+      "last_name": "Mansilla",
+      "national_id": "24111222",
+      "internal_id": 32471,
+      "birth_date": {
+        "year": "1973",
+        "month": "02",
+        "day": "09"
+      },
+      "sex": "M"
+    },
+    "clinical_order": {
+      "modality": "CT",
+      "procedure": "Tomografia de Cerebro sin contraste",
+      "diagnosis": "ACV Isquemico Agudo",
+      "study_setting": "En cama",
+      "requesting_physician": "Dra. Florencia Avila",
+      "room": "203",
+      "bed": "2A",
+      "sector": "UTI",
+      "observations": "Ventana terapeutica, evaluar trombectomia",
+      "date": "2026-04-09T08:15:00"
+    }
+  },
+  {
+    "request_id": "INT-2017",
+    "is_urgent": true,
+    "patient_data": {
+      "first_name": "Griselda",
+      "last_name": "Ibanez",
+      "national_id": "19555666",
+      "internal_id": 32472,
+      "birth_date": {
+        "year": "1967",
+        "month": "12",
+        "day": "01"
+      },
+      "sex": "F"
+    },
+    "clinical_order": {
+      "modality": "CT",
+      "procedure": "Tomografia de Abdomen con contraste",
+      "diagnosis": "Hemorragia digestiva alta",
+      "study_setting": "En cama",
+      "requesting_physician": "Dr. Ramon Bustos",
+      "room": "118",
+      "bed": "1C",
+      "sector": "UTI",
+      "observations": "Hipotensa, requerimiento de transfusiones",
+      "date": "2026-04-09T08:35:00"
+    }
+  },
+  {
+    "request_id": "INT-2018",
+    "is_urgent": false,
+    "patient_data": {
+      "first_name": "Alberto",
+      "last_name": "Paez",
+      "national_id": "13333444",
+      "internal_id": 32473,
+      "birth_date": {
+        "year": "1957",
+        "month": "06",
+        "day": "27"
+      },
+      "sex": "M"
+    },
+    "clinical_order": {
+      "modality": "US",
+      "procedure": "Ecocardiograma Transtoracico",
+      "diagnosis": "Insuficiencia cardiaca",
+      "study_setting": "En cama",
+      "requesting_physician": "Dra. Mirta Vallejos",
+      "room": "107",
+      "bed": "3B",
+      "sector": "Cardiologia",
+      "observations": "Disnea de reposo, edemas en miembros inferiores",
+      "date": "2026-04-09T09:05:00"
+    }
+  },
+  {
+    "request_id": "INT-2019",
+    "is_urgent": true,
+    "patient_data": {
+      "first_name": "Paola",
+      "last_name": "Benitez",
+      "national_id": "31111333",
+      "internal_id": 32474,
+      "birth_date": {
+        "year": "1987",
+        "month": "03",
+        "day": "19"
+      },
+      "sex": "F"
+    },
+    "clinical_order": {
+      "modality": "MR",
+      "procedure": "Resonancia de Cerebro",
+      "diagnosis": "TEP con duda diagnostica",
+      "study_setting": "Rayos",
+      "requesting_physician": "Dr. Omar Farias",
+      "room": "306",
+      "bed": "1A",
+      "sector": "Neumonologia",
+      "observations": "Embarazada de 12 semanas, evitar contraste",
+      "date": "2026-04-09T09:25:00"
+    }
+  },
+  {
+    "request_id": "INT-2020",
+    "is_urgent": false,
+    "patient_data": {
+      "first_name": "Mabel",
+      "last_name": "Godoy",
+      "national_id": "16222444",
+      "internal_id": 32475,
+      "birth_date": {
+        "year": "1961",
+        "month": "09",
+        "day": "14"
+      },
+      "sex": "F"
+    },
+    "clinical_order": {
+      "modality": "CR",
+      "procedure": "Radiografia de Abdomen",
+      "diagnosis": "Suboclusion intestinal",
+      "study_setting": "En cama",
+      "requesting_physician": "Dra. Rosa Ferreyra",
+      "room": "109",
+      "bed": "2B",
+      "sector": "Cirugia General",
+      "observations": "Distension abdominal marcada",
+      "date": "2026-04-09T09:50:00"
+    }
+  },
+  {
+    "request_id": "INT-2021",
+    "is_urgent": false,
+    "patient_data": {
+      "first_name": "Osvaldo",
+      "last_name": "Carrizo",
+      "national_id": "27888999",
+      "internal_id": 32476,
+      "birth_date": {
+        "year": "1976",
+        "month": "08",
+        "day": "07"
+      },
+      "sex": "M"
+    },
+    "clinical_order": {
+      "modality": "MR",
+      "procedure": "Resonancia de Hombro",
+      "diagnosis": "Lesion de manguito rotador",
+      "study_setting": "Rayos",
+      "requesting_physician": "Dr. Ariel Giraudo",
+      "room": "310",
+      "bed": "4A",
+      "sector": "Traumatologia",
+      "observations": "",
+      "date": "2026-04-09T11:10:00"
+    }
   }
 ]

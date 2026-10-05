@@ -1,11 +1,19 @@
-fastapi[standard]
-sqlmodel
-asyncpg
-websockets
-alembic
-requests
-pyjwt
-passlib[bcrypt]
-bcrypt==4.0.1
-httpx>=0.24.0
-pydicom>=2.4.0
+# Dependencias directas del servidor y de las pruebas, con versiones fijadas.
+# El lock completo, con dependencias transitivas, está en server/requirements.lock.
+fastapi==0.142.2
+sqlmodel==0.0.47
+SQLAlchemy==2.0.54
+asyncpg==0.31.0
+websockets==17.1
+alembic==1.20.0
+requests==2.34.2
+PyJWT==2.15.1
+httpx==0.28.1
+pydicom==3.0.2
+pydantic==2.13.5
+pydantic-settings==2.15.0
+uvicorn==0.53.0
+pytest==9.1.1
+pytest-cov==7.1.0
+anyio==4.15.1
+pytest-anyio==0.0.0
