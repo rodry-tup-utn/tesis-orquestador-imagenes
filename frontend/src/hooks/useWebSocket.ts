@@ -44,7 +44,7 @@ export function useWebSocket(): WebSocketStatus {
           ws?.close(1008, "No autenticado");
           return;
         }
-        ws.send(JSON.stringify({ type: "auth", token }));
+        if (ws) ws.send(JSON.stringify({ type: "auth", token }));
       };
 
       ws.onclose = (event) => {
@@ -63,7 +63,7 @@ export function useWebSocket(): WebSocketStatus {
         }
       };
 
-      ws.onerror = () => ws?.close();
+      ws.onerror = () => { try { ws?.close(); } catch (_) {} };
       ws.onmessage = handleMessage;
     };
 

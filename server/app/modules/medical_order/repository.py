@@ -98,6 +98,11 @@ class MedicalOrderRepository(BaseRepository[MedicalOrder]):
                 MedicalOrder.study_setting == filters.study_setting
             )
 
+        if filters.triage_priority is not None:
+            statement = statement.where(
+                MedicalOrder.triage_priority == filters.triage_priority
+            )
+
         order_exprs = self._build_order_by(filters.sort_by, filters.sort_dir)
 
         count_statement = select(func.count()).select_from(statement.subquery())

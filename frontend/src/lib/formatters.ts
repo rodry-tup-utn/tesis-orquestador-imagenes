@@ -18,11 +18,7 @@ export function capitalize(value: string): string {
 }
 
 export function capitalizeWords(value: string): string {
-  return value
-    .split(/\s+/)
-    .map(capitalize)
-    .filter(Boolean)
-    .join(" ");
+  return value.split(/\s+/).map(capitalize).filter(Boolean).join(" ");
 }
 
 export function formatPatientName(
@@ -39,12 +35,31 @@ export function formatDateTime(value: string | null | undefined): string {
   return new Date(value).toLocaleString("es-AR", {
     dateStyle: "short",
     timeStyle: "short",
+    hour12: false,
   });
 }
 
 export function formatDate(value: string | null | undefined): string {
   if (!value) return "—";
   return new Date(value).toLocaleDateString("es-AR");
+}
+
+export function formatTime(value: string | null | undefined): string {
+  if (!value) return "—";
+  return new Date(value).toLocaleTimeString("es-AR", {
+    timeStyle: "short",
+    hour12: false,
+  });
+}
+
+export function splitLocation(value: string | null | undefined): {
+  main: string;
+  rest: string;
+} {
+  const loc = (value ?? "").trim();
+  const sep = loc.indexOf(" - ");
+  if (sep < 0) return { main: loc, rest: "" };
+  return { main: loc.slice(0, sep), rest: loc.slice(sep + 3) };
 }
 
 export function formatDni(value: string | null | undefined): string {

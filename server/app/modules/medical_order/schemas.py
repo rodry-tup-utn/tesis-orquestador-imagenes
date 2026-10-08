@@ -145,6 +145,7 @@ class OrderFilters(BaseModel):
     modality: Modality | None = None
     source_system: Annotated[str | None, PydanticField(max_length=80)] = None
     study_setting: OrderSetting | None = None
+    triage_priority: MedicalPriority | None = None
     sort_by: Literal["created_at", "priority", "patient_name"] = "created_at"
     sort_dir: Literal["asc", "desc"] = "desc"
 

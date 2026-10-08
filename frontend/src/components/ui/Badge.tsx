@@ -11,7 +11,7 @@ type Variant =
   | "red"
   | "pink"
   | "violet";
-type Size = "xs" | "sm" | "md";
+type Size = "xs" | "sm" | "md" | "lg";
 
 interface BadgeProps {
   variant?: Variant;
@@ -41,6 +41,7 @@ const SIZE_CLASSES: Record<Size, string> = {
   xs: "px-2 py-0.5 text-[11px]",
   sm: "px-2.5 py-0.5 text-xs",
   md: "px-3 py-1 text-xs",
+  lg: "px-2.5 py-1 text-sm",
 };
 
 export default function Badge({
@@ -56,7 +57,7 @@ export default function Badge({
   return (
     <span
       title={title}
-      className={`inline-flex items-center gap-1 whitespace-nowrap rounded-full font-semibold ring-1 ring-inset ${uppercase ? "uppercase tracking-wide" : ""} ${VARIANT_CLASSES[variant]} ${SIZE_CLASSES[size]} ${className}`}
+      className={`inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-lg font-semibold ring-1 ring-inset ${uppercase ? "uppercase tracking-wide" : ""} ${VARIANT_CLASSES[variant]} ${SIZE_CLASSES[size]} ${className}`}
     >
       {dot && <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-current" />}
       {icon}

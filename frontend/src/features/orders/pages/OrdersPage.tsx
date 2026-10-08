@@ -7,6 +7,7 @@ import Select from "../../../components/ui/Select";
 import { useDashboardStats } from "../../dashboard/hooks/useDashboard";
 import { MODALITY_LABELS } from "../../../lib/formatters";
 import {
+  MEDICAL_PRIORITIES,
   MODALITIES,
   ORDER_STATES,
   PAGE_SIZE,
@@ -16,6 +17,7 @@ import {
 import OrdersTable from "../components/OrdersTable";
 import { useOrdersQuery } from "../hooks/useOrdersQuery";
 import type {
+  MedicalPriority,
   Modality,
   OrderFilters,
   OrderSetting,
@@ -89,7 +91,7 @@ export default function OrdersPage() {
     !!filters.start_date ||
     !!filters.end_date ||
     !!filters.order_state ||
-    filters.was_notified !== undefined ||
+    !!filters.triage_priority ||
     !!filters.modality ||
     !!filters.source_system ||
     !!filters.study_setting;
@@ -200,19 +202,21 @@ export default function OrdersPage() {
             </div>
             <div className="w-44">
               <Select
-                value={
-                  filters.was_notified === undefined
-                    ? ""
-                    : String(filters.was_notified)
+                value={filters.triage_priority ?? ""}
+                onChange={(e) =>
+                  set({
+                    triage_priority: (e.target.value || undefined) as
+                      | MedicalPriority
+                      | undefined,
+                  })
                 }
-                onChange={(e) => {
-                  const v = e.target.value;
-                  set({ was_notified: v === "" ? undefined : v === "true" });
-                }}
               >
-                <option value="">Notificación</option>
-                <option value="true">Notificada</option>
-                <option value="false">No notificada</option>
+                <option value="">Todas las prioridades</option>
+                {MEDICAL_PRIORITIES.map((priority) => (
+                  <option key={priority} value={priority}>
+                    {priority}
+                  </option>
+                ))}
               </Select>
             </div>
             <div className="w-56">

@@ -1,4 +1,9 @@
-import type { Modality, OrderSetting, OrderState } from "../types/order.types";
+import type {
+  MedicalPriority,
+  Modality,
+  OrderSetting,
+  OrderState,
+} from "../types/order.types";
 
 export const PAGE_SIZE = 10;
 
@@ -7,6 +12,13 @@ export const ORDER_STATES: OrderState[] = [
   "En Proceso",
   "Finalizada",
   "Cancelada",
+];
+
+export const MEDICAL_PRIORITIES: MedicalPriority[] = [
+  "Crítico",
+  "Urgente",
+  "Prioritario",
+  "Rutina",
 ];
 
 export const MODALITIES: Modality[] = [

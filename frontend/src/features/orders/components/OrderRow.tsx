@@ -1,5 +1,11 @@
-import { Bed, Building2, Server } from "lucide-react";
-import { formatDateTime, formatElapsed, formatPatientName } from "../../../lib/formatters";
+import { Bed, Building2, MapPin, Server } from "lucide-react";
+import {
+  formatDate,
+  formatElapsed,
+  formatPatientName,
+  formatTime,
+  splitLocation,
+} from "../../../lib/formatters";
 import { useNow } from "../../../hooks/useNow";
 import type { MedicalOrderRead } from "../types/order.types";
 import OrderActions from "./OrderActions";
@@ -9,6 +15,17 @@ import StateBadge from "./StateBadge";
 
 const WARN_AFTER_MIN = 60;
 const CRITICAL_AFTER_MIN = 120;
+
+const SOURCE_SYSTEM_CLASSES: Record<string, string> = {
+  AMBULATORIO: "bg-sky-100 text-sky-700",
+  GUARDIA: "bg-red-100 text-red-700",
+  INTERNACION: "bg-violet-100 text-violet-700",
+};
+
+const SETTING_CLASSES = {
+  cama: "bg-orange-100 text-orange-700",
+  efector: "bg-green-100 text-green-700",
+} as const;
 
 function elapsedMinutes(
   createdAt: string | null | undefined,
@@ -35,62 +52,91 @@ export default function OrderRow({ order }: OrderRowProps) {
         ? "bg-amber-100 text-amber-700"
         : "bg-gray-100 text-gray-500";
 
+  const locValue = order.order.location?.trim() ?? "";
+  const showLocation = order.source_system !== "AMBULATORIO" && locValue !== "";
+  const location = splitLocation(locValue);
+
   return (
-    <tr className="border-b border-gray-100 transition-colors hover:bg-blue-200 even:bg-blue-100">
-      <td className="whitespace-nowrap px-4 py-4 text-sm text-gray-500">
-        <div>{formatDateTime(order.created_at)}</div>
+    <tr className="border-b border-gray-100 text-center transition-colors hover:bg-blue-200 even:bg-blue-100">
+      <td className="whitespace-nowrap px-4 py-4 text-sm text-gray-500 text-center">
+        <div className="text-base font-medium text-gray-700">
+          {formatDate(order.created_at)}
+        </div>
+        <div className="text-gray-500">{formatTime(order.created_at)}</div>
         <span
-          className={`mt-0.5 inline-flex items-center rounded px-1.5 py-0.5 text-[11px] font-medium ${elapsedClass}`}
+          className={`mt-0.5 inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${elapsedClass}`}
         >
-          {formatElapsed(order.created_at, now)}
+          {`Hace ${formatElapsed(order.created_at, now)}`}
         </span>
       </td>
       <td className="px-4 py-4">
-        <div className="text-sm font-semibold text-gray-900">
+        <div className="text-lg font-semibold text-gray-900">
           {formatPatientName(order.patient.lastname, order.patient.name)}
         </div>
-        <div className="whitespace-nowrap font-mono text-xs text-gray-500">
+        <div className="whitespace-nowrap font-mono text-sm text-gray-500">
           DNI {Number(order.patient.dni).toLocaleString("ES-AR")}
         </div>
       </td>
       <td className="px-4 py-4">
-        <div className="flex flex-col items-center gap-0.5">
-          <PriorityBadge priority={order.order.triage_priority} />
-          <StateBadge state={order.order.state} size="xs" />
+        <div className="flex flex-col gap-0.5">
+          <PriorityBadge priority={order.order.triage_priority} size="lg" />
+          <StateBadge state={order.order.state} size="lg" />
         </div>
       </td>
-      <td className="px-4 py-4 text-sm text-gray-700">
+      <td className="px-4 py-4 text-sm text-center text-gray-700">
+        <div className="mb-2 flex flex-col">
+          <ModalityBadge modality={order.order.modality} size="lg" />
+        </div>
         <div
-          className="max-w-60"
+          className="max-w-60 text-base"
           title={`${order.order.modality} · ${order.order.description}`}
         >
           {order.order.description}
         </div>
-        <div className="mt-0.5">
-          <ModalityBadge modality={order.order.modality} size="md" />
-        </div>
       </td>
       <td className="px-4 py-4 text-sm text-gray-500">
-        <div>{order.order.location}</div>
-        <div className="mt-0.5 flex flex-wrap items-center gap-1">
-          <span className="inline-flex items-center gap-1 rounded bg-gray-100 px-1.5 py-0.5 text-[11px] text-gray-500">
-            <Server size={11} />
-            {order.source_system}
-          </span>
-          <span className="inline-flex items-center gap-1 rounded bg-gray-100 px-1.5 py-0.5 text-[11px] text-gray-500">
+        <span
+          className={`inline-flex items-center gap-1.5 rounded px-2 py-0.5 text-sm font-medium ${SOURCE_SYSTEM_CLASSES[order.source_system] ?? "bg-gray-100 text-gray-500"}`}
+        >
+          <Server size={16} />
+          {order.source_system}
+        </span>
+        <div className="mt-1.5 flex flex-col items-center gap-1 rounded-md bg-gray-100 p-1.5">
+          {showLocation && (
+            <div className="flex w-full items-start justify-center gap-1.5">
+              <MapPin size={16} className="mt-0.5 shrink-0 text-green-600" />
+              <div className="min-w-0">
+                <div
+                  className="truncate text-base font-semibold text-gray-900"
+                  title={locValue}
+                >
+                  {location.main}
+                </div>
+                {location.rest && (
+                  <div
+                    className="truncate font-mono text-sm text-gray-500"
+                    title={locValue}
+                  >
+                    {location.rest}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+          <span
+            className={`inline-flex items-center gap-1.5 rounded px-2 py-0.5 text-sm font-medium uppercase ${order.order.study_setting === "En Cama" ? SETTING_CLASSES.cama : SETTING_CLASSES.efector}`}
+          >
             {order.order.study_setting === "En Cama" ? (
-              <Bed size={11} />
+              <Bed size={16} />
             ) : (
-              <Building2 size={11} />
+              <Building2 size={16} />
             )}
             {order.order.study_setting}
           </span>
         </div>
       </td>
       <td className="px-4 py-4">
-        <div className="flex flex-col items-start gap-1">
-          <OrderActions order={order} compact vertical showRetriage={false} />
-        </div>
+        <OrderActions order={order} size="md" vertical showRetriage={false} />
       </td>
     </tr>
   );

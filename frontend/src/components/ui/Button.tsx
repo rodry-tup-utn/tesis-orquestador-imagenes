@@ -5,6 +5,8 @@ type Variant =
   | "secondary"
   | "danger"
   | "ghost"
+  | "warning"
+  | "ghost-warning"
   | "soft-primary"
   | "soft-danger"
   | "soft-warning"
@@ -29,6 +31,10 @@ const VARIANT_CLASSES: Record<Variant, string> = {
     "bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 focus-visible:ring-red-400/60",
   ghost:
     "text-gray-600 hover:bg-gray-100 hover:text-gray-900 disabled:opacity-50 focus-visible:ring-sky-400/60",
+  warning:
+    "bg-orange-500 text-white hover:bg-orange-600 disabled:opacity-50 focus-visible:ring-orange-400/60",
+  "ghost-warning":
+    "bg-orange-50 text-orange-600 hover:bg-orange-100 disabled:opacity-50 focus-visible:ring-orange-400/60",
   "soft-primary":
     "bg-sky-50 text-sky-700 hover:bg-sky-100 disabled:opacity-50 focus-visible:ring-sky-400/60",
   "soft-danger":

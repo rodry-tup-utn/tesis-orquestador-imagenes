@@ -30,9 +30,9 @@ import {
   formatDate,
   formatPatientName,
   capitalize,
+  splitLocation,
 } from "../../../lib/formatters";
 import OrderActions from "../components/OrderActions";
-import WorklistAction from "../components/WorklistAction";
 import WorklistBadge from "../components/WorklistBadge";
 import PriorityBadge from "../components/PriorityBadge";
 import StateBadge from "../components/StateBadge";
@@ -86,6 +86,10 @@ export default function OrderDetailPage() {
       {isUrgentOriginal ? "Urgente" : "Rutina"}
     </span>
   );
+
+  const locValue = details.location?.trim() ?? "";
+  const showLocation = order.source_system !== "AMBULATORIO" && locValue !== "";
+  const location = splitLocation(locValue);
 
   return (
     <div className="mx-auto max-w-4xl space-y-4">
@@ -211,16 +215,14 @@ export default function OrderDetailPage() {
             </span>
           </div>
 
-          <div className="mt-4">
+          <div className="mt-4 rounded-lg border border-gray-200 bg-gray-50 p-4 ring-1 ring-inset ring-gray-200/40">
+            <div className="mb-1.5">
+              <ModalityBadge modality={details.modality} />
+            </div>
             <p className="text-2xl indent-8 font-semibold leading-snug text-gray-900 py-6">
               {details.description}
             </p>
-            <div className="mt-1.5">
-              <ModalityBadge modality={details.modality} />
-            </div>
-          </div>
-
-          <dl className="mt-4 grid gap-x-10 sm:grid-cols-2">
+            <dl className="mt-4 grid gap-x-10 sm:grid-cols-2">
             <DetailRow
               label="Diagnóstico"
               icon={<HeartPulse size={13} />}
@@ -229,14 +231,29 @@ export default function OrderDetailPage() {
             >
               {details.diagnosis}
             </DetailRow>
-            <DetailRow
-              label="Ubicación"
-              icon={<MapPin size={13} />}
-              iconClass="bg-green-100 text-green-700"
-              className="px-0 py-1.5"
-            >
-              {details.location}
-            </DetailRow>
+
+            {showLocation && (
+              <DetailRow
+                label="Ubicación"
+                icon={<MapPin size={13} />}
+                iconClass="bg-green-100 text-green-700"
+                className="px-0 py-1.5"
+              >
+                {showLocation && (
+                  <>
+                    <div className="font-semibold" title={locValue}>
+                      {location.main}
+                    </div>
+                    {location.rest && (
+                      <div className="font-mono text-gray-500" title={locValue}>
+                        {location.rest}
+                      </div>
+                    )}
+                  </>
+                )}
+              </DetailRow>
+            )}
+
             <DetailRow
               label="Lugar de estudio"
               icon={
@@ -259,9 +276,10 @@ export default function OrderDetailPage() {
             >
               {details.observations ?? "—"}
             </DetailRow>
-          </dl>
+            </dl>
+          </div>
 
-          <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-gray-100 pt-3">
+          <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2 rounded-md border border-gray-100 bg-gray-50 px-3 py-2">
             <span className="flex items-center gap-2 text-sm text-gray-500">
               Estado: <StateBadge state={details.state} />
             </span>
@@ -273,7 +291,7 @@ export default function OrderDetailPage() {
             </span>
           </div>
 
-          <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-gray-100 pt-3">
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-md border border-gray-100 bg-gray-50 px-3 py-2">
             <span className="flex items-center gap-2 text-sm text-gray-500">
               <Stethoscope size={15} className="text-amber-600" />
               Médico solicitante

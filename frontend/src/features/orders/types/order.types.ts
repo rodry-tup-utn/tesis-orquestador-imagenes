@@ -64,6 +64,7 @@ export interface OrderFilters {
   modality?: Modality;
   source_system?: string;
   study_setting?: OrderSetting;
+  triage_priority?: MedicalPriority;
   sort_by?: SortBy;
   sort_dir?: SortDir;
 }

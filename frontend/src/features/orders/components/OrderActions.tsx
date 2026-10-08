@@ -20,6 +20,7 @@ interface OrderActionsProps {
   iconOnly?: boolean;
   compact?: boolean;
   vertical?: boolean;
+  size?: "xs" | "sm" | "md";
 }
 
 export default function OrderActions({
@@ -29,6 +30,7 @@ export default function OrderActions({
   iconOnly = false,
   compact = false,
   vertical = false,
+  size,
 }: OrderActionsProps) {
   const [stateOpen, setStateOpen] = useState(false);
   const [obsOpen, setObsOpen] = useState(false);
@@ -43,7 +45,8 @@ export default function OrderActions({
   const hasObservations =
     Boolean(order.order.observations?.trim()) &&
     !(order.order.observations?.toLowerCase() == "sin observaciones");
-  const size = compact ? "xs" : "sm";
+  const buttonSize = size ?? (compact ? "xs" : "sm");
+  const iconSize = buttonSize === "md" ? 16 : 14;
 
   const goToDetail = () => {
     if (orderId != null) navigate(`/orders/${orderId}`);
@@ -53,15 +56,15 @@ export default function OrderActions({
     <div
       className={
         vertical
-          ? "flex flex-col items-center gap-2"
+          ? "flex flex-col gap-2"
           : "flex flex-wrap items-center justify-center gap-1"
       }
     >
       {detailButton && (
         <Button
-          size="sm"
+          size={buttonSize}
           variant="primary"
-          icon={<Eye size={14} />}
+          icon={<Eye size={iconSize} />}
           iconOnly={iconOnly}
           onClick={goToDetail}
           title="Ver detalle de la orden"
@@ -70,9 +73,9 @@ export default function OrderActions({
         </Button>
       )}
       <Button
-        size={size}
+        size={buttonSize}
         variant="soft-primary"
-        icon={<ToggleRight size={14} />}
+        icon={<ToggleRight size={iconSize} />}
         iconOnly={iconOnly}
         onClick={() => setStateOpen(true)}
         title="Cambiar estado"
@@ -81,9 +84,9 @@ export default function OrderActions({
       </Button>
       {showRetriage && (
         <Button
-          size={size}
+          size={buttonSize}
           variant="soft-warning"
-          icon={<RotateCcw size={14} />}
+          icon={<RotateCcw size={iconSize} />}
           iconOnly={iconOnly}
           onClick={() => setRetriageOpen(true)}
           title="Re-evaluar triaje"
@@ -92,9 +95,9 @@ export default function OrderActions({
         </Button>
       )}
       <Button
-        size={size}
-        variant={hasObservations ? "soft-warning" : "soft-neutral"}
-        icon={<MessageSquare size={14} fill="currentColor" />}
+        size={buttonSize}
+        variant={hasObservations ? "warning" : "ghost-warning"}
+        icon={<MessageSquare size={iconSize} fill="currentColor" />}
         iconOnly={iconOnly}
         onClick={() => setObsOpen(true)}
         title="Ver o editar observaciones"
@@ -102,7 +105,7 @@ export default function OrderActions({
         Observaciones
       </Button>
 
-      <WorklistAction order={order} compact />
+      <WorklistAction order={order} size={buttonSize} block={vertical} />
 
       <ChangeStateModal
         open={stateOpen}
